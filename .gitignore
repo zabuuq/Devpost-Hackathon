@@ -1,16 +1,51 @@
-# Godot 4+ specific ignores
+# ──────────────────────────────────────────────
+# Godot 4+
+# ──────────────────────────────────────────────
 .godot/
 .nomedia
 
-# Godot-specific ignores
+# Legacy Godot (3.x) — safe to keep
 .import/
 export.cfg
 export_credentials.cfg
 
-# Imported translations (automatically generated from CSV files)
+# Imported translations (auto-generated from CSV)
 *.translation
 
-# Mono-specific ignores
+# Mono / C# (not used in this project, but harmless)
 .mono/
 data_*/
 mono_crash.*.json
+
+# ──────────────────────────────────────────────
+# Export output (Butler pushes from here)
+# ──────────────────────────────────────────────
+export/
+
+# ──────────────────────────────────────────────
+# Claude Code
+# ──────────────────────────────────────────────
+.claude/
+
+# ──────────────────────────────────────────────
+# OS
+# ──────────────────────────────────────────────
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ──────────────────────────────────────────────
+# Editor
+# ──────────────────────────────────────────────
+*.swp
+*.swo
+*~
