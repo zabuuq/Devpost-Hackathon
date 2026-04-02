@@ -7,7 +7,12 @@ func _ready() -> void:
 	var player_num: int = GameState.current_player + 1
 	var hits: int = GameState.last_turn_hits
 	if GameState.turn_number == 0:
-		message_label.text = "Player %d — place your fleet.\nPlayer %d, look away." % [player_num, 3 - player_num]
+		if GameState.current_player == 0:
+			# P1 just placed; P2 is up next
+			message_label.text = "Player 2 — time to place your fleet.\nPlayer 1, please look away."
+		else:
+			# P2 just placed; gameplay is about to begin
+			message_label.text = "Both fleets are placed!\nPlayer 1, click Next to begin the battle."
 	else:
 		message_label.text = "Player %d, your turn.\nYou took %d hit%s last turn.\nClick Next to begin." % [
 			player_num,

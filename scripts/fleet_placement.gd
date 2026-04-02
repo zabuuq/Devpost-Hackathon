@@ -34,18 +34,6 @@ func _ready() -> void:
 	done_button.disabled = true
 	grid_node.draw.connect(_draw_grid)
 	grid_node.queue_redraw()
-	_fit_camera.call_deferred()
-
-func _fit_camera() -> void:
-	var vp_size: Vector2 = viewport_container.size
-	if vp_size.x <= 0 or vp_size.y <= 0:
-		return
-	var grid_w: float = GRID_COLS * CELL_SIZE
-	var grid_h: float = GRID_ROWS * CELL_SIZE
-	camera.position = Vector2(grid_w * 0.5, grid_h * 0.5)
-	# SubViewport is grid_w x grid_h; stretch scales it to container.
-	# zoom=1 means 1 world px = 1 subvp px, then stretch handles display scaling.
-	camera.zoom = Vector2.ONE
 
 func _setup_ship_list() -> void:
 	for i in range(ShipDefinitions.FLEET.size()):
@@ -114,17 +102,12 @@ func _on_viewport_gui_input(event: InputEvent) -> void:
 		grid_node.queue_redraw()
 
 func _screen_to_grid(local_pos: Vector2) -> Vector2i:
-	# local_pos is in SubViewportContainer space.
-	# With stretch=true the subvp (GRID_COLS*CELL_SIZE × GRID_ROWS*CELL_SIZE) is
-	# scaled to fit the container. camera.zoom=1, camera at grid center.
+	# camera.zoom=1, camera centered at (grid_w/2, grid_h/2).
+	# With stretch=true: container px maps linearly to SubViewport px = world px.
 	var vp_size: Vector2 = viewport_container.size
 	if vp_size.x <= 0 or vp_size.y <= 0:
 		return Vector2i.ZERO
-	var sub_vp_size := Vector2(GRID_COLS * CELL_SIZE, GRID_ROWS * CELL_SIZE)
-	# Map container pixel → SubViewport pixel
-	var subvp_px: Vector2 = local_pos * sub_vp_size / vp_size
-	# Map SubViewport pixel → world (camera at center, zoom=1)
-	var world_pos: Vector2 = (subvp_px - sub_vp_size * 0.5) / camera.zoom + camera.position
+	var world_pos: Vector2 = local_pos * Vector2(GRID_COLS * CELL_SIZE, GRID_ROWS * CELL_SIZE) / vp_size
 	var col: int = int(world_pos.x / CELL_SIZE)
 	var row: int = int(world_pos.y / CELL_SIZE)
 	return Vector2i(clampi(col, 0, GRID_COLS - 1), clampi(row, 0, GRID_ROWS - 1))
