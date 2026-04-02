@@ -20,10 +20,10 @@ var action_taken: bool = false
 var move_actions_taken: int = 0          # Cruiser gets 2; others get 1
 var is_destroyed: bool = false
 
-static func create(ship_type: String) -> ShipInstance:
+static func create(p_ship_type: String) -> ShipInstance:
 	var inst := ShipInstance.new()
-	inst.ship_type = ship_type
-	var stats: Dictionary = ShipDefinitions.SHIPS[ship_type]
+	inst.ship_type = p_ship_type
+	var stats: Dictionary = ShipDefinitions.SHIPS[p_ship_type]
 	inst.current_shields = stats["max_shields"]
 	inst.current_armor = stats["max_armor"]
 	inst.current_energy = stats["max_energy"]

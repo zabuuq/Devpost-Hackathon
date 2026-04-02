@@ -53,7 +53,7 @@ func _on_ship_button_pressed(idx: int) -> void:
 		done_button.disabled = true
 	selected_ship_idx = idx
 	ghost_facing = 0
-	ghost_position = Vector2i(GRID_COLS / 2, GRID_ROWS / 2)
+	ghost_position = Vector2i(GRID_COLS / 2 as int, GRID_ROWS / 2 as int)
 	_update_detail_panel(ShipDefinitions.FLEET[idx])
 	grid_node.queue_redraw()
 

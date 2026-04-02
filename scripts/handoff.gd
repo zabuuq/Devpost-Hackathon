@@ -1,6 +1,6 @@
 extends Control
 
-@onready var message_label: Label = $MessageLabel
+@onready var message_label: Label = $CenterPanel/MessageLabel
 
 func _ready() -> void:
 	GameState.phase = GameState.Phase.HANDOFF
