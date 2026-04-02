@@ -1,6 +1,105 @@
 [gd_scene load_steps=2 format=3 uid="uid://bfleet00000001"]
 
-[ext_resource type="Script" path="res://scripts/fleet_placement.gd" id="1_ddd"]
+[ext_resource type="Script" path="res://scripts/fleet_placement.gd" id="1_fleet"]
 
 [node name="FleetPlacement" type="Control"]
-script = ExtResource("1_ddd")
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_fleet")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.05, 0.15, 1.0)
+
+[node name="PlayerLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 8.0
+offset_right = 200.0
+offset_bottom = 36.0
+text = "Player 1 — Place Your Fleet"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.4, 0.8, 1.0, 1.0)
+
+[node name="HSplitContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 44.0
+
+[node name="LeftPanel" type="VBoxContainer" parent="HSplitContainer"]
+custom_minimum_size = Vector2(180, 0)
+
+[node name="ShipListLabel" type="Label" parent="HSplitContainer/LeftPanel"]
+text = "Fleet"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.6, 0.8, 1.0, 1.0)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HSplitContainer/LeftPanel"]
+size_flags_vertical = 3
+
+[node name="ShipList" type="VBoxContainer" parent="HSplitContainer/LeftPanel/ScrollContainer"]
+size_flags_horizontal = 3
+
+[node name="PlacementHint" type="Label" parent="HSplitContainer/LeftPanel"]
+text = "Click ship to select\nQ/E to rotate\nRight-click to cancel"
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.5, 0.5, 0.7, 1.0)
+autowrap_mode = 2
+
+[node name="DoneButton" type="Button" parent="HSplitContainer/LeftPanel"]
+custom_minimum_size = Vector2(160, 44)
+text = "Done"
+disabled = true
+
+[node name="GridViewport" type="SubViewportContainer" parent="HSplitContainer"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="HSplitContainer/GridViewport"]
+size = Vector2i(2560, 640)
+
+[node name="GridNode" type="Node2D" parent="HSplitContainer/GridViewport/SubViewport"]
+
+[node name="Camera2D" type="Camera2D" parent="HSplitContainer/GridViewport/SubViewport/GridNode"]
+zoom = Vector2(0.3, 0.3)
+position = Vector2(1280, 320)
+
+[node name="RightPanel" type="VBoxContainer" parent="HSplitContainer"]
+custom_minimum_size = Vector2(180, 0)
+
+[node name="DetailLabel" type="Label" parent="HSplitContainer/RightPanel"]
+text = "Ship Details"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.6, 0.8, 1.0, 1.0)
+
+[node name="DetailPanel" type="VBoxContainer" parent="HSplitContainer/RightPanel"]
+size_flags_vertical = 3
+
+[node name="ShipName" type="Label" parent="HSplitContainer/RightPanel/DetailPanel"]
+text = "—"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.9, 0.9, 1.0, 1.0)
+
+[node name="ShipStats" type="Label" parent="HSplitContainer/RightPanel/DetailPanel"]
+text = "Select a ship\nto see details."
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.7, 0.7, 0.9, 1.0)
+autowrap_mode = 2
+
+[connection signal="pressed" from="HSplitContainer/LeftPanel/DoneButton" to="." method="_on_done_pressed"]
+[connection signal="gui_input" from="HSplitContainer/GridViewport" to="." method="_on_viewport_gui_input"]
