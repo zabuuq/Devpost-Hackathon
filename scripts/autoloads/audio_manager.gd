@@ -2,24 +2,22 @@ extends Node
 
 # AudioStreamPlayer nodes — added as children at runtime
 var _music_player: AudioStreamPlayer = null
-var _sfx_players: Dictionary = {}
-
 func _ready() -> void:
 	_music_player = AudioStreamPlayer.new()
 	_music_player.name = "MusicPlayer"
 	add_child(_music_player)
 
-func play_sfx(sfx_name: String) -> void:
+func play_sfx(_sfx_name: String) -> void:
 	if not GameState.sfx_enabled:
 		return
-	# TODO: load and play res://assets/audio/sfx/{sfx_name}.ogg
+	# TODO: load and play res://assets/audio/sfx/{_sfx_name}.ogg
 	# Placeholder — audio assets not yet present
 	pass
 
-func play_music(music_name: String) -> void:
+func play_music(_music_name: String) -> void:
 	if not GameState.music_enabled:
 		return
-	# TODO: load and play res://assets/audio/music/{music_name}.ogg
+	# TODO: load and play res://assets/audio/music/{_music_name}.ogg
 	# Placeholder — audio assets not yet present
 	pass
 
