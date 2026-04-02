@@ -20,7 +20,8 @@ func _on_next_pressed() -> void:
 	_advance()
 
 func _advance() -> void:
-	if GameState.phase == GameState.Phase.PLACEMENT:
+	# turn_number == 0 means we're still in fleet placement
+	if GameState.turn_number == 0:
 		if GameState.current_player == 0:
 			GameState.current_player = 1
 			get_tree().change_scene_to_file("res://scenes/fleet_placement.tscn")
