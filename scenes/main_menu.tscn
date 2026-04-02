@@ -1,6 +1,124 @@
 [gd_scene load_steps=2 format=3 uid="uid://bmenu000000001"]
 
-[ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_ccc"]
+[ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_menu"]
 
 [node name="MainMenu" type="Control"]
-script = ExtResource("1_ccc")
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_menu")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.05, 0.15, 1.0)
+
+[node name="MenuContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -200.0
+offset_right = 150.0
+offset_bottom = 200.0
+alignment = 1
+
+[node name="GameTitle" type="Label" parent="MenuContainer"]
+text = "NEBULA"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 64
+theme_override_colors/font_color = Color(0.4, 0.8, 1.0, 1.0)
+
+[node name="Subtitle" type="Label" parent="MenuContainer"]
+text = "A Space Combat Tribute"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.6, 0.6, 0.8, 1.0)
+
+[node name="Spacer" type="Control" parent="MenuContainer"]
+custom_minimum_size = Vector2(0, 40)
+
+[node name="StartGame" type="Button" parent="MenuContainer"]
+custom_minimum_size = Vector2(300, 50)
+text = "Start Game"
+
+[node name="HowToPlay" type="Button" parent="MenuContainer"]
+custom_minimum_size = Vector2(300, 50)
+text = "How to Play"
+
+[node name="SFXToggle" type="Button" parent="MenuContainer"]
+custom_minimum_size = Vector2(300, 50)
+text = "SFX: ON"
+
+[node name="MusicToggle" type="Button" parent="MenuContainer"]
+custom_minimum_size = Vector2(300, 50)
+text = "Music: ON"
+
+[node name="HowToPlayOverlay" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+visible = false
+
+[node name="OverlayBG" type="ColorRect" parent="HowToPlayOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.0, 0.0, 0.1, 0.9)
+
+[node name="Panel" type="VBoxContainer" parent="HowToPlayOverlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -280.0
+offset_right = 350.0
+offset_bottom = 280.0
+
+[node name="HowToTitle" type="Label" parent="HowToPlayOverlay/Panel"]
+text = "How to Play"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.4, 0.8, 1.0, 1.0)
+
+[node name="HowToText" type="Label" parent="HowToPlayOverlay/Panel"]
+text = "OBJECTIVE
+Destroy your opponent's entire fleet before they destroy yours.
+
+HOW TO PLAY
+1. Each player secretly places their fleet on their grid.
+2. Players take turns — use probes, lasers, and missiles to find and destroy the enemy fleet.
+3. PROBE: Reveals enemy ship positions in a 4x4 area (6x6 for Probe Ship).
+4. LASER: Fires at a target cell. Hits shields first, then armor.
+5. MISSILE: High armor damage, bypasses shields partially.
+6. MOVE: Reposition your ship. Forward costs half a move point.
+7. Energy regenerates each turn — manage it carefully.
+8. Probe intel fades after a few turns. Ghost markers remain.
+9. The player who destroys all enemy ships wins.
+
+ENERGY SLIDERS
+Shield Regen fires at end of turn. Laser Power sets your shot strength.
+Shields take priority if energy is low."
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 14
+
+[node name="CloseButton" type="Button" parent="HowToPlayOverlay/Panel"]
+custom_minimum_size = Vector2(200, 40)
+text = "Close"
+
+[connection signal="pressed" from="MenuContainer/StartGame" to="." method="_on_start_pressed"]
+[connection signal="pressed" from="MenuContainer/HowToPlay" to="." method="_on_how_to_play_pressed"]
+[connection signal="pressed" from="MenuContainer/SFXToggle" to="." method="_on_sfx_toggle_pressed"]
+[connection signal="pressed" from="MenuContainer/MusicToggle" to="." method="_on_music_toggle_pressed"]
+[connection signal="pressed" from="HowToPlayOverlay/Panel/CloseButton" to="." method="_on_close_overlay_pressed"]

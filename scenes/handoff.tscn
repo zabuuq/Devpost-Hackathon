@@ -1,6 +1,46 @@
 [gd_scene load_steps=2 format=3 uid="uid://bhandoff000001"]
 
-[ext_resource type="Script" path="res://scripts/handoff.gd" id="1_eee"]
+[ext_resource type="Script" path="res://scripts/handoff.gd" id="1_handoff"]
 
 [node name="Handoff" type="Control"]
-script = ExtResource("1_eee")
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_handoff")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.05, 0.15, 1.0)
+
+[node name="CenterPanel" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -120.0
+offset_right = 250.0
+offset_bottom = 120.0
+alignment = 1
+
+[node name="MessageLabel" type="Label" parent="CenterPanel"]
+text = "Player 1, your turn."
+horizontal_alignment = 1
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.9, 0.9, 1.0, 1.0)
+
+[node name="Spacer" type="Control" parent="CenterPanel"]
+custom_minimum_size = Vector2(0, 30)
+
+[node name="NextButton" type="Button" parent="CenterPanel"]
+custom_minimum_size = Vector2(200, 50)
+text = "Next"
+
+[connection signal="pressed" from="CenterPanel/NextButton" to="." method="_on_next_pressed"]
