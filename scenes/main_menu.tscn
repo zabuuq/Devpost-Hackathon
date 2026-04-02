@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bmenu000000001"]
+
+[ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_ccc"]
+
+[node name="MainMenu" type="Control"]
+script = ExtResource("1_ccc")

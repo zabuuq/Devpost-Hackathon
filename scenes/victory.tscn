@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bvict000000001"]
+
+[ext_resource type="Script" path="res://scripts/victory.gd" id="1_ggg"]
+
+[node name="Victory" type="Control"]
+script = ExtResource("1_ggg")
