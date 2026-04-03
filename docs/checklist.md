@@ -1,0 +1,94 @@
+<!-- Every item MUST use the five-field format below. /build reads each item
+     and relies on all five fields being present and consistently formatted.
+     The header encodes methodology choices so /build doesn't re-ask. -->
+
+# Build Checklist
+
+## Build Preferences
+
+- **Build mode:** Autonomous
+- **Comprehension checks:** N/A (autonomous mode)
+- **Git:** Commit after each checklist item with message: "Complete step N: [title]"
+- **Verification:** Yes — summary + in-game verification at checkpoints every 3 items
+- **Check-in cadence:** N/A (autonomous mode)
+
+## Checklist
+
+- [x] **1. Project scaffold and Godot project setup**
+  Spec ref: `spec.md > File Structure`
+  What to build: Create the full Godot 4.6.2 project directory layout. Set up `project.godot` with the correct render settings (Compatibility renderer for HTML5), disable threading in export settings, register `GameState` and `AudioManager` as Autoload singletons. Create all scene and script placeholder files at their correct paths per the file structure in spec.md. No logic yet — stubs only. Confirm the project opens in Godot without errors.
+  Acceptance: The project opens in Godot 4.6.2. Scene tree shows root scene. Autoloads appear in Project Settings → Autoloads. No script errors in the output panel.
+  Verify: Open the project in Godot. Check Project Settings → Autoloads for GameState and AudioManager. Hit F5 — game runs without crash even if nothing displays.
+
+- [x] **2. Data model — ShipDefinitions, ShipInstance, FogShipRecord, CellRecord**
+  Spec ref: `spec.md > Data Model`
+  What to build: Write all four data model scripts with full static typing. `ShipDefinitions` (`scripts/data/ship_definitions.gd`) — static `SHIPS` dictionary with all stats for battleship, probe_ship, destroyer, cruiser; `FLEET` constant array. `ShipInstance` (`scripts/gameplay/ship_instance.gd`) — all fields as specified: position, facing, current stats, slider settings, turn state flags. `FogShipRecord` (`scripts/gameplay/fog_ship_record.gd`) — ship_type, position, facing, last_shields, last_armor. `CellRecord` (`scripts/gameplay/cell_record.gd`) — has_probe, expires_in, has_blind_hit, ship (FogShipRecord reference). All classes use `class_name` declarations.
+  Acceptance: All four scripts parse without errors. `ShipDefinitions.SHIPS["battleship"].max_shields` returns 1000. `ShipDefinitions.FLEET` returns the 5-ship array with two destroyers.
+  Verify: Open each script in Godot. Confirm no parse errors (red squiggles). Use Godot's built-in script runner or a temporary test scene to print `ShipDefinitions.SHIPS["battleship"]` and confirm the dictionary.
+
+- [x] **3. GameState and AudioManager autoloads**
+  Spec ref: `spec.md > Autoloads`
+  What to build: Implement `GameState` (`scripts/autoloads/game_state.gd`) — Phase enum (SPLASH, MENU, PLACEMENT, HANDOFF, GAMEPLAY, VICTORY), `phase`, `current_player`, `turn_number`, `last_turn_hits`, and the `players` array with fleet and cell_records sub-dictionaries shaped exactly as spec'd. Implement `AudioManager` (`scripts/autoloads/audio_manager.gd`) — `play_sfx(name)`, `play_music(name)`, `stop_music()`, `set_sfx_enabled(enabled)`, `set_music_enabled(enabled)`. AudioManager reads sfx_enabled and music_enabled from GameState. Both singletons fully typed.
+  Acceptance: GameState and AudioManager load without errors. `GameState.players` has two entries with correct shape. `GameState.phase` defaults to SPLASH. `AudioManager.set_sfx_enabled(false)` does not throw an error.
+  Verify: Run the project. In Godot's Remote inspector (while running), expand the Autoloads and confirm GameState and AudioManager nodes exist with their exported properties visible.
+
+<!-- CHECKPOINT 1 after item 3: Run the project. Confirm no errors in Output. Check Autoloads in Remote inspector. -->
+
+- [x] **4. Splash, Main Menu, and Handoff scenes**
+  Spec ref: `spec.md > Scenes > Splash Screen`, `spec.md > Scenes > Main Menu`, `spec.md > Scenes > Handoff Screen`
+  What to build: Build three scenes with full UI and logic. `splash.tscn` — nebula background, game name label, "Press any key to load game" prompt; on any input event call `AudioServer.unlock()` and transition to `main_menu.tscn`. `main_menu.tscn` — Start Game button (→ fleet_placement.tscn, sets current_player=0), How to Play button (opens in-screen overlay), Sound toggle, Music toggle; ambient music starts here. `handoff.tscn` — "Player X, your turn. You took N hits. Click Next." text built from GameState; Next button routes to correct next scene based on phase (placement or gameplay). All buttons play click SFX via AudioManager.
+  Acceptance: Clicking through Splash → Main Menu → How to Play overlay → back → Start → Handoff works end-to-end. Hit count on handoff reads from GameState.last_turn_hits. Music toggle silences/resumes music.
+  Verify: Run the project. Click through the full flow: splash → main menu → How to Play → close → Start Game → handoff screen. Confirm "Player 1, your turn" displays. Confirm music plays on main menu and toggles off/on.
+
+- [ ] **5. Fleet Placement scene** ⚠️ REVISIT — bugs found, not completed
+  Spec ref: `spec.md > Scenes > Fleet Placement`, `prd.md > 2.2–2.3 Fleet Placement`, `prd.md > 8. Fleet Placement Rules`
+  What to build: Build `fleet_placement.tscn` with three-panel layout. Left panel: ship list showing all 5 ships as horizontal strips (squares to scale); click to select a ship for placement. Center: 80×20 grid using SubViewport + Camera2D, nebula background; ghost ship follows cursor while a ship is selected; Q/E to rotate; ghost turns red on invalid placement (overlap or out-of-bounds); click to place. Right panel: ship detail card — name, illustration placeholder, special ability, stats from ShipDefinitions. Done button disabled until all 5 ships placed; on click, writes placed fleet to `GameState.players[current_player].fleet` and loads `handoff.tscn`. Reused for both players via `GameState.current_player`.
+  Acceptance: All 5 ships can be placed on the grid. Rotation works with Q/E. Overlap and out-of-bounds turns ghost red. Done button activates only when all 5 are placed. Ship detail panel updates on selection. Fleet data written correctly to GameState.
+  Verify: Run to fleet placement. Place all 5 ships. Attempt to overlap two ships — confirm red ghost. Rotate a ship with Q/E. Click Done. Confirm handoff screen loads for Player 2.
+  Status note: The scene and script exist (`fleet_placement.tscn` / `scripts/fleet_placement.gd`) and most logic works — ship list, rotation, overlap detection, Done button, GameState write. Two bugs found and not yet fixed: (1) ghost ship renders offset from cursor — coordinate conversion in `_screen_to_grid()` is wrong; 4 fix attempts made, see memory note for hypotheses. (2) scroll wheel zoom and middle-mouse pan are missing from `_on_viewport_gui_input` — the zoom/clamp helpers in `gameplay.gd` should be ported here. Read the memory file `project_mouse_tracking_bug.md` before touching coordinate math.
+
+- [x] **6. Gameplay screen layout and SubViewport grid setup**
+  Spec ref: `spec.md > Scenes > Gameplay Screen`, `spec.md > Grid Rendering > SubViewport Setup`
+  What to build: Build `gameplay.tscn` layout — top tab row (Command Grid / Target Grid buttons), left panel with Battle Log and Ship Panel tabs, center SubViewportContainer. Create two SubViewport instances each containing a Node2D (GridRenderer stub) and Camera2D. Wire grid tab buttons to switch the active SubViewport. Camera2D zoom limits: full zoom-out shows entire 80×20 grid; max zoom ~4× cell size. Pan by click-and-drag on empty grid space. Ship Panel tab auto-focuses when a ship is clicked; Battle Log tab auto-focuses when nothing is selected. `gameplay.gd` calls `TurnManager.turn_start()` on scene load.
+  Acceptance: Gameplay scene loads after the second handoff. Both grid tabs are clickable and switch the visible SubViewport. Zoom in/out works with scroll wheel. Pan works on empty grid space. Left panel tabs switch between Battle Log and Ship Panel.
+  Verify: Play through fleet placement for both players. Confirm gameplay scene loads. Click Command Grid / Target Grid tabs. Scroll to zoom in and out. Drag to pan. Click a ship — confirm Ship Panel tab activates.
+
+<!-- CHECKPOINT 2 after item 6: Full flow from splash → placement (both players) → gameplay screen. Both grids switchable. Zoom/pan working. -->
+
+- [x] **7. GridRenderer — Command Grid and Target Grid rendering**
+  Spec ref: `spec.md > Grid Rendering > GridRenderer`
+  What to build: Implement `grid_renderer.gd` attached to the Node2D inside each SubViewport. Rendering layers in order: (1) nebula background texture tiled to 80×20 bounds, (2) grid cell lines, (3) wreckage markers, (4) ships — Command Grid: full color with facing indicator; Target Grid: reads CellRecord state for each cell and renders clear ship / ghost ship / blind hit marker / ghost marker accordingly, (5) probe illumination overlay (semi-transparent highlight on probed cells, nebula still visible beneath), (6) targeting reticule during action targeting (4×4 or 6×6 highlight clamped to grid bounds, moves with mouse). Use placeholder colored rectangles for ships if art assets are not yet ready. Probe area highlight renders in real time during probe targeting mode.
+  Acceptance: Command Grid shows all placed ships with facing arrows. Target Grid shows only fog-of-war state (no ships visible unless probe data exists). Ghost markers render semi-transparent. Probe area highlight tracks mouse and clamps at grid edges.
+  Verify: In gameplay, confirm your own ships are visible on Command Grid. Target Grid shows blank fog. Launch a probe — confirm illuminated area appears over nebula background. Move cursor near grid edge — confirm probe highlight clamps correctly.
+
+- [ ] **8. TurnManager — turn sequence, probe aging, energy, shield regen, win condition**
+  Spec ref: `spec.md > Turn Manager`, `spec.md > Data Model > CellRecord > Probe age logic`
+  What to build: Implement `turn_manager.gd` with `turn_start()` and `turn_end()`. `turn_start()`: call `age_cell_records()` on active player's cell_records (decrement expires_in, convert expired probes to ghost markers, delete empty expired cells), regen +50 energy per living ship, reset `action_taken` and `move_actions_taken` per ship, recalculate slider settings vs available energy (shields fill first). `turn_end()`: fire shield regen per ship's shield_regen_setting (deduct energy), check win condition (all opponent ships destroyed → load victory.tscn), otherwise swap current_player, write last_turn_hits, load handoff.tscn. `fire_shield_regen()` and `check_win_condition()` implemented exactly as spec'd.
+  Acceptance: Energy regenerates at turn start. Probe intel ages correctly — standard probe fades after 2 of your turns, Probe Ship probe after 3. Shield regen fires at turn end and deducts energy. Destroying all opponent ships triggers victory screen.
+  Verify: Play a turn. Confirm energy increases by 50 at turn start. Launch a probe; skip 2 turns; confirm probe fades to ghost marker. Set shield regen slider; end turn; confirm shields increase and energy decreases. (Win condition verified during ActionResolver step.)
+
+- [ ] **9. ActionResolver — Probe, Laser, and Missile actions**
+  Spec ref: `spec.md > Action System > ActionResolver > Probe Action`, `spec.md > Action System > ActionResolver > Laser Action`, `spec.md > Action System > ActionResolver > Missile Action`
+  What to build: Implement `action_resolver.gd` with `resolve_probe()`, `resolve_laser()`, `resolve_missile()`. Probe: determine area (4×4 or 6×6), clamp to grid bounds, deduct energy, decrement probes_remaining, write CellRecords with correct expires_in, handle overlap reset, return ProbeResult for battle log. Laser: deduct laser_power_setting energy, check hit/miss, apply shield damage first then 75% overflow to armor, set blind hit on CellRecord if no active probe, increment hits_scored and last_turn_hits. Missile: decrement missiles_remaining, check hit/miss, 125 damage to shields + full overflow to armor (no percentage), 250 armor if shields are gone. Ship destruction: armor ≤ 0 sets is_destroyed, leaves wreckage. All results written to GameState and returned for battle log.
+  Acceptance: Probe reveals ships in area and creates CellRecords. Laser strips shields then damages armor at 75% overflow. Missile does 250 armor / 125 shield as specified. Destroying a ship (armor to 0) marks it destroyed. Blind hit marker appears on Target Grid when firing without probe coverage.
+  Verify: Launch a probe over an enemy ship — confirm ship appears on Target Grid. Fire a laser at a probed ship — confirm shield/armor values decrease correctly. Fire a missile — confirm flat 250/125 damage. Fire at a ship until armor hits 0 — confirm wreckage marker appears.
+
+<!-- CHECKPOINT 3 after item 9: Full game loop playable. Both players can probe, fire, take turns. Fog of war updates correctly. Win condition triggers. -->
+
+- [ ] **10. ActionResolver — Move action**
+  Spec ref: `spec.md > Action System > ActionResolver > Move Action`, `prd.md > 7. Movement`
+  What to build: Implement `resolve_move()` in `action_resolver.gd`. Move UX: player clicks Move → ship enters preview mode (ghost ship shows proposed position, live display of move points and energy cost). WASD = screen-relative movement (W=up, S=down, A=left, D=right). Q/E = rotate (1.0 move points / 50 energy, max 1 rotation per move action). Forward move (facing direction) = 0.5 pts / 25 energy; all other directions = 1.0 pts / 50 energy. Cost calculated from net displacement from origin (not cumulative path). Available move points = min(base_move_points, floor(energy/25)*0.5). Submit button → "Are you sure?" confirmation → execute move. Collision: living ships block movement (show message, do not consume action point); wreckage is passthrough. Cruiser: 2 move actions per turn (move_actions_taken tracked).
+  Acceptance: Ships move correctly with WASD. Rotation changes facing without moving. Forward move costs 0.5 pts, all other directions 1.0 pts. Cruiser can move twice. Collision with a living ship shows message and does not consume the action. Ghost preview updates live with cost display.
+  Verify: Select a ship and click Move. Move it around in preview mode — confirm ghost updates and cost display changes. Submit — confirm ship moves. Try moving into another ship — confirm blocked message. Test Cruiser's double move. Confirm rotation changes facing correctly.
+
+- [ ] **11. Battle Log, Victory Screen, audio, and visual polish**
+  Spec ref: `spec.md > Battle Log`, `spec.md > Scenes > Victory Screen`, `spec.md > Audio`, `prd.md > 2.6 Victory Screen`, `prd.md > 10. Audio`
+  What to build: **Battle Log** (`scripts/ui/battle_log.gd`): scrollable log; three entry tiers (blind fire minimal, active probe full detail with coordinates and damage numbers, move entry); auto-scroll to latest; format exactly as spec'd. **Victory Screen** (`scenes/victory.tscn`): winner announcement, per-player stats side by side (probes launched, total hits scored), Play Again → main_menu.tscn. **Audio**: wire all SFX in AudioManager (laser.ogg, missile.ogg, probe.ogg, explosion.ogg, hit.ogg, click.ogg, ambient_space.ogg); use royalty-free placeholder audio files if originals not yet sourced; call correct `play_sfx()` from each action. **Visual polish**: nebula background texture applied to all grids; ship portrait placeholders in Ship Panel (colored rectangles with ship type label); probe illumination overlay rendering correctly over nebula; UI panels styled with space theme (dark backgrounds, teal/blue accent colors).
+  Acceptance: Battle log shows correct tier detail per action. Victory screen displays with correct winner and stats. All SFX fire on correct events. Music plays on main menu and toggles correctly. Nebula background visible on grids with probe illumination overlaid (not replacing it).
+  Verify: Play a full game to completion. Read the battle log — confirm correct detail tiers for probe, laser hit with/without probe, and move. Destroy all opponent ships — confirm victory screen loads with correct stats. Confirm laser, missile, probe, hit, explosion SFX play on corresponding actions.
+
+- [ ] **12. HTML5 export, itch.io deploy, and Devpost submission**
+  Spec ref: `spec.md > Runtime & Deployment`, `prd.md > 12. Success Criteria`
+  What to build: **Export**: in Godot Editor → Project → Export → HTML5 preset. Disable threading. Output to `export/web/`. Run the exported game in a local browser and confirm it plays end-to-end. **Deploy to itch.io**: run `butler push ./export/web <username>/<game-slug>:html5`. On itch.io, confirm the game page is set to HTML (Kind of Project) and the channel is marked "Playable in browser." **GitHub repo**: confirm the repo is public and all code is pushed. **Devpost submission**: write project name and tagline (nebula-themed tribute angle). Draft the project story — the human hook (tribute to dad's Pascal game), the probe fade mechanic as the tactical "wow," the visual artistry (nebula background + probe illumination) as the aesthetic "wow." Add built-with tags: Godot 4, GDScript, HTML5, itch.io. Add screenshots: fleet placement grid, gameplay with active probe illumination over nebula, ship panel with energy sliders, victory screen. Link GitHub repo and itch.io live demo. Submit.
+  Acceptance: Game plays in browser at the itch.io URL without download. GitHub repo is public with all code. Devpost submission is live with green "Submitted" badge, project story, screenshots, built-with tags, and both links (repo + live demo).
+  Verify: Open the itch.io game page in a fresh browser tab — confirm it loads and is playable end-to-end. Open the Devpost submission page — confirm the "Submitted" badge is visible. Read the description aloud — does it land the tribute story and both wow moments?

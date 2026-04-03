@@ -103,3 +103,50 @@ Jason made nearly all architectural decisions when given options. Notable moment
 - **Creative sensibility:** Sci-fi/fantasy + detective/spy crossover reader. Sandbox and strategy games. Built a Game Jam game (top-down 2D, nuclear meltdown mechanic). Eclectic music taste. Loves landscapes and colorful abstracts. Gravitates toward systems with depth and high-stakes tension.
 - **Prior SDD experience:** Yes — used AI to define project scope, then structured work as GitHub epics and issues/stories. Reasonably formal, but front-loading of specification was likely thinner than what this process demands.
 - **Energy/engagement:** Direct and experienced. Answers are concise and precise — doesn't over-explain. Will respond well to a brisk pace and peer-level tone. Not a hand-holding situation.
+
+## /build
+
+### Step 7: GridRenderer — Command Grid and Target Grid rendering
+
+**What was built:**
+- `scripts/ui/grid_renderer.gd` — full `_draw()` implementation with 8 rendering layers: background, grid lines, Command Grid ship rendering (full color + facing arrow), Target Grid fog-of-war rendering (full/ghost/blind hit based on CellRecord state), probe area highlight (4×4 or 6×6, clamped to grid bounds, tracks mouse in real time). Placeholder colored rectangles for ships — one color per ship type.
+- `scenes/gameplay.tscn` — added GridRenderer script reference and `is_command_grid` export on both GridNode instances.
+- `scripts/gameplay.gd` — added SubViewport references, typed GridRenderer `@onready` vars, `_container_to_world()` coordinate conversion helper, mouse world pos forwarding on mouse motion events, and `refresh()` calls on scene ready.
+
+**Issues:** None. No verification yet (checkpoint 3 is after item 9).
+
+## /checklist
+
+### Sequencing decisions and rationale
+Jason's instinct: start with data structures. Correct call — `ShipInstance`, `CellRecord`, `FogShipRecord`, and `ShipDefinitions` are referenced by every downstream system. Final sequence: data model → autoloads → simple scenes → fleet placement → gameplay layout → grid rendering → turn manager → action resolvers (probe/combat, then move separately) → battle log/victory → audio/polish → Devpost.
+
+Move action isolated to its own item (item 10) because the net displacement + preview mode system is significantly more complex than probe/laser/missile.
+
+### Methodology preferences
+- **Build mode:** Autonomous
+- **Verification:** Yes — summary + in-game verification at checkpoints
+- **Checkpoint cadence:** Every 3 items (after items 3, 6, 9)
+- **Comprehension checks:** N/A
+- **Git cadence:** Commit after each checklist item
+
+### Checklist stats
+- 12 items total
+- Estimated build time: ~4–5 hours (items vary 15–45 min; move system and grid renderer are the longest)
+- 3 verification checkpoints + final submission
+
+### What Jason was confident about vs. needed guidance on
+- **Confident:** Data-first sequencing (immediate, unprompted). Autonomous mode (quick decision). Verification model (wanted both summary and in-game check). Git cadence (agreed immediately).
+- **Needed clarification:** Step-by-step granularity — asked whether steps were the 8 high-level sequences or more granular items. Good question; confirmed items are more atomic (10–12 items vs 8 sequences).
+
+### Submission planning notes
+- Core story confirmed: tribute to dad's Pascal game
+- Two wow moments: (1) probe fade mechanic — tactical tension of stale intel, (2) visual artistry — nebula background + probe illumination overlay
+- Screenshots planned: fleet placement, gameplay with active probe illumination, ship panel with energy sliders, victory screen
+- Deploy to itch.io: yes, via Butler push
+- GitHub repo: already public; submission item includes push confirmation
+
+### Deepening rounds
+Zero deepening rounds chosen. Jason accepted the proposed checklist without requesting refinement rounds. The sequencing logic and item granularity were clear enough that he didn't need to dig in. The clarifying question about step-by-step granularity was the only point of active engagement — good signal that he understood the structure before committing.
+
+### Active shaping
+Minimal but purposeful. Jason set the direction (data structures first) which locked the sequencing. His clarifying question about step granularity showed he was thinking about the actual build experience, not just approving a list. No pushback on item order or groupings — accepted the dependency logic as presented.

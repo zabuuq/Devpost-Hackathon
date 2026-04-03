@@ -129,7 +129,7 @@ func _draw_probe_highlight() -> void:
 		return
 	var cell_x: int = int(mouse_world_pos.x / CELL_SIZE)
 	var cell_y: int = int(mouse_world_pos.y / CELL_SIZE)
-	var half: int = probe_highlight_size / 2
+	var half: int = probe_highlight_size >> 1
 	# Clamp so the highlight stays fully within grid bounds
 	var start_col: int = clampi(cell_x - half, 0, GRID_COLS - probe_highlight_size)
 	var start_row: int = clampi(cell_y - half, 0, GRID_ROWS - probe_highlight_size)
