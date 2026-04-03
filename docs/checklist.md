@@ -40,7 +40,7 @@
   Acceptance: Clicking through Splash → Main Menu → How to Play overlay → back → Start → Handoff works end-to-end. Hit count on handoff reads from GameState.last_turn_hits. Music toggle silences/resumes music.
   Verify: Run the project. Click through the full flow: splash → main menu → How to Play → close → Start Game → handoff screen. Confirm "Player 1, your turn" displays. Confirm music plays on main menu and toggles off/on.
 
-- [ ] **5. Fleet Placement scene** ⚠️ REVISIT — bugs found, not completed
+- [x] **5. Fleet Placement scene**
   Spec ref: `spec.md > Scenes > Fleet Placement`, `prd.md > 2.2–2.3 Fleet Placement`, `prd.md > 8. Fleet Placement Rules`
   What to build: Build `fleet_placement.tscn` with three-panel layout. Left panel: ship list showing all 5 ships as horizontal strips (squares to scale); click to select a ship for placement. Center: 80×20 grid using SubViewport + Camera2D, nebula background; ghost ship follows cursor while a ship is selected; Q/E to rotate; ghost turns red on invalid placement (overlap or out-of-bounds); click to place. Right panel: ship detail card — name, illustration placeholder, special ability, stats from ShipDefinitions. Done button disabled until all 5 ships placed; on click, writes placed fleet to `GameState.players[current_player].fleet` and loads `handoff.tscn`. Reused for both players via `GameState.current_player`.
   Acceptance: All 5 ships can be placed on the grid. Rotation works with Q/E. Overlap and out-of-bounds turns ghost red. Done button activates only when all 5 are placed. Ship detail panel updates on selection. Fleet data written correctly to GameState.

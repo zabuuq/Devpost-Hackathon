@@ -106,6 +106,17 @@ Jason made nearly all architectural decisions when given options. Notable moment
 
 ## /build
 
+### Step 5: Fleet Placement scene — bug fixes
+
+**What was built:**
+- Fixed ghost-offset bug: replaced manual container→viewport coordinate math in `_screen_to_grid()` with `grid_node.get_local_mouse_position()`. Godot handles SubViewportContainer stretch and Camera2D transform internally, bypassing the coordinate conversion that was wrong across 4 prior attempts.
+- Added scroll-wheel zoom (`_zoom_camera`) and middle-mouse pan to `_on_viewport_gui_input`, ported from `gameplay.gd`. Added `MIN_ZOOM`/`MAX_ZOOM` constants and `is_panning`/`pan_start_*` state variables.
+- Added `_zoom_camera()` and `_clamp_camera()` helper methods matching the gameplay.gd pattern.
+
+**Issues:** Root cause of the offset bug was the manual container math — it didn't account for Godot's internal transforms. The `get_local_mouse_position()` approach resolves this cleanly.
+
+**Verification:** Requires in-game test — move cursor over grid and confirm ghost ship tracks cursor correctly; zoom with scroll wheel; pan with middle-mouse drag.
+
 ### Step 7: GridRenderer — Command Grid and Target Grid rendering
 
 **What was built:**

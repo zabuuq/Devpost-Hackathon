@@ -4,6 +4,8 @@ const CELL_SIZE: int = 32
 const GRID_COLS: int = 80
 const GRID_ROWS: int = 20
 const GRID_CENTER: Vector2i = Vector2i(40, 10)
+const MIN_ZOOM: float = 0.1
+const MAX_ZOOM: float = 4.0
 
 const SHIP_NAMES: Dictionary = {
 	"battleship": "Battleship",
@@ -27,6 +29,9 @@ var ghost_position: Vector2i = Vector2i(-1, -1)
 var ghost_facing: int = 0
 var ghost_valid: bool = false
 var ship_buttons: Array[Button] = []
+var is_panning: bool = false
+var pan_start_mouse: Vector2 = Vector2.ZERO
+var pan_start_cam: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	player_label.text = "Player %d — Place Your Fleet" % (GameState.current_player + 1)
@@ -91,26 +96,51 @@ func _rotate_ghost(delta: int) -> void:
 	grid_node.queue_redraw()
 
 func _on_viewport_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion:
-		ghost_position = _screen_to_grid(event.position)
-		grid_node.queue_redraw()
-	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		if selected_ship_idx >= 0:
-			_try_place_ship()
-	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
-		selected_ship_idx = -1
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_zoom_camera(1.1)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_zoom_camera(0.9)
+		elif event.button_index == MOUSE_BUTTON_MIDDLE:
+			if event.pressed:
+				is_panning = true
+				pan_start_mouse = event.position
+				pan_start_cam = camera.position
+			else:
+				is_panning = false
+		elif event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			if selected_ship_idx >= 0:
+				_try_place_ship()
+		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+			selected_ship_idx = -1
+			grid_node.queue_redraw()
+	elif event is InputEventMouseMotion:
+		if is_panning and (event.button_mask & MOUSE_BUTTON_MASK_MIDDLE):
+			var delta: Vector2 = (pan_start_mouse - event.position) / camera.zoom
+			camera.position = pan_start_cam + delta
+			_clamp_camera()
+		ghost_position = _screen_to_grid()
 		grid_node.queue_redraw()
 
-func _screen_to_grid(local_pos: Vector2) -> Vector2i:
-	# camera.zoom=1, camera centered at (grid_w/2, grid_h/2).
-	# With stretch=true: container px maps linearly to SubViewport px = world px.
-	var vp_size: Vector2 = viewport_container.size
-	if vp_size.x <= 0 or vp_size.y <= 0:
-		return Vector2i.ZERO
-	var world_pos: Vector2 = local_pos * Vector2(GRID_COLS * CELL_SIZE, GRID_ROWS * CELL_SIZE) / vp_size
+func _screen_to_grid() -> Vector2i:
+	# Ask Godot for the mouse position in grid_node's local (world) space.
+	# This bypasses container/viewport coordinate math entirely — the engine
+	# handles the SubViewportContainer stretch and Camera2D transform internally.
+	var world_pos: Vector2 = grid_node.get_local_mouse_position()
 	var col: int = int(world_pos.x / CELL_SIZE)
 	var row: int = int(world_pos.y / CELL_SIZE)
 	return Vector2i(clampi(col, 0, GRID_COLS - 1), clampi(row, 0, GRID_ROWS - 1))
+
+func _zoom_camera(factor: float) -> void:
+	var new_zoom: float = clampf(camera.zoom.x * factor, MIN_ZOOM, MAX_ZOOM)
+	camera.zoom = Vector2(new_zoom, new_zoom)
+	_clamp_camera()
+
+func _clamp_camera() -> void:
+	var grid_w: float = GRID_COLS * CELL_SIZE
+	var grid_h: float = GRID_ROWS * CELL_SIZE
+	camera.position.x = clampf(camera.position.x, 0.0, grid_w)
+	camera.position.y = clampf(camera.position.y, 0.0, grid_h)
 
 func _try_place_ship() -> void:
 	if not ghost_valid:
