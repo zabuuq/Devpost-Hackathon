@@ -33,6 +33,11 @@ var is_panning: bool = false
 var pan_start_mouse: Vector2 = Vector2.ZERO
 var pan_start_cam: Vector2 = Vector2.ZERO
 
+func _process(_delta: float) -> void:
+	if selected_ship_idx >= 0:
+		ghost_position = _screen_to_grid()
+		grid_node.queue_redraw()
+
 func _ready() -> void:
 	player_label.text = "Player %d — Place Your Fleet" % (GameState.current_player + 1)
 	_setup_ship_list()
@@ -119,17 +124,17 @@ func _on_viewport_gui_input(event: InputEvent) -> void:
 			var delta: Vector2 = (pan_start_mouse - event.position) / camera.zoom
 			camera.position = pan_start_cam + delta
 			_clamp_camera()
-		ghost_position = _screen_to_grid()
-		grid_node.queue_redraw()
+			grid_node.queue_redraw()
 
 func _screen_to_grid() -> Vector2i:
-	# Ask Godot for the mouse position in grid_node's local (world) space.
-	# This bypasses container/viewport coordinate math entirely — the engine
-	# handles the SubViewportContainer stretch and Camera2D transform internally.
 	var world_pos: Vector2 = grid_node.get_local_mouse_position()
 	var col: int = int(world_pos.x / CELL_SIZE)
 	var row: int = int(world_pos.y / CELL_SIZE)
-	return Vector2i(clampi(col, 0, GRID_COLS - 1), clampi(row, 0, GRID_ROWS - 1))
+	var mouse_cell := Vector2i(clampi(col, 0, GRID_COLS - 1), clampi(row, 0, GRID_ROWS - 1))
+	if selected_ship_idx >= 0:
+		var stype: String = ShipDefinitions.FLEET[selected_ship_idx]
+		return mouse_cell - ShipDefinitions.get_pivot_offset(stype, ghost_facing)
+	return mouse_cell
 
 func _zoom_camera(factor: float) -> void:
 	var new_zoom: float = clampf(camera.zoom.x * factor, MIN_ZOOM, MAX_ZOOM)
@@ -196,6 +201,11 @@ func _draw_grid() -> void:
 			if cell.x >= 0 and cell.x < GRID_COLS and cell.y >= 0 and cell.y < GRID_ROWS:
 				var rect := Rect2(cell.x * CELL_SIZE + 1, cell.y * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2)
 				grid_node.draw_rect(rect, ghost_color)
+		if cells.size() > 0:
+			var bow := cells[0]
+			if bow.x >= 0 and bow.x < GRID_COLS and bow.y >= 0 and bow.y < GRID_ROWS:
+				var center := Vector2(bow.x * CELL_SIZE + CELL_SIZE * 0.5, bow.y * CELL_SIZE + CELL_SIZE * 0.5)
+				grid_node.draw_circle(center, 4.0, Color(1.0, 1.0, 0.3, 0.9))
 
 func _on_done_pressed() -> void:
 	AudioManager.play_sfx("click")
