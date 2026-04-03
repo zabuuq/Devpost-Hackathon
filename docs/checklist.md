@@ -61,7 +61,7 @@
   Acceptance: Command Grid shows all placed ships with facing arrows. Target Grid shows only fog-of-war state (no ships visible unless probe data exists). Ghost markers render semi-transparent. Probe area highlight tracks mouse and clamps at grid edges.
   Verify: In gameplay, confirm your own ships are visible on Command Grid. Target Grid shows blank fog. Launch a probe — confirm illuminated area appears over nebula background. Move cursor near grid edge — confirm probe highlight clamps correctly.
 
-- [ ] **8. TurnManager — turn sequence, probe aging, energy, shield regen, win condition**
+- [x] **8. TurnManager — turn sequence, probe aging, energy, shield regen, win condition**
   Spec ref: `spec.md > Turn Manager`, `spec.md > Data Model > CellRecord > Probe age logic`
   What to build: Implement `turn_manager.gd` with `turn_start()` and `turn_end()`. `turn_start()`: call `age_cell_records()` on active player's cell_records (decrement expires_in, convert expired probes to ghost markers, delete empty expired cells), regen +50 energy per living ship, reset `action_taken` and `move_actions_taken` per ship, recalculate slider settings vs available energy (shields fill first). `turn_end()`: fire shield regen per ship's shield_regen_setting (deduct energy), check win condition (all opponent ships destroyed → load victory.tscn), otherwise swap current_player, write last_turn_hits, load handoff.tscn. `fire_shield_regen()` and `check_win_condition()` implemented exactly as spec'd.
   Acceptance: Energy regenerates at turn start. Probe intel ages correctly — standard probe fades after 2 of your turns, Probe Ship probe after 3. Shield regen fires at turn end and deducts energy. Destroying all opponent ships triggers victory screen.
