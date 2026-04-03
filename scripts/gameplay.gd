@@ -24,6 +24,7 @@ enum ActiveGrid { COMMAND, TARGET }
 @onready var ship_panel: Control = $MainLayout/LeftPanel/ShipPanelContainer
 @onready var player_turn_label: Label = $TopBar/PlayerTurnLabel
 @onready var end_turn_button: Button = $TopBar/EndTurnButton
+@onready var turn_manager: TurnManager = $TurnManager
 
 var active_grid: ActiveGrid = ActiveGrid.COMMAND
 var is_panning: bool = false
@@ -36,8 +37,7 @@ func _ready() -> void:
 	_update_player_label()
 	_switch_grid(ActiveGrid.COMMAND)
 	_show_left_tab("battle_log")
-	# TurnManager not yet implemented — placeholder
-	print("TurnManager.turn_start() — not yet implemented")
+	turn_manager.turn_start()
 	command_renderer.refresh()
 	target_renderer.refresh()
 
@@ -133,8 +133,4 @@ func _fit_camera(cam: Camera2D, vp_size: Vector2) -> void:
 
 func _on_end_turn_pressed() -> void:
 	AudioManager.play_sfx("click")
-	# TurnManager.turn_end() — not yet implemented
-	print("TurnManager.turn_end() — not yet implemented")
-	GameState.last_turn_hits = 0
-	GameState.current_player = 1 - GameState.current_player
-	get_tree().change_scene_to_file("res://scenes/handoff.tscn")
+	turn_manager.turn_end()
