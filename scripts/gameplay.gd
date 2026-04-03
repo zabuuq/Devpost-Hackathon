@@ -10,8 +10,12 @@ enum ActiveGrid { COMMAND, TARGET }
 
 @onready var command_viewport: SubViewportContainer = $MainLayout/GridArea/CommandViewport
 @onready var target_viewport: SubViewportContainer = $MainLayout/GridArea/TargetViewport
+@onready var command_subviewport: SubViewport = $MainLayout/GridArea/CommandViewport/SubViewport
+@onready var target_subviewport: SubViewport = $MainLayout/GridArea/TargetViewport/SubViewport
 @onready var command_camera: Camera2D = $MainLayout/GridArea/CommandViewport/SubViewport/GridNode/Camera2D
 @onready var target_camera: Camera2D = $MainLayout/GridArea/TargetViewport/SubViewport/GridNode/Camera2D
+@onready var command_renderer: GridRenderer = $MainLayout/GridArea/CommandViewport/SubViewport/GridNode
+@onready var target_renderer: GridRenderer = $MainLayout/GridArea/TargetViewport/SubViewport/GridNode
 @onready var command_tab_btn: Button = $TopBar/CommandGridBtn
 @onready var target_tab_btn: Button = $TopBar/TargetGridBtn
 @onready var battle_log_tab_btn: Button = $MainLayout/LeftPanel/TabButtons/BattleLogBtn
@@ -34,6 +38,8 @@ func _ready() -> void:
 	_show_left_tab("battle_log")
 	# TurnManager not yet implemented — placeholder
 	print("TurnManager.turn_start() — not yet implemented")
+	command_renderer.refresh()
+	target_renderer.refresh()
 
 func _update_player_label() -> void:
 	player_turn_label.text = "Player %d — Turn %d" % [GameState.current_player + 1, GameState.turn_number]
@@ -67,12 +73,13 @@ func _on_ship_panel_tab_pressed() -> void:
 	_show_left_tab("ship_panel")
 
 func _on_command_viewport_gui_input(event: InputEvent) -> void:
-	_handle_grid_input(event, command_camera)
+	_handle_grid_input(event, command_camera, command_viewport, command_subviewport, command_renderer)
 
 func _on_target_viewport_gui_input(event: InputEvent) -> void:
-	_handle_grid_input(event, target_camera)
+	_handle_grid_input(event, target_camera, target_viewport, target_subviewport, target_renderer)
 
-func _handle_grid_input(event: InputEvent, cam: Camera2D) -> void:
+func _handle_grid_input(event: InputEvent, cam: Camera2D, container: SubViewportContainer,
+		vp: SubViewport, renderer: GridRenderer) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_zoom_camera(cam, 1.1)
@@ -92,6 +99,16 @@ func _handle_grid_input(event: InputEvent, cam: Camera2D) -> void:
 			var delta: Vector2 = (pan_start_mouse - event.position) / cam.zoom
 			cam.position = pan_start_cam + delta
 			_clamp_camera(cam)
+		renderer.set_mouse_world_pos(_container_to_world(event.position, container, vp, cam))
+
+func _container_to_world(container_pos: Vector2, container: SubViewportContainer,
+		vp: SubViewport, cam: Camera2D) -> Vector2:
+	var container_size := container.size
+	if container_size.x <= 0.0 or container_size.y <= 0.0:
+		return Vector2.ZERO
+	var vp_size := Vector2(vp.size)
+	var vp_pos := container_pos / container_size * vp_size
+	return cam.position + (vp_pos - vp_size * 0.5) / cam.zoom
 
 func _zoom_camera(cam: Camera2D, factor: float) -> void:
 	var new_zoom: float = clampf(cam.zoom.x * factor, MIN_ZOOM, MAX_ZOOM)

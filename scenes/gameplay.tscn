@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://bgame000000001"]
+[gd_scene load_steps=3 format=3 uid="uid://bgame000000001"]
 
 [ext_resource type="Script" path="res://scripts/gameplay.gd" id="1_game"]
+[ext_resource type="Script" path="res://scripts/ui/grid_renderer.gd" id="2_grid"]
 
 [node name="Gameplay" type="Control"]
 layout_mode = 3
@@ -102,6 +103,8 @@ stretch = true
 size = Vector2i(2560, 640)
 
 [node name="GridNode" type="Node2D" parent="MainLayout/GridArea/CommandViewport/SubViewport"]
+script = ExtResource("2_grid")
+is_command_grid = true
 
 [node name="Camera2D" type="Camera2D" parent="MainLayout/GridArea/CommandViewport/SubViewport/GridNode"]
 zoom = Vector2(0.3, 0.3)
@@ -119,6 +122,8 @@ visible = false
 size = Vector2i(2560, 640)
 
 [node name="GridNode" type="Node2D" parent="MainLayout/GridArea/TargetViewport/SubViewport"]
+script = ExtResource("2_grid")
+is_command_grid = false
 
 [node name="Camera2D" type="Camera2D" parent="MainLayout/GridArea/TargetViewport/SubViewport/GridNode"]
 zoom = Vector2(0.3, 0.3)
