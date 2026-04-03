@@ -21,17 +21,33 @@ const SHIP_COLORS: Dictionary = {
 	"cruiser": Color(1.0, 0.65, 0.2, 1.0),
 }
 
+const COLOR_GHOST_SHIP: Color = Color(1.0, 1.0, 1.0, 0.35)
+const COLOR_GHOST_SHIP_INVALID: Color = Color(1.0, 0.2, 0.2, 0.35)
+const COLOR_SELECTED_SHIP: Color = Color(1.0, 1.0, 0.3, 0.6)
+
 @export var is_command_grid: bool = true
 
 # Set by gameplay.gd when probe targeting is active; 0 = no highlight
 var probe_highlight_size: int = 0
 var mouse_world_pos: Vector2 = Vector2.ZERO
 
+# Ghost ship for move preview — set by gameplay.gd
+var ghost_cells: Array[Vector2i] = []
+var ghost_facing: int = 0
+var ghost_origin: Vector2i = Vector2i.ZERO
+var ghost_valid: bool = true
+var ghost_visible: bool = false
+
+# Selected ship highlight — set by gameplay.gd
+var selected_ship: ShipInstance = null
+
 func _draw() -> void:
 	_draw_background()
 	_draw_grid_lines()
 	if is_command_grid:
 		_draw_command_ships()
+		_draw_selected_highlight()
+		_draw_ghost_ship()
 	else:
 		_draw_target_cells()
 	_draw_probe_highlight()
@@ -84,6 +100,30 @@ func _draw_target_cells() -> void:
 			)
 			if record.has_probe:
 				_draw_facing_arrow(fog.position, fog.facing)
+
+# --- Ghost ship + selection overlays ---
+
+func _draw_selected_highlight() -> void:
+	if selected_ship == null or selected_ship.is_destroyed:
+		return
+	var cells: Array[Vector2i] = selected_ship.get_occupied_cells()
+	for cell in cells:
+		draw_rect(
+			Rect2(cell.x * CELL_SIZE, cell.y * CELL_SIZE, CELL_SIZE, CELL_SIZE),
+			COLOR_SELECTED_SHIP, false, 2.0
+		)
+
+func _draw_ghost_ship() -> void:
+	if not ghost_visible or ghost_cells.is_empty():
+		return
+	var color: Color = COLOR_GHOST_SHIP if ghost_valid else COLOR_GHOST_SHIP_INVALID
+	for cell in ghost_cells:
+		draw_rect(
+			Rect2(cell.x * CELL_SIZE + 1, cell.y * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2),
+			color
+		)
+	# Draw facing arrow on ghost
+	_draw_facing_arrow(ghost_origin, ghost_facing)
 
 # --- Shared drawing helpers ---
 
@@ -148,6 +188,27 @@ func set_mouse_world_pos(world_pos: Vector2) -> void:
 	mouse_world_pos = world_pos
 	if probe_highlight_size > 0:
 		queue_redraw()
+
+func set_ghost_ship(cells: Array[Vector2i], origin: Vector2i, facing: int, valid: bool) -> void:
+	ghost_cells = cells
+	ghost_origin = origin
+	ghost_facing = facing
+	ghost_valid = valid
+	ghost_visible = true
+	queue_redraw()
+
+func clear_ghost_ship() -> void:
+	ghost_cells = []
+	ghost_visible = false
+	queue_redraw()
+
+func set_selected_ship(ship: ShipInstance) -> void:
+	selected_ship = ship
+	queue_redraw()
+
+func clear_selected_ship() -> void:
+	selected_ship = null
+	queue_redraw()
 
 func refresh() -> void:
 	queue_redraw()

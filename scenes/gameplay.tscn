@@ -1,8 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://bgame000000001"]
+[gd_scene load_steps=6 format=3 uid="uid://bgame000000001"]
 
 [ext_resource type="Script" path="res://scripts/gameplay.gd" id="1_game"]
 [ext_resource type="Script" path="res://scripts/ui/grid_renderer.gd" id="2_grid"]
 [ext_resource type="Script" path="res://scripts/gameplay/turn_manager.gd" id="3_turn"]
+[ext_resource type="Script" path="res://scripts/gameplay/action_resolver.gd" id="4_action"]
+[ext_resource type="Script" path="res://scripts/ui/battle_log.gd" id="5_blog"]
 
 [node name="Gameplay" type="Control"]
 layout_mode = 3
@@ -70,6 +72,7 @@ text = "Ship Panel"
 
 [node name="BattleLogPanel" type="ScrollContainer" parent="MainLayout/LeftPanel"]
 size_flags_vertical = 3
+script = ExtResource("5_blog")
 
 [node name="BattleLogContent" type="VBoxContainer" parent="MainLayout/LeftPanel/BattleLogPanel"]
 size_flags_horizontal = 3
@@ -132,6 +135,56 @@ position = Vector2(1280, 320)
 
 [node name="TurnManager" type="Node" parent="."]
 script = ExtResource("3_turn")
+
+[node name="ActionResolver" type="Node" parent="."]
+script = ExtResource("4_action")
+
+[node name="MoveInfoLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -70.0
+offset_right = 200.0
+offset_bottom = -50.0
+horizontal_alignment = 1
+text = "Move Points: 0.0 / 0.0 | Energy cost: 0"
+visible = false
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.6, 1.0, 0.6, 1.0)
+
+[node name="MoveButtons" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -46.0
+offset_right = 120.0
+offset_bottom = -10.0
+alignment = 1
+theme_override_constants/separation = 16
+visible = false
+
+[node name="SubmitMoveBtn" type="Button" parent="MoveButtons"]
+custom_minimum_size = Vector2(100, 32)
+text = "Submit Move"
+theme_override_colors/font_color = Color(0.3, 1.0, 0.3, 1.0)
+
+[node name="CancelMoveBtn" type="Button" parent="MoveButtons"]
+custom_minimum_size = Vector2(100, 32)
+text = "Cancel"
+theme_override_colors/font_color = Color(1.0, 0.4, 0.4, 1.0)
+
+[node name="ConfirmMoveDialog" type="ConfirmationDialog" parent="."]
+title = "Confirm Move"
+size = Vector2i(300, 120)
+dialog_text = "Are you sure you want to move this ship?"
 
 [connection signal="pressed" from="TopBar/CommandGridBtn" to="." method="_on_command_grid_pressed"]
 [connection signal="pressed" from="TopBar/TargetGridBtn" to="." method="_on_target_grid_pressed"]
