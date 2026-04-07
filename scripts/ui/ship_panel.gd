@@ -127,13 +127,51 @@ func _build_ui() -> void:
 func show_ship(ship: ShipInstance) -> void:
 	_ship = ship
 	_container.visible = true
+	# Restore visibility of controls that show_enemy_ship may have hidden
+	_shield_slider.get_parent().visible = true
+	_laser_slider.get_parent().visible = true
+	_energy_remaining_label.visible = true
+	_probe_btn.visible = true
+	_laser_btn.visible = true
+	_missile_btn.visible = true
+	_move_btn.visible = true
 	_refresh_display()
+
+
+func show_enemy_ship(fog: FogShipRecord) -> void:
+	_ship = null
+	_container.visible = true
+	var stats: Dictionary = ShipDefinitions.SHIPS[fog.ship_type]
+	var display_name: String = fog.ship_type.replace("_", " ").capitalize()
+
+	_name_label.text = display_name + " (Enemy)"
+	_stats_label.text = (
+		"Shields: %d / %d\n" % [fog.last_shields, stats["max_shields"]] +
+		"Armor: %d / %d" % [fog.last_armor, stats["max_armor"]]
+	)
+
+	# Hide sliders and action buttons for enemy ships
+	_shield_slider.get_parent().visible = false
+	_laser_slider.get_parent().visible = false
+	_energy_remaining_label.visible = false
+	_probe_btn.visible = false
+	_laser_btn.visible = false
+	_missile_btn.visible = false
+	_move_btn.visible = false
 
 
 func clear_ship() -> void:
 	_ship = null
 	if _container:
 		_container.visible = false
+		# Restore visibility of controls hidden by show_enemy_ship
+		_shield_slider.get_parent().visible = true
+		_laser_slider.get_parent().visible = true
+		_energy_remaining_label.visible = true
+		_probe_btn.visible = true
+		_laser_btn.visible = true
+		_missile_btn.visible = true
+		_move_btn.visible = true
 
 
 func _refresh_display() -> void:
@@ -162,8 +200,7 @@ func _refresh_display() -> void:
 	_update_slider_labels()
 
 	# Update action button states
-	var max_move_actions: int = 2 if stats["special"] == "double_move" else 1
-	var can_move: bool = _ship.move_actions_taken < max_move_actions and not _ship.is_destroyed
+	var can_move: bool = _ship.move_actions_taken < 1 and not _ship.action_taken and not _ship.is_destroyed
 	var can_act: bool = not _ship.action_taken and not _ship.is_destroyed
 	var has_probes: bool = _ship.probes_remaining > 0 and _ship.current_energy >= stats["probe_cost"]
 	var has_missiles: bool = _ship.missiles_remaining > 0
@@ -201,7 +238,7 @@ func _on_shield_slider_changed(value: float) -> void:
 		_laser_slider.set_value_no_signal(laser_val)
 	_ship.shield_regen_setting = shield_val
 	_ship.laser_power_setting = laser_val
-	_update_slider_labels()
+	_refresh_display()
 
 
 func _on_laser_slider_changed(value: float) -> void:
@@ -215,7 +252,7 @@ func _on_laser_slider_changed(value: float) -> void:
 		_laser_slider.set_value_no_signal(laser_val)
 	_ship.shield_regen_setting = shield_val
 	_ship.laser_power_setting = laser_val
-	_update_slider_labels()
+	_refresh_display()
 
 
 func _emit_action(action: String) -> void:

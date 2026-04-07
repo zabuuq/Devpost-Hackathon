@@ -189,9 +189,8 @@ func _draw_grid() -> void:
 			var rect := Rect2(cell.x * CELL_SIZE + 1, cell.y * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2)
 			grid_node.draw_rect(rect, Color(0.2, 0.6, 1.0, 0.8))
 		if cells.size() > 0:
-			var fc := cells[0]
-			var center := Vector2(fc.x * CELL_SIZE + CELL_SIZE * 0.5, fc.y * CELL_SIZE + CELL_SIZE * 0.5)
-			grid_node.draw_circle(center, 4.0, Color(1.0, 1.0, 0.3, 1.0))
+			var front := cells[cells.size() - 1]
+			_draw_facing_triangle_on_grid(grid_node, front, inst.facing)
 	if selected_ship_idx >= 0:
 		var stype: String = ShipDefinitions.FLEET[selected_ship_idx]
 		ghost_valid = _is_placement_valid(stype, ghost_position, ghost_facing)
@@ -202,10 +201,41 @@ func _draw_grid() -> void:
 				var rect := Rect2(cell.x * CELL_SIZE + 1, cell.y * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2)
 				grid_node.draw_rect(rect, ghost_color)
 		if cells.size() > 0:
-			var bow := cells[0]
-			if bow.x >= 0 and bow.x < GRID_COLS and bow.y >= 0 and bow.y < GRID_ROWS:
-				var center := Vector2(bow.x * CELL_SIZE + CELL_SIZE * 0.5, bow.y * CELL_SIZE + CELL_SIZE * 0.5)
-				grid_node.draw_circle(center, 4.0, Color(1.0, 1.0, 0.3, 0.9))
+			var front := cells[cells.size() - 1]
+			if front.x >= 0 and front.x < GRID_COLS and front.y >= 0 and front.y < GRID_ROWS:
+				_draw_facing_triangle_on_grid(grid_node, front, ghost_facing)
+
+func _draw_facing_triangle_on_grid(node: Node2D, cell: Vector2i, facing: int) -> void:
+	var cx: float = cell.x * CELL_SIZE + CELL_SIZE * 0.5
+	var cy: float = cell.y * CELL_SIZE + CELL_SIZE * 0.5
+	var h: float = CELL_SIZE * 0.35
+	var w: float = CELL_SIZE * 0.2
+	var tip: Vector2
+	var base_l: Vector2
+	var base_r: Vector2
+	match facing:
+		0:
+			tip = Vector2(cx, cy - h)
+			base_l = Vector2(cx - w, cy + h)
+			base_r = Vector2(cx + w, cy + h)
+		1:
+			tip = Vector2(cx + h, cy)
+			base_l = Vector2(cx - h, cy - w)
+			base_r = Vector2(cx - h, cy + w)
+		2:
+			tip = Vector2(cx, cy + h)
+			base_l = Vector2(cx + w, cy - h)
+			base_r = Vector2(cx - w, cy - h)
+		3:
+			tip = Vector2(cx - h, cy)
+			base_l = Vector2(cx + h, cy + w)
+			base_r = Vector2(cx + h, cy - w)
+		_:
+			tip = Vector2(cx, cy - h)
+			base_l = Vector2(cx - w, cy + h)
+			base_r = Vector2(cx + w, cy + h)
+	node.draw_colored_polygon(PackedVector2Array([tip, base_l, base_r]), Color(1.0, 1.0, 0.3, 1.0))
+
 
 func _on_done_pressed() -> void:
 	AudioManager.play_sfx("click")

@@ -75,13 +75,23 @@ func _draw_command_ships() -> void:
 			_draw_wreckage_cells(s.get_occupied_cells())
 		else:
 			_draw_ship_cells(s.get_occupied_cells(), SHIP_COLORS.get(s.ship_type, Color.WHITE), 1.0)
-			_draw_facing_arrow(s.position, s.facing)
+			_draw_facing_triangle(_get_front_cell(s.ship_type, s.position, s.facing), s.facing)
 
 # --- Target Grid ---
 
 func _draw_target_cells() -> void:
 	var cell_records: Dictionary = GameState.players[GameState.current_player]["cell_records"]
 	var drawn_fog: Array = []
+	# Draw probe illumination overlay on all actively probed cells
+	for key: Variant in cell_records.keys():
+		var cell: Vector2i = key
+		var record: CellRecord = cell_records[cell]
+		if record.has_probe:
+			draw_rect(
+				Rect2(cell.x * CELL_SIZE, cell.y * CELL_SIZE, CELL_SIZE, CELL_SIZE),
+				COLOR_PROBE_FILL
+			)
+	# Draw ships and blind hits on top of the illumination
 	for key: Variant in cell_records.keys():
 		var cell: Vector2i = key
 		var record: CellRecord = cell_records[cell]
@@ -99,7 +109,7 @@ func _draw_target_cells() -> void:
 				alpha
 			)
 			if record.has_probe:
-				_draw_facing_arrow(fog.position, fog.facing)
+				_draw_facing_triangle(_get_front_cell(fog.ship_type, fog.position, fog.facing), fog.facing)
 
 # --- Ghost ship + selection overlays ---
 
@@ -122,8 +132,9 @@ func _draw_ghost_ship() -> void:
 			Rect2(cell.x * CELL_SIZE + 1, cell.y * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2),
 			color
 		)
-	# Draw facing arrow on ghost
-	_draw_facing_arrow(ghost_origin, ghost_facing)
+	# Draw facing arrow on ghost front cell
+	if selected_ship != null:
+		_draw_facing_triangle(_get_front_cell(selected_ship.ship_type, ghost_origin, ghost_facing), ghost_facing)
 
 # --- Shared drawing helpers ---
 
@@ -145,19 +156,47 @@ func _draw_wreckage_cells(cells: Array[Vector2i]) -> void:
 		draw_line(Vector2(rx, ry), Vector2(rx + rw, ry + rh), COLOR_WRECKAGE_X, 2.0)
 		draw_line(Vector2(rx + rw, ry), Vector2(rx, ry + rh), COLOR_WRECKAGE_X, 2.0)
 
-func _draw_facing_arrow(origin: Vector2i, facing: int) -> void:
-	var cx: float = origin.x * CELL_SIZE + CELL_SIZE * 0.5
-	var cy: float = origin.y * CELL_SIZE + CELL_SIZE * 0.5
-	var offset: float = CELL_SIZE * 0.32
-	var tip: Vector2
+func _get_front_cell(ship_type: String, origin: Vector2i, facing: int) -> Vector2i:
+	var squares: int = ShipDefinitions.SHIPS[ship_type]["squares"]
+	var dir: Vector2i
 	match facing:
-		0: tip = Vector2(cx, cy - offset)
-		1: tip = Vector2(cx + offset, cy)
-		2: tip = Vector2(cx, cy + offset)
-		3: tip = Vector2(cx - offset, cy)
-		_: tip = Vector2(cx, cy - offset)
-	draw_line(Vector2(cx, cy), tip, COLOR_FACING, 3.0)
-	draw_circle(tip, 4.0, COLOR_FACING)
+		0: dir = Vector2i(0, -1)
+		1: dir = Vector2i(1, 0)
+		2: dir = Vector2i(0, 1)
+		3: dir = Vector2i(-1, 0)
+		_: dir = Vector2i(0, -1)
+	return origin + dir * (squares - 1)
+
+func _draw_facing_triangle(cell: Vector2i, facing: int) -> void:
+	var cx: float = cell.x * CELL_SIZE + CELL_SIZE * 0.5
+	var cy: float = cell.y * CELL_SIZE + CELL_SIZE * 0.5
+	var h: float = CELL_SIZE * 0.35  # half-length along facing axis (elongated)
+	var w: float = CELL_SIZE * 0.2   # half-width perpendicular to facing
+	var tip: Vector2
+	var base_l: Vector2
+	var base_r: Vector2
+	match facing:
+		0:  # up
+			tip = Vector2(cx, cy - h)
+			base_l = Vector2(cx - w, cy + h)
+			base_r = Vector2(cx + w, cy + h)
+		1:  # right
+			tip = Vector2(cx + h, cy)
+			base_l = Vector2(cx - h, cy - w)
+			base_r = Vector2(cx - h, cy + w)
+		2:  # down
+			tip = Vector2(cx, cy + h)
+			base_l = Vector2(cx + w, cy - h)
+			base_r = Vector2(cx - w, cy - h)
+		3:  # left
+			tip = Vector2(cx - h, cy)
+			base_l = Vector2(cx + h, cy + w)
+			base_r = Vector2(cx + h, cy - w)
+		_:
+			tip = Vector2(cx, cy - h)
+			base_l = Vector2(cx - w, cy + h)
+			base_r = Vector2(cx + w, cy + h)
+	draw_colored_polygon(PackedVector2Array([tip, base_l, base_r]), COLOR_FACING)
 
 func _draw_blind_hit(cell: Vector2i) -> void:
 	var cx: float = cell.x * CELL_SIZE + CELL_SIZE * 0.5

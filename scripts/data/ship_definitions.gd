@@ -55,7 +55,7 @@ const SHIPS: Dictionary = {
 		"probe_cost": 100,
 		"laser_max": 500,
 		"base_move_points": 2.0,
-		"special": "double_move"
+		"special": ""
 	}
 }
 

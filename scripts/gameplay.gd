@@ -49,7 +49,6 @@ var move_preview_origin: Vector2i = Vector2i.ZERO
 var move_preview_facing: int = 0
 var move_preview_position: Vector2i = Vector2i.ZERO
 var move_preview_new_facing: int = 0
-var move_preview_rotated: bool = false  # max 1 rotation per move action
 
 # Targeting state (for probe/laser/missile)
 var targeting_action: String = ""
@@ -61,6 +60,11 @@ func _ready() -> void:
 	_update_player_label()
 	_switch_grid(ActiveGrid.COMMAND)
 	_show_left_tab("battle_log")
+	# Replay opponent's last turn results into the battle log
+	for result in GameState.last_turn_results:
+		battle_log_panel.add_entry(result)
+	GameState.last_turn_results = []
+
 	turn_manager.turn_start()
 	command_renderer.refresh()
 	target_renderer.refresh()
@@ -181,6 +185,8 @@ func _handle_grid_click(cell: Vector2i, is_command: bool) -> void:
 		# Target grid click
 		if interaction_state == InteractionState.TARGETING:
 			_execute_targeting_action(cell)
+		else:
+			_try_select_enemy_ship(cell)
 
 
 func _try_select_ship(cell: Vector2i) -> void:
@@ -204,6 +210,16 @@ func _try_select_ship(cell: Vector2i) -> void:
 		return
 
 	_select_ship(clicked_ship)
+
+
+func _try_select_enemy_ship(cell: Vector2i) -> void:
+	var cell_records: Dictionary = GameState.players[GameState.current_player]["cell_records"]
+	if not cell_records.has(cell):
+		return
+	var record: CellRecord = cell_records[cell]
+	if record.has_probe and record.ship != null:
+		ship_panel.show_enemy_ship(record.ship)
+		_show_left_tab("ship_panel")
 
 
 func _select_ship(ship: ShipInstance) -> void:
@@ -274,7 +290,6 @@ func _execute_targeting_action(cell: Vector2i) -> void:
 	match targeting_action:
 		"probe":
 			result = action_resolver.resolve_probe(targeting_ship, cell, player_idx)
-			targeting_ship.action_taken = true
 		"laser":
 			result = action_resolver.resolve_laser(targeting_ship, cell, opponent_fleet, player_idx)
 		"missile":
@@ -283,6 +298,7 @@ func _execute_targeting_action(cell: Vector2i) -> void:
 	# Log result and play SFX
 	battle_log_panel.add_entry(result)
 	AudioManager.play_action_sfx(result)
+	GameState.last_turn_results.append(result)
 
 	# Return to command grid
 	_cancel_targeting()
@@ -308,8 +324,6 @@ func _enter_move_preview(ship: ShipInstance) -> void:
 	move_preview_facing = ship.facing
 	move_preview_position = ship.position
 	move_preview_new_facing = ship.facing
-	move_preview_rotated = false
-
 	# Show move UI
 	move_info_label.visible = true
 	move_buttons.visible = true
@@ -330,7 +344,10 @@ func _update_move_preview() -> void:
 	if selected_ship == null:
 		return
 
-	var net_displacement: Vector2i = move_preview_position - move_preview_origin
+	# Use pivot displacement so rotation-induced origin shifts don't count as movement
+	var old_pivot: Vector2i = move_preview_origin + ShipDefinitions.get_pivot_offset(selected_ship.ship_type, move_preview_facing)
+	var new_pivot: Vector2i = move_preview_position + ShipDefinitions.get_pivot_offset(selected_ship.ship_type, move_preview_new_facing)
+	var net_displacement: Vector2i = new_pivot - old_pivot
 	var net_rotation: int = 0
 	var facing_diff: int = (move_preview_new_facing - move_preview_facing + 4) % 4
 	if facing_diff == 1:
@@ -386,19 +403,21 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_D:
 				move_preview_position += Vector2i(1, 0)
 			KEY_Q:
-				if not move_preview_rotated:
+				var q_facing_diff: int = (move_preview_new_facing - move_preview_facing + 4) % 4
+				# Allow CCW if net rotation is currently 0 or +1 (result would be -1 or 0)
+				if q_facing_diff == 0 or q_facing_diff == 1:
+					var old_facing_for_adjust: int = move_preview_new_facing
 					move_preview_new_facing = (move_preview_new_facing + 3) % 4  # CCW
-					move_preview_rotated = true
-					# Adjust position to keep pivot fixed
-					_adjust_position_for_rotation(move_preview_facing, move_preview_new_facing)
+					_adjust_position_for_rotation(old_facing_for_adjust, move_preview_new_facing)
 				else:
 					handled = false
 			KEY_E:
-				if not move_preview_rotated:
+				var e_facing_diff: int = (move_preview_new_facing - move_preview_facing + 4) % 4
+				# Allow CW if net rotation is currently 0 or -1 (result would be +1 or 0)
+				if e_facing_diff == 0 or e_facing_diff == 3:
+					var old_facing_for_adjust: int = move_preview_new_facing
 					move_preview_new_facing = (move_preview_new_facing + 1) % 4  # CW
-					move_preview_rotated = true
-					# Adjust position to keep pivot fixed
-					_adjust_position_for_rotation(move_preview_facing, move_preview_new_facing)
+					_adjust_position_for_rotation(old_facing_for_adjust, move_preview_new_facing)
 				else:
 					handled = false
 			KEY_ESCAPE:
@@ -449,6 +468,7 @@ func _on_move_confirmed() -> void:
 
 	battle_log_panel.add_entry(result)
 	AudioManager.play_action_sfx(result)
+	GameState.last_turn_results.append(result)
 	_exit_move_preview()
 
 	# Refresh

@@ -30,7 +30,7 @@ static func create(p_ship_type: String) -> ShipInstance:
 	inst.missiles_remaining = stats["missiles"]
 	inst.probes_remaining = stats["probes"]
 	inst.shield_regen_setting = 0
-	inst.laser_power_setting = 0
+	inst.laser_power_setting = stats["laser_strength"]
 	return inst
 
 func get_occupied_cells() -> Array[Vector2i]:

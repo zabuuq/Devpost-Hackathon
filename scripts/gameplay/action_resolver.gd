@@ -36,6 +36,7 @@ func resolve_probe(acting_ship: ShipInstance, target_cell: Vector2i, player_idx:
 	# Deduct energy and probes
 	acting_ship.current_energy -= probe_cost
 	acting_ship.probes_remaining -= 1
+	acting_ship.action_taken = true
 
 	var player_data: Dictionary = GameState.players[player_idx]
 	var cell_records: Dictionary = player_data.cell_records
@@ -141,6 +142,9 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 			cell_records[target_cell] = record
 		record.has_blind_hit = true
 
+	# Refresh probe records so the attacker sees updated shields/armor
+	_refresh_probe_records_for_ship(target_ship, player_idx)
+
 	# Stats
 	player_data.turn_stats.hits_scored += 1
 	GameState.last_turn_hits += 1
@@ -215,6 +219,9 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 			record = CellRecord.new()
 			cell_records[target_cell] = record
 		record.has_blind_hit = true
+
+	# Refresh probe records so the attacker sees updated shields/armor
+	_refresh_probe_records_for_ship(target_ship, player_idx)
 
 	# Stats
 	player_data.turn_stats.hits_scored += 1
@@ -292,20 +299,19 @@ static func calc_move_cost(facing: int, net_displacement: Vector2i, net_rotation
 	return {"move_points": pts, "energy": energy, "valid": true}
 
 
-## Check if proposed ship cells collide with any living ship (from both fleets).
-## Excludes the moving ship itself.
+## Check if proposed ship cells collide with any living friendly ship.
+## Excludes the moving ship itself. Enemy ships are invisible and don't block.
 func check_move_collision(moving_ship: ShipInstance, new_cells: Array[Vector2i]) -> ShipInstance:
-	for pidx in range(2):
-		var fleet: Array = GameState.players[pidx]["fleet"]
-		for ship in fleet:
-			if ship == moving_ship:
-				continue
-			if ship.is_destroyed:
-				continue
-			var cells: Array[Vector2i] = get_ship_cells(ship)
-			for c in new_cells:
-				if cells.has(c):
-					return ship
+	var fleet: Array = GameState.players[GameState.current_player]["fleet"]
+	for ship in fleet:
+		if ship == moving_ship:
+			continue
+		if ship.is_destroyed:
+			continue
+		var cells: Array[Vector2i] = get_ship_cells(ship)
+		for c in new_cells:
+			if cells.has(c):
+				return ship
 	return null
 
 
@@ -315,6 +321,45 @@ static func cells_in_bounds(cells: Array[Vector2i]) -> bool:
 		if c.x < 0 or c.x >= GRID_WIDTH or c.y < 0 or c.y >= GRID_HEIGHT:
 			return false
 	return true
+
+
+## Refresh FogShipRecords on all active probe cells that cover a given ship.
+## Called after damage so the attacker's probe view shows updated stats.
+func _refresh_probe_records_for_ship(ship: ShipInstance, attacker_idx: int) -> void:
+	var cell_records: Dictionary = GameState.players[attacker_idx]["cell_records"]
+	var ship_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
+		ship.ship_type, ship.position, ship.facing)
+	var fog: FogShipRecord = FogShipRecord.from_ship(ship)
+	for cell in ship_cells:
+		if cell_records.has(cell):
+			var record: CellRecord = cell_records[cell]
+			if record.has_probe:
+				record.ship = fog
+
+
+## After a ship moves, update the opponent's active probe cell records.
+## Old cells that had probe coverage lose their ship record; new cells that
+## have probe coverage gain a fresh FogShipRecord.
+func _update_opponent_probes_after_move(ship: ShipInstance, old_cells: Array[Vector2i],
+		new_cells: Array[Vector2i], player_idx: int) -> void:
+	var opponent_idx: int = 1 - player_idx
+	var cell_records: Dictionary = GameState.players[opponent_idx]["cell_records"]
+
+	# Clear ship from old cells that have active probes
+	for cell in old_cells:
+		if cell_records.has(cell):
+			var record: CellRecord = cell_records[cell]
+			if record.has_probe and record.ship != null:
+				# Only clear if this record refers to the same ship (matching position/type)
+				record.ship = null
+
+	# Add ship to new cells that have active probes
+	var fog: FogShipRecord = FogShipRecord.from_ship(ship)
+	for cell in new_cells:
+		if cell_records.has(cell):
+			var record: CellRecord = cell_records[cell]
+			if record.has_probe:
+				record.ship = fog
 
 
 ## Execute a move action. Returns a result dictionary.
@@ -350,10 +395,16 @@ func resolve_move(acting_ship: ShipInstance, new_position: Vector2i, new_facing:
 		return {"type": "move", "success": false, "reason": "Blocked by " + blocker.ship_type}
 
 	# Execute move
+	var old_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
+		acting_ship.ship_type, acting_ship.position, acting_ship.facing)
 	acting_ship.position = new_position
 	acting_ship.facing = new_facing
 	acting_ship.current_energy -= cost["energy"]
 	acting_ship.move_actions_taken += 1
+	acting_ship.action_taken = true
+
+	# Update opponent's active probe records to reflect this ship's new position
+	_update_opponent_probes_after_move(acting_ship, old_cells, new_cells, player_idx)
 
 	# Recalculate sliders after energy change
 	var tm: TurnManager = get_parent().get_node("TurnManager") if get_parent() else null
