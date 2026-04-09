@@ -90,6 +90,28 @@
   Verify: Play a full game to completion. Read the battle log — confirm correct detail tiers for probe, laser hit with/without probe, and move. Destroy all opponent ships — confirm victory screen loads with correct stats. Confirm laser, missile, probe, hit, explosion SFX play on corresponding actions.
   Status: **CODE COMPLETE — TESTING IN PROGRESS.** Bugs found and fixed: (1) Opponent's last-turn results not shown in battle log — added replay of GameState.last_turn_results at scene load. (2) Clicking probed enemy ship on target grid did nothing — added _try_select_enemy_ship and show_enemy_ship on ship panel. (3) No visual distinction for probed areas on target grid — added probe illumination overlay pass. (4) Facing indicator was a dot on the rear cell — redesigned as elongated triangle on the front cell.
 
+## Iteration 1 — Audio SFX
+
+- [x] **I1-1. Install numpy for audio synthesis**
+  Spec ref: New — not in original spec
+  What to build: Run `pip install numpy` to install the numpy package. Confirm it imports successfully in Python.
+  Acceptance: `python -c "import numpy; print(numpy.__version__)"` prints a version number without error.
+  Verify: Run the acceptance command above.
+
+- [ ] **I1-2. Generate 6 SFX audio files with Python + numpy**
+  Spec ref: `spec.md > Audio`
+  What to build: Write a Python script (`tools/generate_sfx.py`) that procedurally generates 6 sci-fi sound effects using numpy waveform synthesis: (1) `laser.ogg` — short high-frequency sweep downward, (2) `missile.ogg` — rising whoosh with low rumble, (3) `probe.ogg` — electronic ping/sonar pulse, (4) `explosion.ogg` — noise burst with decay, (5) `hit.ogg` — short metallic impact, (6) `click.ogg` — crisp UI click. Script outputs `.wav` files to a temp directory, then converts each to `.ogg` using ffmpeg. Final `.ogg` files placed in `assets/audio/sfx/`. Each sound should be 0.2–1.5 seconds, 44100 Hz sample rate, mono. Sounds should feel sci-fi and space-themed — not realistic, but satisfying.
+  Acceptance: All 6 `.ogg` files exist in `assets/audio/sfx/`. Each file plays audible, distinct sound. No clipping or distortion.
+  Verify: Play each `.ogg` file manually. Confirm each sounds distinct and appropriate for its action.
+
+- [ ] **I1-3. Verify SFX playback in-game**
+  Spec ref: `spec.md > Audio`, `prd.md > 10. Audio`
+  What to build: Run the game and trigger each sound effect: click a button (click.ogg), launch a probe (probe.ogg), fire a laser (laser.ogg), fire a missile (missile.ogg), hit an enemy ship (hit.ogg), destroy an enemy ship (explosion.ogg). Confirm AudioManager plays each at appropriate volume without overlap issues. Adjust volumes in the generation script if any sound is too loud/quiet relative to others, regenerate, and re-test.
+  Acceptance: All 6 SFX fire on their correct game events. No SFX is jarring, silent, or clipping. Volume levels feel balanced relative to each other.
+  Verify: Play through a partial game triggering all 6 actions. Confirm each sound plays.
+
+---
+
 - [ ] **12. HTML5 export, itch.io deploy, and Devpost submission**
   Spec ref: `spec.md > Runtime & Deployment`, `prd.md > 12. Success Criteria`
   What to build: **Export**: in Godot Editor → Project → Export → HTML5 preset. Disable threading. Output to `export/web/`. Run the exported game in a local browser and confirm it plays end-to-end. **Deploy to itch.io**: run `butler push ./export/web <username>/<game-slug>:html5`. On itch.io, confirm the game page is set to HTML (Kind of Project) and the channel is marked "Playable in browser." **GitHub repo**: confirm the repo is public and all code is pushed. **Devpost submission**: write project name and tagline (nebula-themed tribute angle). Draft the project story — the human hook (tribute to dad's Pascal game), the probe fade mechanic as the tactical "wow," the visual artistry (nebula background + probe illumination) as the aesthetic "wow." Add built-with tags: Godot 4, GDScript, HTML5, itch.io. Add screenshots: fleet placement grid, gameplay with active probe illumination over nebula, ship panel with energy sliders, victory screen. Link GitHub repo and itch.io live demo. Submit.
