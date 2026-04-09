@@ -67,14 +67,19 @@ func resolve_probe(acting_ship: ShipInstance, target_cell: Vector2i, player_idx:
 			var record := CellRecord.make_probe(fog_ship, expires_in)
 			cell_records[cell] = record
 
-	# For each detected ship, also write probe records on ALL cells that ship
-	# occupies — even those outside the probe area — so the ship renders fully.
+	# For each detected ship, write ship references on cells OUTSIDE the probe
+	# area so the ship renders fully. These cells do NOT get has_probe = true —
+	# they're ghost references that will be cleared when the ship moves away.
 	for ship in detected_ships:
 		var fog_ship: FogShipRecord = FogShipRecord.from_ship(ship)
 		var ship_cells: Array[Vector2i] = get_ship_cells(ship)
 		for cell in ship_cells:
-			var record := CellRecord.make_probe(fog_ship, expires_in)
-			cell_records[cell] = record
+			if not cell_records.has(cell) or not cell_records[cell].has_probe:
+				# Cell is outside the probe area — add a ghost ship reference only
+				cell_records[cell] = CellRecord.make_ship_ghost(fog_ship)
+			elif cell_records[cell].ship == null:
+				# Cell is inside probe area but wasn't on this ship — set the ref
+				cell_records[cell].ship = fog_ship
 
 	ships_detected = detected_ships.size()
 
@@ -333,7 +338,7 @@ func _refresh_probe_records_for_ship(ship: ShipInstance, attacker_idx: int) -> v
 	for cell in ship_cells:
 		if cell_records.has(cell):
 			var record: CellRecord = cell_records[cell]
-			if record.has_probe:
+			if record.ship != null:
 				record.ship = fog
 
 
@@ -345,13 +350,15 @@ func _update_opponent_probes_after_move(ship: ShipInstance, old_cells: Array[Vec
 	var opponent_idx: int = 1 - player_idx
 	var cell_records: Dictionary = GameState.players[opponent_idx]["cell_records"]
 
-	# Clear ship from old cells that have active probes
+	# Clear ship from old cells
 	for cell in old_cells:
 		if cell_records.has(cell):
 			var record: CellRecord = cell_records[cell]
-			if record.has_probe and record.ship != null:
-				# Only clear if this record refers to the same ship (matching position/type)
+			if record.ship != null:
 				record.ship = null
+				# If cell was only a ghost reference (not an actual probe), remove it entirely
+				if not record.has_probe and not record.has_blind_hit:
+					cell_records.erase(cell)
 
 	# Add ship to new cells that have active probes
 	var fog: FogShipRecord = FogShipRecord.from_ship(ship)
@@ -366,7 +373,10 @@ func _update_opponent_probes_after_move(ship: ShipInstance, old_cells: Array[Vec
 ## new_position: the ship's new origin after the move.
 ## new_facing: the ship's new facing after the move.
 func resolve_move(acting_ship: ShipInstance, new_position: Vector2i, new_facing: int, player_idx: int) -> Dictionary:
-	var net_displacement: Vector2i = new_position - acting_ship.position
+	# Use pivot-based displacement so rotation-induced origin shifts don't count as movement
+	var old_pivot: Vector2i = acting_ship.position + ShipDefinitions.get_pivot_offset(acting_ship.ship_type, acting_ship.facing)
+	var new_pivot: Vector2i = new_position + ShipDefinitions.get_pivot_offset(acting_ship.ship_type, new_facing)
+	var net_displacement: Vector2i = new_pivot - old_pivot
 	var facing_diff: int = (new_facing - acting_ship.facing + 4) % 4
 	var net_rotation: int = 0
 	if facing_diff == 1:

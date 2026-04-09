@@ -14,6 +14,12 @@ static func make_probe(fog_ship: FogShipRecord, probe_expires_in: int) -> CellRe
 	record.ship = fog_ship
 	return record
 
+static func make_ship_ghost(fog_ship: FogShipRecord) -> CellRecord:
+	var record := CellRecord.new()
+	record.has_probe = false
+	record.ship = fog_ship
+	return record
+
 static func make_blind_hit() -> CellRecord:
 	var record := CellRecord.new()
 	record.has_blind_hit = true

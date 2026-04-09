@@ -83,7 +83,7 @@ static func get_pivot_offset(ship_type: String, facing: int) -> Vector2i:
 		"battleship": pivot_idx = 2   # square 3 (0-indexed = 2)
 		"probe_ship": pivot_idx = 2   # square 3 (0-indexed = 2)
 		"destroyer": pivot_idx = 1    # square 2 (0-indexed = 1)
-		"cruiser": pivot_idx = 1      # square 2 (0-indexed = 1)
+		"cruiser": pivot_idx = 0      # square 2 (back) — origin is the back cell
 		_: pivot_idx = 0
 	var dir: Vector2i
 	match facing:

@@ -215,17 +215,33 @@ func _try_select_ship(cell: Vector2i) -> void:
 func _try_select_enemy_ship(cell: Vector2i) -> void:
 	var cell_records: Dictionary = GameState.players[GameState.current_player]["cell_records"]
 	if not cell_records.has(cell):
+		_clear_enemy_selection()
 		return
 	var record: CellRecord = cell_records[cell]
 	if record.has_probe and record.ship != null:
+		# Deselect own ship so clicking it again will re-select properly
+		if selected_ship != null:
+			selected_ship = null
+			interaction_state = InteractionState.IDLE
+			command_renderer.clear_selected_ship()
+		# Set enemy selection highlight on target grid
+		target_renderer.set_selected_enemy(record.ship)
 		ship_panel.show_enemy_ship(record.ship)
 		_show_left_tab("ship_panel")
+	else:
+		_clear_enemy_selection()
+
+
+func _clear_enemy_selection() -> void:
+	target_renderer.clear_selected_enemy()
 
 
 func _select_ship(ship: ShipInstance) -> void:
 	selected_ship = ship
 	interaction_state = InteractionState.SHIP_SELECTED
 	command_renderer.set_selected_ship(ship)
+	# Clear any enemy selection when selecting own ship (Bug 3)
+	target_renderer.clear_selected_enemy()
 	ship_panel.show_ship(ship)
 	_show_left_tab("ship_panel")
 
@@ -234,6 +250,7 @@ func _deselect_ship() -> void:
 	selected_ship = null
 	interaction_state = InteractionState.IDLE
 	command_renderer.clear_selected_ship()
+	target_renderer.clear_selected_enemy()
 	ship_panel.clear_ship()
 
 
@@ -289,7 +306,16 @@ func _execute_targeting_action(cell: Vector2i) -> void:
 
 	match targeting_action:
 		"probe":
-			result = action_resolver.resolve_probe(targeting_ship, cell, player_idx)
+			# Clamp probe center so the full probe area stays on-grid,
+			# matching the visual highlight clamping in GridRenderer.
+			var stats: Dictionary = ShipDefinitions.SHIPS[targeting_ship.ship_type]
+			var probe_size: int = stats["probe_area"]
+			var half: int = probe_size / 2
+			var clamped_cell := Vector2i(
+				clampi(cell.x, half, GRID_COLS - 1 - (probe_size - 1 - half)),
+				clampi(cell.y, half, GRID_ROWS - 1 - (probe_size - 1 - half))
+			)
+			result = action_resolver.resolve_probe(targeting_ship, clamped_cell, player_idx)
 		"laser":
 			result = action_resolver.resolve_laser(targeting_ship, cell, opponent_fleet, player_idx)
 		"missile":

@@ -194,6 +194,12 @@ func _refresh_display() -> void:
 	var laser_max: int = stats["laser_max"]
 	_laser_slider.max_value = laser_max
 
+	# Recalculate sliders if they exceed available energy after actions
+	var combined: int = _ship.shield_regen_setting + _ship.laser_power_setting
+	if combined > _ship.current_energy:
+		_ship.shield_regen_setting = mini(_ship.shield_regen_setting, _ship.current_energy)
+		_ship.laser_power_setting = mini(_ship.laser_power_setting, _ship.current_energy - _ship.shield_regen_setting)
+
 	# Set slider values from ship settings
 	_shield_slider.set_value_no_signal(_ship.shield_regen_setting)
 	_laser_slider.set_value_no_signal(_ship.laser_power_setting)

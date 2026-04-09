@@ -41,6 +41,9 @@ var ghost_visible: bool = false
 # Selected ship highlight — set by gameplay.gd
 var selected_ship: ShipInstance = null
 
+# Selected enemy ship highlight (target grid only) — set by gameplay.gd
+var selected_enemy_fog: FogShipRecord = null
+
 func _draw() -> void:
 	_draw_background()
 	_draw_grid_lines()
@@ -50,6 +53,7 @@ func _draw() -> void:
 		_draw_ghost_ship()
 	else:
 		_draw_target_cells()
+		_draw_selected_enemy_highlight()
 	_draw_probe_highlight()
 
 func _draw_background() -> void:
@@ -95,21 +99,33 @@ func _draw_target_cells() -> void:
 	for key: Variant in cell_records.keys():
 		var cell: Vector2i = key
 		var record: CellRecord = cell_records[cell]
-		# Blind hit drawn only when no ship record (ship record takes visual priority)
-		if record.has_blind_hit and record.ship == null:
+		# Blind hit drawn unless cell has an active probe (active probe shows full detail instead)
+		if record.has_blind_hit and not record.has_probe:
 			_draw_blind_hit(cell)
 		if record.ship != null and not drawn_fog.has(record.ship):
 			drawn_fog.append(record.ship)
 			var fog: FogShipRecord = record.ship
-			# Determine display state from this cell's has_probe flag
-			var alpha: float = 1.0 if record.has_probe else 0.35
-			_draw_ship_cells(
-				ShipDefinitions.get_ship_cells(fog.ship_type, fog.position, fog.facing),
-				SHIP_COLORS.get(fog.ship_type, Color.WHITE),
-				alpha
-			)
-			if record.has_probe:
-				_draw_facing_triangle(_get_front_cell(fog.ship_type, fog.position, fog.facing), fog.facing)
+			var ship_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(fog.ship_type, fog.position, fog.facing)
+			# Ship is active if ANY of its cells have an active probe
+			var any_probed: bool = false
+			for sc: Vector2i in ship_cells:
+				if cell_records.has(sc):
+					var sc_rec: CellRecord = cell_records[sc]
+					if sc_rec.has_probe:
+						any_probed = true
+						break
+			# Destroyed ship with active probe: show wreckage
+			if fog.last_armor <= 0 and any_probed:
+				_draw_wreckage_cells(ship_cells)
+			else:
+				var alpha: float = 1.0 if any_probed else 0.35
+				_draw_ship_cells(
+					ship_cells,
+					SHIP_COLORS.get(fog.ship_type, Color.WHITE),
+					alpha
+				)
+				if any_probed:
+					_draw_facing_triangle(_get_front_cell(fog.ship_type, fog.position, fog.facing), fog.facing)
 
 # --- Ghost ship + selection overlays ---
 
@@ -117,6 +133,18 @@ func _draw_selected_highlight() -> void:
 	if selected_ship == null or selected_ship.is_destroyed:
 		return
 	var cells: Array[Vector2i] = selected_ship.get_occupied_cells()
+	for cell in cells:
+		draw_rect(
+			Rect2(cell.x * CELL_SIZE, cell.y * CELL_SIZE, CELL_SIZE, CELL_SIZE),
+			COLOR_SELECTED_SHIP, false, 2.0
+		)
+
+func _draw_selected_enemy_highlight() -> void:
+	if selected_enemy_fog == null:
+		return
+	# Check the fog record still has a valid position (ship_type must be known)
+	var cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
+		selected_enemy_fog.ship_type, selected_enemy_fog.position, selected_enemy_fog.facing)
 	for cell in cells:
 		draw_rect(
 			Rect2(cell.x * CELL_SIZE, cell.y * CELL_SIZE, CELL_SIZE, CELL_SIZE),
@@ -247,6 +275,14 @@ func set_selected_ship(ship: ShipInstance) -> void:
 
 func clear_selected_ship() -> void:
 	selected_ship = null
+	queue_redraw()
+
+func set_selected_enemy(fog: FogShipRecord) -> void:
+	selected_enemy_fog = fog
+	queue_redraw()
+
+func clear_selected_enemy() -> void:
+	selected_enemy_fog = null
 	queue_redraw()
 
 func refresh() -> void:
