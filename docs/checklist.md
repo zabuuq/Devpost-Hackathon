@@ -98,7 +98,7 @@
   Acceptance: `python -c "import numpy; print(numpy.__version__)"` prints a version number without error.
   Verify: Run the acceptance command above.
 
-- [ ] **I1-2. Generate 6 SFX audio files with Python + numpy**
+- [x] **I1-2. Generate 6 SFX audio files with Python + numpy**
   Spec ref: `spec.md > Audio`
   What to build: Write a Python script (`tools/generate_sfx.py`) that procedurally generates 6 sci-fi sound effects using numpy waveform synthesis: (1) `laser.ogg` — short high-frequency sweep downward, (2) `missile.ogg` — rising whoosh with low rumble, (3) `probe.ogg` — electronic ping/sonar pulse, (4) `explosion.ogg` — noise burst with decay, (5) `hit.ogg` — short metallic impact, (6) `click.ogg` — crisp UI click. Script outputs `.wav` files to a temp directory, then converts each to `.ogg` using ffmpeg. Final `.ogg` files placed in `assets/audio/sfx/`. Each sound should be 0.2–1.5 seconds, 44100 Hz sample rate, mono. Sounds should feel sci-fi and space-themed — not realistic, but satisfying.
   Acceptance: All 6 `.ogg` files exist in `assets/audio/sfx/`. Each file plays audible, distinct sound. No clipping or distortion.
