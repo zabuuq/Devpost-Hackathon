@@ -1,4 +1,4 @@
-# Nebula [TBD] — Technical Spec
+# Battlestations: Nebula — Technical Spec
 
 ## Stack
 
@@ -648,7 +648,7 @@ Music and SFX controlled independently via toggles on main menu. States stored i
 ## File Structure
 
 ```
-nebula-tbd/                              ← project root (rename when title chosen)
+battlestations-nebula/                   ← project root
 ├── project.godot
 ├── process-notes.md
 ├── docs/
@@ -754,7 +754,7 @@ No external APIs. No backend. No database. No API keys required. Entirely self-c
 
 2. **Ship sprite / portrait assets** — not yet sourced. The spec assumes one portrait and one grid sprite per ship type (5 types). These need to exist before `grid_renderer.gd` and `ship_panel.gd` can be completed. Placeholder colored rectangles are fine for build; swap in art during `/iterate`.
 
-3. **Game title** — still TBD. Candidates from scope: *Nebula Protocol*, *Dark Fleet*, *Void Sector*. Code uses `nebula-tbd` as placeholder project name. Rename before itch.io publish.
+3. ~~**Game title**~~ — resolved: **Battlestations: Nebula**.
 
 4. **Energy cap** — PRD notes "unused energy carries over between turns (no cap stated — TBD in spec)." Recommend no cap for simplicity. Ships with high energy reserves become more capable over time — interesting strategic dimension.
 

@@ -1,4 +1,4 @@
-# Nebula [TBD] — Space Battleship Tribute
+# Battlestations: Nebula — Space Battleship Tribute
 
 ## Idea
 A turn-based, hidden-fleet space combat game for two hot-seat players — a personal tribute to a Pascal game built by Jason's father ~35 years ago, rebuilt in Godot and exported to the browser for itch.io.

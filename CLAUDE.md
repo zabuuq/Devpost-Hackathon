@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Nebula [TBD]** — A turn-based, hidden-fleet space combat game built in Godot 4.6.2, targeting HTML5/web export and deployment to itch.io. Two-player hot-seat (local multiplayer). A tribute to a Pascal game from ~35 years ago.
+**Battlestations: Nebula** — A turn-based, hidden-fleet space combat game built in Godot 4.6.2, targeting HTML5/web export and deployment to itch.io. Two-player hot-seat (local multiplayer). A tribute to a Pascal game from ~35 years ago.
 
 Full design docs are in `docs/`: `prd.md` (product requirements), `spec.md` (technical architecture), `scope.md` (feature rationale), `backlog.md` (post-hackathon ideas).
 

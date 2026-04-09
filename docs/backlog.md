@@ -1,4 +1,4 @@
-# Backlog — Nebula [TBD]
+# Backlog — Battlestations: Nebula
 
 Future features and ideas captured during development. Not committed to any timeline.
 
