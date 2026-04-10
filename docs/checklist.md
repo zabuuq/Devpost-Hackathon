@@ -104,7 +104,7 @@
   Acceptance: All 6 `.ogg` files exist in `assets/audio/sfx/`. Each file plays audible, distinct sound. No clipping or distortion.
   Verify: Play each `.ogg` file manually. Confirm each sounds distinct and appropriate for its action.
 
-- [ ] **I1-3. Verify SFX playback in-game**
+- [x] **I1-3. Verify SFX playback in-game**
   Spec ref: `spec.md > Audio`, `prd.md > 10. Audio`
   What to build: Run the game and trigger each sound effect: click a button (click.ogg), launch a probe (probe.ogg), fire a laser (laser.ogg), fire a missile (missile.ogg), hit an enemy ship (hit.ogg), destroy an enemy ship (explosion.ogg). Confirm AudioManager plays each at appropriate volume without overlap issues. Adjust volumes in the generation script if any sound is too loud/quiet relative to others, regenerate, and re-test.
   Acceptance: All 6 SFX fire on their correct game events. No SFX is jarring, silent, or clipping. Volume levels feel balanced relative to each other.
