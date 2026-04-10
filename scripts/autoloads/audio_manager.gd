@@ -64,22 +64,27 @@ func set_music_enabled(enabled: bool) -> void:
 
 
 ## Convenience: play the appropriate SFX for an action result dictionary.
+## For laser/missile hits, plays the weapon sound first, then the impact sound after a delay.
 func play_action_sfx(result: Dictionary) -> void:
 	var action_type: String = result.get("type", "")
 	match action_type:
 		"probe":
 			play_sfx("probe")
 		"laser":
+			play_sfx("laser")
 			if result.get("destroyed", false):
-				play_sfx("explosion")
+				_play_sfx_delayed("explosion", 0.5)
 			elif result.get("hit", false):
-				play_sfx("hit")
-			else:
-				play_sfx("laser")
+				_play_sfx_delayed("hit", 0.5)
 		"missile":
+			play_sfx("missile")
 			if result.get("destroyed", false):
-				play_sfx("explosion")
+				_play_sfx_delayed("explosion", 0.8)
 			elif result.get("hit", false):
-				play_sfx("hit")
-			else:
-				play_sfx("missile")
+				_play_sfx_delayed("hit", 0.8)
+
+
+## Play an SFX after a delay (seconds). Used to sequence weapon + impact sounds.
+func _play_sfx_delayed(sfx_name: String, delay: float) -> void:
+	var timer: SceneTreeTimer = get_tree().create_timer(delay)
+	timer.timeout.connect(play_sfx.bind(sfx_name))

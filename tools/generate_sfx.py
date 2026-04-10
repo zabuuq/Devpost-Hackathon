@@ -39,15 +39,15 @@ def convert_to_ogg(wav_path: str, ogg_name: str) -> str:
     return ogg_path
 
 
-def envelope(length: int, attack: float = 0.01, decay: float = 0.0, release: float = 0.05) -> np.ndarray:
-    """Generate an ADSR-ish envelope (no sustain param — sustain = 1.0 between attack and release)."""
+def smooth_envelope(length: int, attack: float = 0.02, release: float = 0.08) -> np.ndarray:
+    """Cosine-smoothed attack/release envelope — no clicks or jarring edges."""
     env = np.ones(length, dtype=np.float64)
-    att_samples = int(attack * SAMPLE_RATE)
-    rel_samples = int(release * SAMPLE_RATE)
-    if att_samples > 0:
-        env[:att_samples] = np.linspace(0, 1, att_samples)
-    if rel_samples > 0:
-        env[-rel_samples:] = np.linspace(1, 0, rel_samples)
+    att_samples = max(int(attack * SAMPLE_RATE), 1)
+    rel_samples = max(int(release * SAMPLE_RATE), 1)
+    # Cosine ease-in (0 -> 1)
+    env[:att_samples] = 0.5 * (1.0 - np.cos(np.linspace(0, np.pi, att_samples)))
+    # Cosine ease-out (1 -> 0)
+    env[-rel_samples:] = 0.5 * (1.0 + np.cos(np.linspace(0, np.pi, rel_samples)))
     return env
 
 
@@ -60,68 +60,73 @@ def gen_laser() -> np.ndarray:
     freq = np.linspace(2500, 300, n)
     phase = np.cumsum(freq / SAMPLE_RATE) * 2 * np.pi
     sig = np.sin(phase) * 0.7
-    # Add a bit of harmonics
     sig += np.sin(phase * 2) * 0.2
     sig += np.sin(phase * 3) * 0.1
-    # Sharp attack, quick decay
-    env = np.exp(-t * 12) * envelope(n, attack=0.005, release=0.02)
-    return sig * env
+    # Exponential decay with smooth envelope
+    env = np.exp(-t * 12) * smooth_envelope(n, attack=0.008, release=0.04)
+    return sig * env * 0.6
 
 
 def gen_missile() -> np.ndarray:
-    """Rising whoosh with low rumble."""
-    duration = 1.0
+    """Whoosh launch — low rumble with filtered noise, no tonal sweep."""
+    duration = 0.8
     n = int(SAMPLE_RATE * duration)
     t = np.linspace(0, duration, n, endpoint=False)
-    # Low rumble — filtered noise
     rng = np.random.default_rng(42)
     noise = rng.normal(0, 1, n)
-    # Simple low-pass via cumulative averaging
+
+    # Low rumble — heavily filtered noise
     rumble = np.zeros(n)
     alpha = 0.005
     rumble[0] = noise[0] * alpha
     for i in range(1, n):
         rumble[i] = rumble[i - 1] * (1 - alpha) + noise[i] * alpha
     rumble = rumble / (np.max(np.abs(rumble)) + 1e-9) * 0.5
-    # Rising tone sweep 80 Hz -> 600 Hz
-    freq = np.linspace(80, 600, n)
-    phase = np.cumsum(freq / SAMPLE_RATE) * 2 * np.pi
-    tone = np.sin(phase) * 0.4
-    # Whoosh — band-passed noise rising in pitch (simple approach: modulated noise)
-    whoosh_freq = np.linspace(200, 2000, n)
+
+    # Whoosh — band-passed noise, no rising tone
+    whoosh_freq = np.linspace(200, 1200, n)
     whoosh_phase = np.cumsum(whoosh_freq / SAMPLE_RATE) * 2 * np.pi
-    whoosh = np.sin(whoosh_phase) * noise * 0.3
-    sig = (rumble + tone + whoosh)
-    env = envelope(n, attack=0.1, release=0.15)
-    # Crescendo
-    env *= np.linspace(0.3, 1.0, n)
-    return sig * env
+    whoosh = np.sin(whoosh_phase) * noise * 0.35
+
+    sig = rumble + whoosh
+    # Crescendo shape that peaks at ~60% then decays
+    vol_shape = np.sin(np.linspace(0, np.pi, n)) ** 0.5
+    env = smooth_envelope(n, attack=0.06, release=0.15) * vol_shape
+    return sig * env * 0.55
 
 
 def gen_probe() -> np.ndarray:
-    """Electronic ping/sonar pulse."""
-    duration = 0.6
+    """Ethereal woosh — soft sweep with airy texture."""
+    duration = 0.7
     n = int(SAMPLE_RATE * duration)
     t = np.linspace(0, duration, n, endpoint=False)
-    # Main ping at 1200 Hz
-    sig = np.sin(2 * np.pi * 1200 * t) * 0.5
-    # Second harmonic ping slightly detuned
-    sig += np.sin(2 * np.pi * 1807 * t) * 0.3
-    # Third — very high shimmer
-    sig += np.sin(2 * np.pi * 3600 * t) * 0.1
-    # Sharp attack, long exponential decay
-    env = np.exp(-t * 6) * envelope(n, attack=0.003, release=0.05)
-    # Add a second smaller ping echo
-    echo_start = int(0.2 * SAMPLE_RATE)
-    echo_env = np.zeros(n)
-    remaining = n - echo_start
-    echo_env[echo_start:] = np.exp(-np.linspace(0, duration * 6, remaining)) * 0.4
-    return sig * (env + echo_env)
+    rng = np.random.default_rng(55)
+
+    # Soft frequency sweep 300 -> 600 -> 300 Hz (arc shape)
+    freq = 300 + 300 * np.sin(np.linspace(0, np.pi, n))
+    phase = np.cumsum(freq / SAMPLE_RATE) * 2 * np.pi
+    tone = np.sin(phase) * 0.25
+
+    # Airy filtered noise layer
+    noise = rng.normal(0, 1, n)
+    airy = np.zeros(n)
+    alpha = 0.02
+    airy[0] = noise[0] * alpha
+    for i in range(1, n):
+        airy[i] = airy[i - 1] * (1 - alpha) + noise[i] * alpha
+    airy = airy / (np.max(np.abs(airy)) + 1e-9) * 0.3
+
+    # Gentle shimmer — high frequency, very quiet
+    shimmer = np.sin(2 * np.pi * 2400 * t) * 0.05 * np.sin(np.linspace(0, np.pi, n))
+
+    sig = tone + airy + shimmer
+    env = smooth_envelope(n, attack=0.1, release=0.2) * np.sin(np.linspace(0, np.pi, n)) ** 0.6
+    return sig * env * 0.5
 
 
 def gen_explosion() -> np.ndarray:
-    """Noise burst with decay — space explosion."""
-    duration = 0.8
+    """Noise burst with decay — space explosion, smoothed edges."""
+    duration = 0.9
     n = int(SAMPLE_RATE * duration)
     t = np.linspace(0, duration, n, endpoint=False)
     rng = np.random.default_rng(99)
@@ -129,46 +134,54 @@ def gen_explosion() -> np.ndarray:
     # Low-pass filter the noise progressively more over time for "boom" feel
     filtered = np.zeros(n)
     for i in range(1, n):
-        # Alpha decreases over time — more filtering as sound decays
         a = 0.15 * math.exp(-t[i] * 3)
         filtered[i] = filtered[i - 1] * (1 - a) + noise[i] * a
     filtered = filtered / (np.max(np.abs(filtered)) + 1e-9)
-    # Add a low thump
-    thump = np.sin(2 * np.pi * 60 * t) * np.exp(-t * 8) * 0.6
-    sig = filtered * 0.7 + thump
-    env = np.exp(-t * 4) * envelope(n, attack=0.005, release=0.1)
-    return sig * env
+    # Low thump
+    thump = np.sin(2 * np.pi * 50 * t) * np.exp(-t * 6) * 0.6
+    sig = filtered * 0.6 + thump
+    # Smooth attack to avoid jarring start
+    env = np.exp(-t * 3.5) * smooth_envelope(n, attack=0.02, release=0.15)
+    return sig * env * 0.55
 
 
 def gen_hit() -> np.ndarray:
-    """Short metallic impact."""
-    duration = 0.3
+    """Impact thud — lower frequency, more of a punchy hit than metallic ring."""
+    duration = 0.35
     n = int(SAMPLE_RATE * duration)
     t = np.linspace(0, duration, n, endpoint=False)
-    # Multiple inharmonic frequencies for metallic timbre
-    freqs = [440, 587, 831, 1120, 1487]
-    sig = np.zeros(n)
-    for i, f in enumerate(freqs):
-        sig += np.sin(2 * np.pi * f * t) * (0.4 / (i + 1))
-    # Noise transient at start
     rng = np.random.default_rng(77)
-    noise = rng.normal(0, 1, n) * np.exp(-t * 80) * 0.5
-    sig += noise
-    env = np.exp(-t * 15) * envelope(n, attack=0.001, release=0.02)
-    return sig * env
+
+    # Low-mid impact tone
+    sig = np.sin(2 * np.pi * 120 * t) * 0.5 * np.exp(-t * 10)
+    # Mid crunch layer
+    sig += np.sin(2 * np.pi * 250 * t) * 0.3 * np.exp(-t * 15)
+    # Noise burst for texture
+    noise = rng.normal(0, 1, n) * np.exp(-t * 30) * 0.35
+    # Filter the noise a bit
+    filtered_noise = np.zeros(n)
+    alpha = 0.08
+    for i in range(1, n):
+        filtered_noise[i] = filtered_noise[i - 1] * (1 - alpha) + noise[i] * alpha
+    filtered_noise = filtered_noise / (np.max(np.abs(filtered_noise)) + 1e-9) * 0.3
+    sig += filtered_noise
+
+    env = smooth_envelope(n, attack=0.005, release=0.06)
+    return sig * env * 0.6
 
 
 def gen_click() -> np.ndarray:
-    """Crisp UI click."""
-    duration = 0.05
+    """Low, soft keyboard/mouse click."""
+    duration = 0.06
     n = int(SAMPLE_RATE * duration)
     t = np.linspace(0, duration, n, endpoint=False)
-    # Very short sine burst
-    sig = np.sin(2 * np.pi * 1000 * t) * 0.6
-    # Add a click transient
-    sig += np.sin(2 * np.pi * 4000 * t) * 0.3
-    env = np.exp(-t * 100) * envelope(n, attack=0.001, release=0.005)
-    return sig * env
+    # Low-frequency click — like a key bottoming out
+    sig = np.sin(2 * np.pi * 300 * t) * 0.5
+    # Subtle second harmonic
+    sig += np.sin(2 * np.pi * 600 * t) * 0.15
+    # Very fast decay
+    env = np.exp(-t * 80) * smooth_envelope(n, attack=0.001, release=0.015)
+    return sig * env * 0.5
 
 
 def main():
