@@ -161,3 +161,26 @@ Zero deepening rounds chosen. Jason accepted the proposed checklist without requ
 
 ### Active shaping
 Minimal but purposeful. Jason set the direction (data structures first) which locked the sequencing. His clarifying question about step granularity showed he was thinking about the actual build experience, not just approving a list. No pushback on item order or groupings — accepted the dependency logic as presented.
+
+## /iterate — Iteration 1
+
+### What the learner chose and why
+Audio SFX — all 6 sound effects (laser, missile, probe, explosion, hit, click). No ambient music this round. Jason identified audio as the highest-impact polish item: the code is fully wired up in AudioManager but zero audio files exist. The game is silent, which undermines the space combat atmosphere.
+
+### What the review pass surfaced
+- Audio files are the biggest gap between "code complete" and "submission ready"
+- Several trivial backlog items exist (instant win, uniform probe cost, cruiser rotation bug) but Jason prioritized audio first — right call for submission impact
+- Python + numpy synthesis approach chosen to keep everything in the terminal without manual asset sourcing
+
+### How many iteration items were created
+3 items: install numpy, generate 6 SFX files via Python script, verify playback in-game.
+
+### Observations
+Jason asked the right process question: "do we write checklist items or just do it here?" Shows he's internalized the workflow and is thinking about when structure helps vs. when it's overhead. He also asked about tool options (numpy vs scipy) and made a clear cost/benefit decision. Working more as a collaborator than a learner at this point — the structured phase served its purpose.
+
+### Build results
+- Numpy synthesis produced 6 sounds but they sounded fake. Jason flagged all 6 as needing work — too high-pitched, jarring, artificial.
+- Jason suggested switching to open-source CC0 sounds instead of synthesizing — correct instinct. Pivoted to Kenney asset packs (sci-fi-sounds, impact-sounds, interface-sounds), all CC0.
+- Also fixed AudioManager timing: weapon SFX (laser/missile) now plays first, impact/explosion follows after a delay so both sounds are audible in sequence.
+- Applied ffmpeg fade-in/fade-out to all 6 files to smooth the onset. Jason approved after this pass.
+- All 3 iteration items complete.
