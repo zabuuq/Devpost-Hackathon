@@ -213,3 +213,12 @@ Submission-readiness content work: README, in-game "How to Play" rewrite, itch.i
 
 ### Observations
 Jason is working as a collaborator rather than a learner at this point. He drove the ordering change (early deploy, parallel Cowork), added the theme task mid-draft, flagged the item #12 ordering problem unprompted, and set the Welcome page voice with a specific seed. The structured `/iterate` flow served as a forcing function to turn his ideas into a concrete, ordered checklist with pause points. Noteworthy: he asked the agent's opinion on decisions before making them (theme task bundling, README tone, combat/energy page merge) rather than just dictating, which kept the collaboration honest in both directions.
+
+### I2-1 deploy record (Apr 11, 2026)
+- **Live URL (draft with secret, Cowork-compatible):** `https://zabuuq.itch.io/battlestations-nebula?secret=B7MkfBht0kXO4Sw15lL0qIIGk`
+- **itch.io channel:** `zabuuq/battlestations-nebula:html5`
+- **Build:** butler build #1608182 (version 2), promoted from prior #1605057
+- **Export:** Godot 4.6.1 headless (`godot --headless --path . --export-release "Web" export/web/index.html`). Project binary on disk is 4.6.1 even though CLAUDE.md spec references 4.6.2 — project.godot only requires the "4.6" feature tag so it works, but flagging for a future fix pass.
+- **Page visibility:** Draft, kept draft intentionally for now. Public switch deferred until Iteration 2 is fully done. Secret URL is the access path Cowork (I2-2) and all downstream verification will use.
+- **Verification:** WebFetch against the secret URL confirmed a valid itch.io game page rendering `init_ViewHtmlGame`, "Run game" button, Godot tag, and game metadata. No in-browser playthrough run by the build agent; local smoke test skipped per autonomous-mode intent.
+- **Open note:** `itch-theme-screenshot.png` is at the project root and got auto-imported by Godot, so it's also bundled inside `index.pck` (trivial, ~43KB). Cleanup deferred to end of Iteration 2.

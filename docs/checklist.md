@@ -112,7 +112,7 @@
 
 ## Iteration 2 — Submission Content & In-Game Tutorial
 
-- [ ] **I2-1. Export to HTML5 and deploy to itch.io via butler**
+- [x] **I2-1. Export to HTML5 and deploy to itch.io via butler**
   Spec ref: `spec.md > Runtime & Deployment`, CLAUDE.md > Build & Deploy
   What to build: Export the current project to HTML5 using the existing export preset. Confirm threading is disabled. Output to `export/web/`. Verify the exported build loads and plays in a local browser before pushing. Push to itch.io via `butler push ./export/web <username>/<game-slug>:html5`. Confirm the live page loads and the game reaches the main menu. If any step fails (export error, local load failure, butler push error, live page load failure), halt the iteration and surface the error for a fix pass before continuing. Do not proceed to I2-2 until the live itch.io build works.
   Acceptance: `export/web/` contains a working HTML5 build. Local browser confirms the game loads and reaches the main menu. `butler push` completes without error. Live itch.io URL loads the game and reaches the main menu from a fresh browser tab.
