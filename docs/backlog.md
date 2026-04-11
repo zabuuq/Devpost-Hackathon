@@ -74,4 +74,20 @@ Future features and ideas captured during development. Not committed to any time
 | Uniform probe cost (50 energy for all ships) | Change probe cost from 100 (standard) / 50 (Probe Ship) to 50 for all ships. Simplifies the energy economy and makes probing more accessible. |
 | Increase Probe Ship probe area to 7×7 | Bump Probe Ship probe area from 6×6 to 7×7 to further differentiate it from standard 4×4 probes. |
 | Partially probed ships clickable on all cells | When an opponent ship is partially inside an active probe area, only the probed cells are clickable on the Target Grid. The entire ship should be clickable since the player already knows it's there. |
+| Bug: first-turn energy regen ignores cap | On the first round, the +50 energy regen applies on top of the ship's starting max energy, so each ship ends up 50 over its stated max. Regen should clamp to the ship's `max_energy`. Likely in `TurnManager.turn_start()` energy regen step. |
+| Bug: destroyed ships render above live ships | Wreckage markers for destroyed ships currently draw on top of adjacent living ships on the Command Grid. Destroyed ships should render on a lower z-layer so living ships always draw above wreckage. Fix in `scripts/ui/grid_renderer.gd` draw order. |
 
+---
+
+## Long-term / Exploratory
+
+Bigger structural ideas. Post-hackathon, post-polish, probably post-several-iterations. These reshape the ship model and combat model, so they need their own design pass before any of them gets scoped into work.
+
+| Idea | Notes |
+|---|---|
+| Non-linear ship shapes | Ships today are straight lines of N cells. Allow L-shapes, T-shapes, rectangles, irregular footprints. Affects placement collision, rotation pivots, hit detection, probe reveal math, and ship rendering. The Battleship becoming a 3×2 block instead of a 5×1 line changes the tactical profile significantly. |
+| Half-block ship cells | Ship cells that occupy only half of a grid square. Harder to hit (miss chance on targeted fire, or a reduced hit footprint relative to the probe/fire area). Introduces a sub-grid resolution layer, which affects probe reveal, laser/missile targeting math, and the renderer. Pairs with non-linear shapes. |
+| Critical hit zones on ships | Designate core cells (engine, reactor, bridge) on each ship that unlock critical-hit behavior when struck. Requires per-ship shape metadata identifying which cells are core vs hull. |
+| Critical hit mechanic | If a shot lands on a core cell while shields are down, trigger a critical hit: extra damage, system disable (no laser this turn, no probe this turn, halved move), or chained secondary damage. Couples with the critical hit zones item above. Needs damage math, UI feedback, and battle log entries for crits. |
+| Custom ship builder / fleet builder from stock ships | Two-level customization. Fleet builder: pick your 5 (or N) ships from a stock roster with a point budget, replacing the fixed-fleet preset. Ship builder: compose individual ships from hull / weapon / subsystem modules before the fleet is built. Overlaps with the existing "Points-based fleet builder" and "Ship upgrades / loadout customization" items but goes further into per-ship composition. |
+| Partial probe reveal on ships | When a probe only catches some cells of an enemy ship, reveal only the probed cells instead of the whole ship. The player sees a partial silhouette and has to infer ship type, size, and facing. Changes the probe/reveal contract: today a single probed cell reveals the full `FogShipRecord`; this would reveal only overlapped cells. Affects `FogShipRecord` shape, CellRecord population, and Target Grid rendering. |
