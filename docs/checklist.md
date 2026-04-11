@@ -152,7 +152,7 @@
 
 <!-- PAUSE after I2-6. User hands the page setup brief to Claude Cowork for theme + description upload. -->
 
-- [ ] **I2-7. Update checklist item #12 and add HOLD marker**
+- [x] **I2-7. Update checklist item #12 and add HOLD marker**
   Spec ref: `docs/checklist.md > item 12`
   What to build: Edit item #12 in `docs/checklist.md`. Add a note in "What to build" stating that `docs/pitch.md` is the source for the Devpost project name, tagline, project story, and built-with framing, and that `docs/itch-io-description.md` is the already-written itch.io Description (live on itch.io after I2-6). Add a note that the initial deploy happened in I2-1 and the theme + description upload happened in I2-6, so item #12's deploy step becomes a final redeploy of the latest build after I2-8 wires screenshots into the tutorial overlay. Add an HTML comment marker immediately above item #12: `<!-- HOLD — item 12 is the final submission step. Do not /build this item until all iteration work is complete. -->`. Additive edits only. Preserve all original content verbatim.
   Acceptance: Item #12 references both new files. Redeploy note is present. HOLD marker sits directly above item #12. Original item #12 text is not modified outside of the additive note.
@@ -166,8 +166,11 @@
 
 ---
 
+<!-- HOLD — item 12 is the final submission step. Do not /build this item until all iteration work is complete. -->
+
 - [ ] **12. HTML5 export, itch.io deploy, and Devpost submission**
   Spec ref: `spec.md > Runtime & Deployment`, `prd.md > 12. Success Criteria`
   What to build: **Export**: in Godot Editor → Project → Export → HTML5 preset. Disable threading. Output to `export/web/`. Run the exported game in a local browser and confirm it plays end-to-end. **Deploy to itch.io**: run `butler push ./export/web <username>/<game-slug>:html5`. On itch.io, confirm the game page is set to HTML (Kind of Project) and the channel is marked "Playable in browser." **GitHub repo**: confirm the repo is public and all code is pushed. **Devpost submission**: write project name and tagline (nebula-themed tribute angle). Draft the project story — the human hook (tribute to dad's Pascal game), the probe fade mechanic as the tactical "wow," the visual artistry (nebula background + probe illumination) as the aesthetic "wow." Add built-with tags: Godot 4, GDScript, HTML5, itch.io. Add screenshots: fleet placement grid, gameplay with active probe illumination over nebula, ship panel with energy sliders, victory screen. Link GitHub repo and itch.io live demo. Submit.
+  Iteration 2 notes: `docs/pitch.md` is the source of truth for the Devpost project name, tagline, project story, and built-with framing — crib from it directly rather than rewriting. `docs/itch-io-description.md` is the already-written itch.io Description and is live on the itch.io page after I2-6 (Cowork applied the theme and pasted the description). The initial HTML5 export and itch.io deploy already happened in I2-1; the theme and description upload already happened in I2-6. This item's deploy step is now a **final redeploy** of the latest build after I2-8 wires the tutorial screenshots into the How to Play overlay, so the live page reflects the finished tutorial before submission. Flip the itch.io page from draft to public as part of this step.
   Acceptance: Game plays in browser at the itch.io URL without download. GitHub repo is public with all code. Devpost submission is live with green "Submitted" badge, project story, screenshots, built-with tags, and both links (repo + live demo).
   Verify: Open the itch.io game page in a fresh browser tab — confirm it loads and is playable end-to-end. Open the Devpost submission page — confirm the "Submitted" badge is visible. Read the description aloud — does it land the tribute story and both wow moments?
