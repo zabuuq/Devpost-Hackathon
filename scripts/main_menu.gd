@@ -2,9 +2,9 @@ extends Control
 
 const HOW_TO_PLAY_PAGES: Array[Dictionary] = [
 	{
-		"title": "Welcome, Commander",
+		"title": "Welcome, commander",
 		"screenshot": "res://assets/screenshots/01_welcome.png",
-		"body": "You were pulled out of hyperspace into an unmapped nebula. So was the other commander. Neither of you asked for this. Somewhere up the chain, a bored god flipped a circuit breaker and dropped you both into the same cloud of gas and dust and static.\n\nYou have five ships. They have five ships. The nebula is watching, and the nebula does not care which of you walks out.\n\nDestroy every enemy ship. That's the whole job.",
+		"body": "One minute you were cruising through hyperspace. The next, something yanked your fleet into an unmapped nebula and cut your sensors like a bored god flipping a circuit breaker.\n\nThey came back online in pieces. Long enough to spot an enemy fleet drifting in the same soup you are. Long enough to confirm the obvious: somebody out here has weapons and no sense of humor.\n\nDid they pull you in on purpose? Are they as lost as you? Is this a cosmic practical joke staged by a nebula that hates traffic? None of it matters now.\n\nWhat matters is that they're out there. You're in here. Only one of you is leaving.\n\nFind them before they find you. Destroy them before they destroy you. Try not to take it personally.\n\n[b]Two commanders, one computer[/b]\n\nBattlestations: Nebula is a hot-seat game. You and your opponent share one screen and take turns. When the handoff prompt appears, the outgoing player looks away. The incoming player reads their situation and plays their turn. No peeking. The nebula is watching.",
 	},
 	{
 		"title": "Place Your Fleet",
