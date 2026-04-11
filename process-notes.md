@@ -184,3 +184,32 @@ Jason asked the right process question: "do we write checklist items or just do 
 - Also fixed AudioManager timing: weapon SFX (laser/missile) now plays first, impact/explosion follows after a delay so both sounds are audible in sequence.
 - Applied ffmpeg fade-in/fade-out to all 6 files to smooth the onset. Jason approved after this pass.
 - All 3 iteration items complete.
+
+## /iterate — Iteration 2
+
+### What Jason chose and why
+Submission-readiness content work: README, in-game "How to Play" rewrite, itch.io page description. Framing: "I want to get all of those up-to-date, accurate, user friendly, and helpful" before deploying for the Devpost submission. Hackathon deadline is April 29, 2026 (non-competitive Learning Hackathon: Spec Driven Development). Confirmed during scoping that continued iteration is allowed post-submission (Devpost allows edits until deadline, itch.io link is not frozen), so the plan is to submit after this iteration, then do one more iteration cycle before the deadline.
+
+### What the review pass surfaced
+- README does not exist at project root. Devpost submission requires a public repo link with instructions, so a README is effectively required.
+- "How to Play" overlay is a single 18-line `Label` in `scenes/main_menu.tscn`. Accurate but terse and dense. Missing: hot-seat flow, keyboard reference, Command/Target Grid explanation, probe fade explanation. No visual structure.
+- itch.io page description and Devpost project story both blank. These share DNA with the README and with each other, so a single source-of-truth pitch doc was agreed on up front.
+- Devpost project story was already bundled into checklist item #12. Clean split chosen: this iteration handles README, in-game tutorial, and itch.io page; item #12 handles the Devpost-specific content and the final submit.
+
+### Key scoping decisions
+- **Core pitch file (`docs/pitch.md`)**: single source of truth for reusable content (elevator pitch, taglines, tribute story, feature hooks, bullets, credits). README cribs a paragraph, itch.io description adapts the whole thing, item #12's Devpost content references it. No content written twice.
+- **How to Play structure**: Option 3 (paged overlay with Next/Previous buttons) chosen over Option 2 (sectioned single screen). Screenshots need room to breathe, the game's existing polish level calls for a tutorial that matches, implementation cost is modest with a single templated page.
+- **Welcome page voice locked first**: Jason provided a seed paragraph about being pulled from hyperspace into an unmapped nebula. The agent drafted a dark-playful second-person version ("a bored god flipping a circuit breaker," "the nebula is watching"). Jason approved with "I love it!" before anything else was scoped, so the voice became the tonal anchor for every other piece of content.
+- **WRITING-STYLE.md uploaded**: Jason added `WRITING-STYLE.md` at the project root mid-iteration and asked Claude to adhere to it. Banned words list, no em dashes, no LLM clichés, confident direct voice, active voice, second person. Applied to all Iteration 2 content and to every response in the scoping conversation after the upload.
+- **Technical README (Option 2)**: Not a pitch-first README. Setup/run/build-for-web is the primary job. One-paragraph pitch at the top, no hero screenshot. Story lives on itch.io.
+- **Early deploy as task 1**: Jason's idea. Deploy the current build to itch.io before anything else. Two reasons: (1) flush out web-export bugs (audio autoplay, path case sensitivity, threading quirks) early rather than at the deadline, (2) give Cowork a live URL to work from for screenshot capture.
+- **Failure handling**: Halt iteration on I2-1 failure (option a). No content items proceed on a broken build.
+- **Claude Cowork for screenshots and itch.io page setup**: Jason uses Cowork to automate browser-based tasks. Cowork runs in parallel with the build agent's content work. Two Cowork sessions needed: (1) screenshot capture after I2-2, (2) theme update and description upload after I2-6. Two explicit PAUSE comments added to the checklist to tell the `/build` agent to stop.
+- **Theme + description upload bundled**: Both are Cowork operations on the same itch.io page edit screen. Combined into one brief (I2-6) rather than two. Cowork applies the theme and pastes the description in a single session.
+- **Item #12 held to last**: Two layers of defense. (1) Iteration 2 section inserted above item #12 in the checklist file so `/build` picks up Iteration 2 items first in file order. (2) HOLD HTML comment marker added to item #12 during I2-7's execution as insurance.
+
+### Iteration size
+8 items. No artificial cap applied. Items reflect the work: one deploy, two Cowork briefs, three content files (pitch, README, itch description), one item #12 update, one overlay rewrite.
+
+### Observations
+Jason is working as a collaborator rather than a learner at this point. He drove the ordering change (early deploy, parallel Cowork), added the theme task mid-draft, flagged the item #12 ordering problem unprompted, and set the Welcome page voice with a specific seed. The structured `/iterate` flow served as a forcing function to turn his ideas into a concrete, ordered checklist with pause points. Noteworthy: he asked the agent's opinion on decisions before making them (theme task bundling, README tone, combat/energy page merge) rather than just dictating, which kept the collaboration honest in both directions.
