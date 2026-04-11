@@ -126,7 +126,7 @@
 
 <!-- PAUSE after I2-2. User hands the screenshot brief to Claude Cowork. Cowork runs in parallel with I2-3 through I2-6. -->
 
-- [ ] **I2-3. Create `docs/pitch.md`**
+- [x] **I2-3. Create `docs/pitch.md`**
   Spec ref: New (not in original spec)
   What to build: Create `docs/pitch.md` as the source-of-truth content doc. Section 1: elevator pitch, 2-3 sentences. Section 2: tagline candidates, 3-5 options for Devpost and itch.io headers. Section 3: tribute story with the dad/Pascal framing, polished in the voice locked during scoping (dark-playful humor, second person, zero em dashes). Section 4: mechanical hook, the probe fade system framed as a feature with concrete stakes. Section 5: visual hook, nebula background and probe illumination as a feature. Section 6: feature bullets, 6-10 bullets covering hot-seat play, 5-ship fleet, fog-of-war grid, probe/laser/missile/move actions, energy management, probe fade to ghost markers. Section 7: credits including Kenney CC0 audio packs (sci-fi-sounds, impact-sounds, interface-sounds), Godot 4.6.2, GDScript. Voice matches the approved Welcome page draft from the scoping conversation. Adhere to `WRITING-STYLE.md`.
   Acceptance: File exists. All 7 sections present. Zero banned words from `WRITING-STYLE.md`. Zero em dashes. Voice matches the Welcome page draft (second person, confident, direct, dark-playful).
