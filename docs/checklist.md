@@ -132,13 +132,13 @@
   Acceptance: File exists. All 7 sections present. Zero banned words from `WRITING-STYLE.md`. Zero em dashes. Voice matches the Welcome page draft (second person, confident, direct, dark-playful).
   Verify: Read the file. Grep for banned words. Grep for em dashes. Compare tone against the approved Welcome draft in process notes.
 
-- [ ] **I2-4. Create technical `README.md`**
+- [x] **I2-4. Create technical `README.md`**
   Spec ref: New (not in original spec)
   What to build: Create `README.md` at project root. Section 1: one-paragraph project description cribbed from `docs/pitch.md`'s elevator pitch and tribute angle. Section 2: Play it live, a link to the itch.io URL from I2-1. Section 3: Setup and run, requires Godot 4.6.2, open the project file, F5 to run. Section 4: Build for web, HTML5 export preset, threading disabled, output to `export/web/`, butler push command. Section 5: File structure overview of `scripts/`, `scenes/`, `assets/`, `docs/`, `tools/`. Section 6: Design docs pointer to the `docs/` folder with one-line descriptions of scope.md, prd.md, spec.md, pitch.md. Section 7: Credits (Kenney CC0 audio, Godot 4.6.2, GDScript). Section 8: License if applicable. Technical tone per user decision. No hero screenshot. Adhere to `WRITING-STYLE.md`.
   Acceptance: `README.md` exists at project root. All sections present. Setup instructions match the actual project. itch.io URL is the real deployed URL from I2-1. Zero banned words, zero em dashes.
   Verify: Read the README. Follow the setup instructions against the project to confirm they work. Click the itch.io link to confirm it loads.
 
-- [ ] **I2-5. Create `docs/itch-io-description.md`**
+- [x] **I2-5. Create `docs/itch-io-description.md`**
   Spec ref: New (not in original spec)
   What to build: Create `docs/itch-io-description.md` as ready-to-paste content for the itch.io game page Description field. Section 1: tagline at the top. Section 2: hero hook, tribute framing adapted from `docs/pitch.md`. Section 3: how to play summary, condensed from the 8-page tutorial structure. Section 4: feature bullets adapted from pitch.md. Section 5: controls reference for keyboard and mouse. Section 6: credits (Kenney CC0 audio, Godot). Section 7: links including the GitHub repo URL. Use itch.io-compatible markdown (headings, bold, italic, lists, links, images). Reference 3-5 screenshot filenames from `docs/claude-cowork/screenshot-brief.md` that Cowork will upload in I2-6. Adapt from `docs/pitch.md`. Adhere to `WRITING-STYLE.md`.
   Acceptance: File exists. Structured for itch.io paste. Pulls from pitch.md. References screenshot filenames from the Cowork brief. Zero banned words, zero em dashes.
