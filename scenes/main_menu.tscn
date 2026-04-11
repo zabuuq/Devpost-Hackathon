@@ -81,44 +81,60 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -350.0
-offset_top = -280.0
-offset_right = 350.0
-offset_bottom = 280.0
+offset_left = -480.0
+offset_top = -350.0
+offset_right = 480.0
+offset_bottom = 350.0
+theme_override_constants/separation = 12
 
-[node name="HowToTitle" type="Label" parent="HowToPlayOverlay/Panel"]
+[node name="PageTitle" type="Label" parent="HowToPlayOverlay/Panel"]
 text = "How to Play"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(0.4, 0.8, 1.0, 1.0)
 
-[node name="HowToText" type="Label" parent="HowToPlayOverlay/Panel"]
-text = "OBJECTIVE
-Destroy your opponent's entire fleet before they destroy yours.
+[node name="PageScreenshot" type="TextureRect" parent="HowToPlayOverlay/Panel"]
+custom_minimum_size = Vector2(800, 360)
+expand_mode = 1
+stretch_mode = 5
 
-HOW TO PLAY
-1. Each player secretly places their fleet on their grid.
-2. Players take turns — use probes, lasers, and missiles to find and destroy the enemy fleet.
-3. PROBE: Reveals enemy ship positions in a 4x4 area (6x6 for Probe Ship).
-4. LASER: Fires at a target cell. Hits shields first, then armor.
-5. MISSILE: High armor damage, bypasses shields partially.
-6. MOVE: Reposition your ship. Forward costs half a move point.
-7. Energy regenerates each turn — manage it carefully.
-8. Probe intel fades after a few turns. Ghost markers remain.
-9. The player who destroys all enemy ships wins.
+[node name="PageBody" type="RichTextLabel" parent="HowToPlayOverlay/Panel"]
+custom_minimum_size = Vector2(800, 180)
+bbcode_enabled = true
+fit_content = false
+scroll_active = true
+autowrap_mode = 3
+theme_override_font_sizes/normal_font_size = 15
+theme_override_colors/default_color = Color(0.85, 0.9, 1.0, 1.0)
 
-ENERGY SLIDERS
-Shield Regen fires at end of turn. Laser Power sets your shot strength.
-Shields take priority if energy is low."
-autowrap_mode = 2
-theme_override_font_sizes/font_size = 14
+[node name="NavRow" type="HBoxContainer" parent="HowToPlayOverlay/Panel"]
+custom_minimum_size = Vector2(800, 50)
+alignment = 1
+theme_override_constants/separation = 20
 
-[node name="CloseButton" type="Button" parent="HowToPlayOverlay/Panel"]
-custom_minimum_size = Vector2(200, 40)
+[node name="PreviousButton" type="Button" parent="HowToPlayOverlay/Panel/NavRow"]
+custom_minimum_size = Vector2(140, 40)
+text = "Previous"
+
+[node name="PageIndicator" type="Label" parent="HowToPlayOverlay/Panel/NavRow"]
+custom_minimum_size = Vector2(140, 40)
+text = "Page 1 of 8"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.6, 0.6, 0.8, 1.0)
+
+[node name="NextButton" type="Button" parent="HowToPlayOverlay/Panel/NavRow"]
+custom_minimum_size = Vector2(140, 40)
+text = "Next"
+
+[node name="CloseButton" type="Button" parent="HowToPlayOverlay/Panel/NavRow"]
+custom_minimum_size = Vector2(140, 40)
 text = "Close"
 
 [connection signal="pressed" from="MenuContainer/StartGame" to="." method="_on_start_pressed"]
 [connection signal="pressed" from="MenuContainer/HowToPlay" to="." method="_on_how_to_play_pressed"]
 [connection signal="pressed" from="MenuContainer/SFXToggle" to="." method="_on_sfx_toggle_pressed"]
 [connection signal="pressed" from="MenuContainer/MusicToggle" to="." method="_on_music_toggle_pressed"]
-[connection signal="pressed" from="HowToPlayOverlay/Panel/CloseButton" to="." method="_on_close_overlay_pressed"]
+[connection signal="pressed" from="HowToPlayOverlay/Panel/NavRow/PreviousButton" to="." method="_on_previous_page_pressed"]
+[connection signal="pressed" from="HowToPlayOverlay/Panel/NavRow/NextButton" to="." method="_on_next_page_pressed"]
+[connection signal="pressed" from="HowToPlayOverlay/Panel/NavRow/CloseButton" to="." method="_on_close_overlay_pressed"]
