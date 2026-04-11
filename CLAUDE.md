@@ -23,6 +23,20 @@ butler push ./export/web <username>/<game-slug>:html5
 - Export templates must match Godot 4.6.2 exactly
 - Call `AudioServer.unlock()` on first user input to bypass web autoplay restriction
 
+## Screenshot capture
+
+When the user asks for screenshots of the game (for itch.io, the in-game tutorial, Devpost, marketing, etc.), **do not drive the game manually via a browser or chrome-devtools MCP**. There's a scripted runner that produces the full 13-shot set in one command:
+
+```bash
+godot --path . -- --screenshot
+```
+
+This drops PNGs into `assets/screenshots/` with canonical filenames (`01_welcome.png` through `13_command_overview.png`). The filenames and intended contents match the brief in `docs/claude-cowork/screenshot-brief.md`.
+
+The runner lives at `scripts/debug/screenshot_runner.gd`. It drives `GameState` directly, goes through the real `ActionResolver`/`GridRenderer`/`ShipPanel` code paths, and walks 13 capture points. No new scenes, no UI automation, no browser. The `--screenshot` flag is checked in `scripts/main.gd`; without it, the game boots normally.
+
+**Edit the runner when:** UI/graphics change and the shots drift, new shots are needed, method names or scene tree paths referenced by the runner (e.g., `_select_ship`, `_enter_targeting`, `MainLayout/GridArea/...`) get refactored. Shots are designed to match the game's own rendering so routine visual changes need zero runner edits — just rerun the command.
+
 ## Architecture
 
 GDScript with static typing throughout. Scene-based state machine coordinated by `Main.tscn`.
