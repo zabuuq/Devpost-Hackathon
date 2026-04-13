@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://bmenu000000001"]
+[gd_scene load_steps=3 format=3 uid="uid://bmenu000000001"]
 
 [ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_menu"]
+[ext_resource type="Script" path="res://scripts/ui/text_wrap.gd" id="2_wrap"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -93,19 +94,31 @@ horizontal_alignment = 1
 theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(0.4, 0.8, 1.0, 1.0)
 
-[node name="PageScreenshot" type="TextureRect" parent="HowToPlayOverlay/Panel"]
-custom_minimum_size = Vector2(800, 360)
+[node name="ContentArea" type="Control" parent="HowToPlayOverlay/Panel"]
+custom_minimum_size = Vector2(920, 540)
+size_flags_vertical = 3
+layout_mode = 2
+
+[node name="PageBody" type="Control" parent="HowToPlayOverlay/Panel/ContentArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("2_wrap")
+image_width = 560.0
+image_height = 315.0
+image_padding = 16.0
+font_size = 15
+font_color = Color(0.85, 0.9, 1.0, 1.0)
+
+[node name="PageScreenshot" type="TextureRect" parent="HowToPlayOverlay/Panel/ContentArea"]
+layout_mode = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -560.0
+offset_bottom = 315.0
 expand_mode = 1
 stretch_mode = 5
-
-[node name="PageBody" type="RichTextLabel" parent="HowToPlayOverlay/Panel"]
-custom_minimum_size = Vector2(800, 180)
-bbcode_enabled = true
-fit_content = false
-scroll_active = true
-autowrap_mode = 3
-theme_override_font_sizes/normal_font_size = 15
-theme_override_colors/default_color = Color(0.85, 0.9, 1.0, 1.0)
 
 [node name="NavRow" type="HBoxContainer" parent="HowToPlayOverlay/Panel"]
 custom_minimum_size = Vector2(800, 50)

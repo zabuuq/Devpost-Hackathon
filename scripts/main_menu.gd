@@ -2,14 +2,14 @@ extends Control
 
 const HOW_TO_PLAY_PAGES: Array[Dictionary] = [
 	{
-		"title": "Welcome, commander",
-		"screenshot": "res://assets/screenshots/01_welcome.png",
-		"body": "One minute you were cruising through hyperspace. The next, something yanked your fleet into an unmapped nebula and cut your sensors like a bored god flipping a circuit breaker.\n\nThey came back online in pieces. Long enough to spot an enemy fleet drifting in the same soup you are. Long enough to confirm the obvious: somebody out here has weapons and no sense of humor.\n\nDid they pull you in on purpose? Are they as lost as you? Is this a cosmic practical joke staged by a nebula that hates traffic? None of it matters now.\n\nWhat matters is that they're out there. You're in here. Only one of you is leaving.\n\nFind them before they find you. Destroy them before they destroy you. Try not to take it personally.\n\n[b]Two commanders, one computer[/b]\n\nBattlestations: Nebula is a hot-seat game. You and your opponent share one screen and take turns. When the handoff prompt appears, the outgoing player looks away. The incoming player reads their situation and plays their turn. No peeking. The nebula is watching.",
+		"title": "Welcome, Commander",
+		"screenshot": "",
+		"body": "One minute you're cruising through hyperspace, halfway through a reconstituted turkey sandwich, and a mediocre opinion of the Oort Cloud. Next, a cosmic sledgehammer drops your fleet into an unmapped nebula.\n\nChaos. Your sensors flicker off like a bored god just hit the breaker. In that half-second of useful existence, your navigator, who once got lost in a parking lot, spots an enemy fleet. They've got live warheads, the ethics of a space whale with a hangover, and the same lost-puppy look you're sporting. Welcome to the soup.\n\nDid those dollar-store fudgesicles pull this cosmic prank, or are they just as bamboozled as you? Maybe the nebula just hates commuters. Doesn't matter. You're both stuck in the same interstellar meat grinder, and only one of you gets to crawl out. The other gets a ghost marker and a footnote in the nebula's unofficial idiot census.\n\nTwo commanders. One computer. Zero chance you'll agree on snack breaks.\n\nYour job: Find the enemy fleet and turn it into space confetti before they do the same to you. First to run out of ships loses. Don't take it personally. The nebula's just cleaning house, and you're the dust bunnies.\n\nBattlestations: Nebula is a hot-seat game. You and your nemesis share a screen, taking turns to hunt each other's ships like two raccoons fighting over a single trash can. When it's not your turn, avert your eyes like the decent human being your mom claims you are. Then swap.\n\nNo peeking. The nebula sees all, judges all, and has nothing better to do. If you cheat, you'll have to declare, with all the dignity of a soggy sandwich, \"I have invoked the wrath of the nebula!\" and lose your turn. That's just cosmic justice.",
 	},
 	{
 		"title": "Place Your Fleet",
 		"screenshot": "res://assets/screenshots/04_fleet_placement_full.png",
-		"body": "Before anything else, you hide your fleet. Pick a ship from the list on the left, hover the grid, and click to lock it in place. Press Q or E to rotate. A red ghost means overlap or out-of-bounds; a green ghost means the cell is clean.\n\nYou command five ships: a Battleship, a Probe Ship, two Destroyers, and a Cruiser. Place all five to unlock the Done button. Then it's the other commander's turn at the same keyboard, and they never see your grid.\n\nPlacement is permanent. Spread your fleet like someone is coming for you, because someone is.",
+		"body": "Step one of not dying: hide your fleet. Click a ship from the list on the left, hover over the grid, and click again to lock it in place. Q and E rotate. Red ghost means overlap or out of bounds. Green ghost means the nebula hasn't decided to ruin your afternoon yet, but give it time. Right-click cancels, for when your commitment issues flare up, or you just remembered you left a sandwich in the microwave.\n\nYou get five ships and zero refunds: a Battleship, a Probe Ship, two Destroyers, and a Cruiser. Place all five to wake up the Done button. Then your nemesis takes the same keyboard, hides their own fleet, and swears on an Oort Cloud bible they didn't peek. They definitely didn't peek. Probably.\n\nYour ships will be able to move after placement, but don't clump them like anxious penguins at a pool party. Spread out like someone is coming for you, because someone is, and they're doing the same math on the other side of this laptop, probably while eating your chips.",
 	},
 	{
 		"title": "Two Grids, One Nebula",
@@ -47,8 +47,8 @@ const HOW_TO_PLAY_PAGES: Array[Dictionary] = [
 @onready var sfx_button: Button = $MenuContainer/SFXToggle
 @onready var music_button: Button = $MenuContainer/MusicToggle
 @onready var page_title: Label = $HowToPlayOverlay/Panel/PageTitle
-@onready var page_screenshot: TextureRect = $HowToPlayOverlay/Panel/PageScreenshot
-@onready var page_body: RichTextLabel = $HowToPlayOverlay/Panel/PageBody
+@onready var page_screenshot: TextureRect = $HowToPlayOverlay/Panel/ContentArea/PageScreenshot
+@onready var page_body: TextWrap = $HowToPlayOverlay/Panel/ContentArea/PageBody
 @onready var page_indicator: Label = $HowToPlayOverlay/Panel/NavRow/PageIndicator
 @onready var previous_button: Button = $HowToPlayOverlay/Panel/NavRow/PreviousButton
 @onready var next_button: Button = $HowToPlayOverlay/Panel/NavRow/NextButton
@@ -94,11 +94,21 @@ func _render_page() -> void:
 	var page: Dictionary = HOW_TO_PLAY_PAGES[current_page]
 	page_title.text = page["title"]
 	var screenshot_path: String = page["screenshot"]
-	if ResourceLoader.exists(screenshot_path):
-		page_screenshot.texture = load(screenshot_path)
-	else:
+	var body: String = page["body"]
+	if screenshot_path.is_empty():
+		page_screenshot.visible = false
 		page_screenshot.texture = null
-	page_body.text = page["body"]
+		page_body.image_width = 0.0
+		page_body.image_height = 0.0
+	else:
+		page_screenshot.visible = true
+		if ResourceLoader.exists(screenshot_path):
+			page_screenshot.texture = load(screenshot_path)
+		else:
+			page_screenshot.texture = null
+		page_body.image_width = 560.0
+		page_body.image_height = 315.0
+	page_body.text = body
 	page_indicator.text = "Page %d of %d" % [current_page + 1, HOW_TO_PLAY_PAGES.size()]
 	previous_button.disabled = current_page == 0
 	next_button.disabled = current_page == HOW_TO_PLAY_PAGES.size() - 1

@@ -36,6 +36,18 @@ const P2_POSITIONS: Array = [
 ]
 const SHIP_FACING: int = 2  # down
 
+# Shot 04 uses a scattered layout with varied facings and a tighter camera, so
+# the ships look like a real commander's spread rather than a parade-ground row.
+# Not every ship sits inside the visible window; that's intentional (brief asks
+# for >50% visible, not all). Facings: 0=up, 1=right, 2=down, 3=left.
+const SHOT_04_POSITIONS: Array = [
+	{"type": "battleship", "pos": Vector2i(28, 4),  "facing": 1},
+	{"type": "probe_ship", "pos": Vector2i(50, 15), "facing": 0},
+	{"type": "destroyer",  "pos": Vector2i(38, 2),  "facing": 2},
+	{"type": "destroyer",  "pos": Vector2i(70, 10), "facing": 3},
+	{"type": "cruiser",    "pos": Vector2i(25, 17), "facing": 1},
+]
+
 
 func _ready() -> void:
 	print("[screenshot_runner] starting")
@@ -144,10 +156,84 @@ func _fit_gameplay_cameras(gp: Node) -> void:
 		tgt_renderer.queue_redraw()
 
 
+func _ship_center_cell(stype: String, origin: Vector2i, facing: int) -> Vector2i:
+	var cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(stype, origin, facing)
+	if cells.is_empty():
+		return origin
+	return cells[cells.size() / 2]
+
+
+# Computes the main-window pixel position of a grid cell's center, walking the
+# Camera2D → SubViewport → SubViewportContainer transform chain. Used to place
+# overlay sprites (e.g., the cursor in shot 04) in screen space.
+func _screen_pos_of_grid_cell(scene: Node, cell: Vector2i) -> Vector2:
+	var cam: Camera2D = scene.get_node_or_null(
+		"HSplitContainer/GridViewport/SubViewport/GridNode/Camera2D")
+	var subvp: SubViewport = scene.get_node_or_null(
+		"HSplitContainer/GridViewport/SubViewport")
+	var container: Control = scene.get_node_or_null("HSplitContainer/GridViewport")
+	if cam == null or subvp == null or container == null:
+		return Vector2.ZERO
+	var world: Vector2 = Vector2(
+		cell.x * CELL_SIZE + CELL_SIZE / 2.0,
+		cell.y * CELL_SIZE + CELL_SIZE / 2.0)
+	var vp_point: Vector2 = (world - cam.position) * cam.zoom + Vector2(subvp.size) * 0.5
+	return container.global_position + vp_point
+
+
+# Adds a mouse-cursor sprite (white fill, black outline) to the scene at the
+# given screen position. The tip of the arrow lands at `screen_pos`.
+func _add_cursor_overlay(scene: Node, screen_pos: Vector2) -> void:
+	var pts := PackedVector2Array([
+		Vector2(0, 0),
+		Vector2(0, 36),
+		Vector2(9, 28),
+		Vector2(14, 40),
+		Vector2(18, 38),
+		Vector2(13, 26),
+		Vector2(24, 26),
+	])
+	var fill := Polygon2D.new()
+	fill.polygon = pts
+	fill.color = Color.WHITE
+	fill.position = screen_pos
+	var outline_pts := pts.duplicate()
+	outline_pts.append(pts[0])
+	var outline := Line2D.new()
+	outline.points = outline_pts
+	outline.width = 1.5
+	outline.default_color = Color.BLACK
+	outline.joint_mode = Line2D.LINE_JOINT_ROUND
+	fill.add_child(outline)
+	scene.add_child(fill)
+
+
 func _fit_placement_camera(scene: Node) -> void:
 	var cam: Camera2D = scene.get_node_or_null("HSplitContainer/GridViewport/SubViewport/GridNode/Camera2D")
 	var vp: SubViewport = scene.get_node_or_null("HSplitContainer/GridViewport/SubViewport")
 	_fit_grid_camera(cam, vp)
+	var grid_node: Node2D = scene.get_node_or_null("HSplitContainer/GridViewport/SubViewport/GridNode")
+	if grid_node != null:
+		grid_node.queue_redraw()
+
+
+# Zooms the placement camera so the grid's 20 rows fill the viewport vertically.
+# The 80-column width then overflows, giving a tight horizontal slice rather
+# than the letterboxed full-grid view. Used by shot 04 so ship sprites are
+# legible in the tutorial overlay.
+func _zoom_in_placement_camera(scene: Node) -> void:
+	var cam: Camera2D = scene.get_node_or_null("HSplitContainer/GridViewport/SubViewport/GridNode/Camera2D")
+	var vp: SubViewport = scene.get_node_or_null("HSplitContainer/GridViewport/SubViewport")
+	if cam == null or vp == null:
+		return
+	var vp_size: Vector2 = Vector2(vp.size)
+	if vp_size.x <= 0.0 or vp_size.y <= 0.0:
+		return
+	var grid_w: float = float(GRID_COLS) * float(CELL_SIZE)
+	var grid_h: float = float(GRID_ROWS) * float(CELL_SIZE)
+	var zoom: float = vp_size.y / grid_h
+	cam.zoom = Vector2(zoom, zoom)
+	cam.position = Vector2(grid_w / 2.0, grid_h / 2.0)
 	var grid_node: Node2D = scene.get_node_or_null("HSplitContainer/GridViewport/SubViewport/GridNode")
 	if grid_node != null:
 		grid_node.queue_redraw()
@@ -215,28 +301,54 @@ func _shot_03_fleet_placement_empty() -> void:
 
 
 func _shot_04_fleet_placement_full() -> void:
-	# Stay on the fleet_placement scene from shot 03. Populate the controller's
-	# placed_ships dict directly and trigger a redraw so _draw_grid() paints
-	# exactly what the real UI would show after five placements.
+	# Stay on the fleet_placement scene from shot 03. Four of five ships are
+	# placed; the remaining one (index GHOST_IDX) is rendered as an authentic
+	# green ghost preview, simulating a commander mid-placement. A synthetic
+	# mouse-cursor sprite is laid over the ghost's center cell so the shot
+	# reads as "hovering to place" even in a headless capture where the OS
+	# cursor is invisible.
 	var scene: Node = get_tree().current_scene
 	if scene == null:
 		push_error("[screenshot_runner] shot 04: current_scene is null")
 		return
+	var ghost_idx: int = 2  # destroyer at (38, 2) facing down
 	var placed: Dictionary = {}
-	for i in range(P1_POSITIONS.size()):
-		var entry: Dictionary = P1_POSITIONS[i]
-		placed[i] = _make_ship(entry["type"], entry["pos"], SHIP_FACING)
+	for i in range(SHOT_04_POSITIONS.size()):
+		if i == ghost_idx:
+			continue
+		var entry: Dictionary = SHOT_04_POSITIONS[i]
+		placed[i] = _make_ship(entry["type"], entry["pos"], entry["facing"])
 	scene.set("placed_ships", placed)
-	scene.set("selected_ship_idx", -1)
+	# Disable _process so fleet_placement.gd doesn't overwrite ghost_position
+	# with whatever cell the headless mouse happens to hover over.
+	scene.set_process(false)
+	var ghost_entry: Dictionary = SHOT_04_POSITIONS[ghost_idx]
+	scene.set("selected_ship_idx", ghost_idx)
+	scene.set("ghost_position", ghost_entry["pos"])
+	scene.set("ghost_facing", ghost_entry["facing"])
+	scene.set("ghost_valid", true)
 	var done_btn: Button = scene.get_node_or_null("HSplitContainer/LeftPanel/DoneButton")
 	if done_btn != null:
-		done_btn.disabled = false
-	# Tint the ship-list buttons green the way the real placement flow does.
+		done_btn.disabled = true  # one ship still unplaced
+	# Tint placed-ship buttons green the way the real placement flow does;
+	# leave the ghost ship's button un-tinted (it's the one we're "placing").
 	var ship_buttons: Variant = scene.get("ship_buttons")
 	if ship_buttons != null:
-		for btn in ship_buttons:
-			btn.modulate = Color(0.4, 1.0, 0.4)
-	_fit_placement_camera(scene)
+		for i in range(ship_buttons.size()):
+			if i != ghost_idx:
+				ship_buttons[i].modulate = Color(0.4, 1.0, 0.4)
+	_zoom_in_placement_camera(scene)
+	# Lay a cursor sprite over the center cell of the ghost ship. Coordinates
+	# are computed from the live camera transform so the overlay tracks any
+	# future camera or viewport size changes.
+	var center_cell: Vector2i = _ship_center_cell(
+		ghost_entry["type"], ghost_entry["pos"], ghost_entry["facing"])
+	var cursor_screen_pos: Vector2 = _screen_pos_of_grid_cell(scene, center_cell)
+	_add_cursor_overlay(scene, cursor_screen_pos)
+	var grid_node: Node2D = scene.get_node_or_null(
+		"HSplitContainer/GridViewport/SubViewport/GridNode")
+	if grid_node != null:
+		grid_node.queue_redraw()
 	await _capture("04_fleet_placement_full.png")
 
 
