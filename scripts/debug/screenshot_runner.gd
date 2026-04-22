@@ -693,7 +693,15 @@ func _shot_09_move_preview() -> void:
 	var command_renderer: Node2D = gp.get_node(
 		"MainLayout/GridArea/CommandViewport/SubViewport/GridNode")
 	command_renderer.queue_redraw()
-	await _capture("09_move_preview.png")
+	# Crop to just the grid slice around the pair. With the 1600x900 window,
+	# LeftPanel fills x=0..200 and the MoveInfoLabel/MoveButtons sit around
+	# y=830..890; the cruiser (cols 50-51, row 9) lands around screen x=700..860
+	# y=394..474 and the ghost (cols 52-53, row 10) lands around x=860..1020
+	# y=474..554 at zoom 2.5. An 800x340 crop at (460, 304) frames both hulls
+	# with nebula padding and excludes the panel + bottom bar. Aspect 2.353:1
+	# matches page 5's 452x192 slot (2.354:1) so the TextureRect stretches
+	# without visible distortion.
+	await _capture_cropped("09_move_preview.png", Rect2i(460, 304, 800, 340))
 
 
 func _shot_10_active_probe_enemy_panel() -> void:
