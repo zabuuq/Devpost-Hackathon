@@ -29,7 +29,9 @@ const HOW_TO_PLAY_PAGES: Array[Dictionary] = [
 	},
 	{
 		"title": "Probes Are Flashlights",
-		"screenshot": "res://assets/screenshots/05c_target_grid_mixed.png",
+		"images": [
+			{"path": "res://assets/screenshots/05c_target_grid_mixed.png", "side": "right", "y_offset": 0.0, "width": 480.0, "height": 204.0},
+		],
 		"body": "A probe is a flashlight in a haunted house, except the ghosts have plasma cannons and a grudge. Smash that Launch Probe button, pick a cell, and you light up a 4-by-4 chunk of nebula. Every enemy ship in the box pops up on your Target Grid, all their embarrassing stats exposed: type, facing, shields, armor, and the creeping suspicion you just ruined someone's airtight alibi. The Probe Ship gets a 6-by-6 box, because it spent its formative years at flashlight camp, won a badge, and now won't shut up about it. Typical.\n\nYou get two turns of that sweet, fleeting clarity. Three if a Probe Ship did the honors. That's your window to do the math: count shields, eyeball armor, check which way they're pointing, and decide if you can vaporize them before they catch a whiff of the discount cologne you panic-bought at the last waystation. Then the lights die, and the nebula hands you a consolation prize: a ghost marker, stuck to the map like a passive-aggressive sticky note that says, \"A ship was here once. Good luck, genius.\"\n\nGhost markers are permanent. So is regret. Usually, they're both wrong. You can fire on a ghost if you like wasting ammo and dignity. The enemy moved three turns ago. Your shot hits empty space, your log says miss, and somewhere in the nebula, something laughs at you, personally, like it got your yearbook photo and your home address.\n\nProbes cost energy, and energy ain't cheap, so turn off the lights when you leave the room! Spend them like a divorced dad on a weekend: with purpose, a little too late, and aimed directly at whatever makes you want to move to a moon colony. Sight is temporary. Memory is a trap. Missing is free, and you will absolutely overdraw that account.",
 	},
 	{
