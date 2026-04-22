@@ -120,6 +120,18 @@ offset_bottom = 315.0
 expand_mode = 1
 stretch_mode = 5
 
+[node name="PageScreenshot2" type="TextureRect" parent="HowToPlayOverlay/Panel/ContentArea"]
+layout_mode = 1
+expand_mode = 1
+stretch_mode = 5
+visible = false
+
+[node name="PageScreenshot3" type="TextureRect" parent="HowToPlayOverlay/Panel/ContentArea"]
+layout_mode = 1
+expand_mode = 1
+stretch_mode = 5
+visible = false
+
 [node name="NavRow" type="HBoxContainer" parent="HowToPlayOverlay/Panel"]
 custom_minimum_size = Vector2(800, 50)
 alignment = 1

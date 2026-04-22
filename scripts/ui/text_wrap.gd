@@ -1,12 +1,18 @@
 class_name TextWrap
 extends Control
-## Word-wraps text around a rectangular avoid region in the top-right corner
-## of its own rect. Used by the How to Play overlay to get float-right image
-## behavior that Godot's RichTextLabel does not support natively.
+## Word-wraps text around rectangular avoid regions. Used by the How to Play
+## overlay to get float-right/float-left image behavior that Godot's
+## RichTextLabel does not support natively.
 ##
-## Set `image_width` / `image_height` to zero to disable avoidance (text fills
-## the full width). Single newlines are treated as hard line breaks; double
-## newlines produce a paragraph gap.
+## Two schemas:
+##   1. Legacy single-image: set `image_width` / `image_height` for a top-right
+##      avoid region. Text fills the full width once it drops below the image.
+##   2. Multi-region: set `regions` to an array of dictionaries, each with keys
+##      `side` ("right" or "left"), `y_offset` (float), `width` (float),
+##      `height` (float). Any number of regions supported; they should not
+##      overlap horizontally at the same y range (text needs a path through).
+##
+## Single newlines are hard line breaks; double newlines produce a paragraph gap.
 
 @export_multiline var text: String = "":
 	set(value):
@@ -26,6 +32,13 @@ extends Control
 @export var image_padding: float = 16.0:
 	set(value):
 		image_padding = value
+		queue_redraw()
+
+# Array[Dictionary]. Each entry: {side, y_offset, width, height}. When non-empty,
+# this takes precedence over image_width/image_height.
+var regions: Array = []:
+	set(value):
+		regions = value
 		queue_redraw()
 
 @export var font_size: int = 15:
@@ -84,7 +97,9 @@ func _layout_segment(
 	var words: PackedStringArray = segment.split(" ", false)
 	var line: Array[String] = []
 	var line_w: float = 0.0
-	var available_w: float = _width_at(cursor_y, line_h)
+	var x_range: Vector2 = _line_x_range(cursor_y, line_h)
+	var line_start_x: float = x_range.x
+	var available_w: float = x_range.y - x_range.x
 	for word in words:
 		if word.is_empty():
 			continue
@@ -97,38 +112,54 @@ func _layout_segment(
 			line.append(word)
 			line_w = trial_w
 		else:
-			_draw_line(font, line, cursor_y, ascent)
+			_draw_line(font, line, line_start_x, cursor_y, ascent)
 			cursor_y += line_h
-			available_w = _width_at(cursor_y, line_h)
+			x_range = _line_x_range(cursor_y, line_h)
+			line_start_x = x_range.x
+			available_w = x_range.y - x_range.x
 			line = [word]
 			line_w = word_w
 	if not line.is_empty():
-		_draw_line(font, line, cursor_y, ascent)
+		_draw_line(font, line, line_start_x, cursor_y, ascent)
 		cursor_y += line_h
 	return cursor_y
 
 
-func _width_at(line_top: float, line_h: float) -> float:
-	var total: float = size.x
-	if image_width <= 0.0 or image_height <= 0.0:
-		return total
+func _line_x_range(line_top: float, line_h: float) -> Vector2:
+	var start_x: float = 0.0
+	var end_x: float = size.x
 	var line_bottom: float = line_top + line_h
-	var r_bottom: float = image_height + image_padding
-	if line_top >= r_bottom or line_bottom <= 0.0:
-		return total
-	var r_left: float = total - image_width - image_padding
-	return maxf(0.0, r_left)
+	if not regions.is_empty():
+		for r in regions:
+			var r_top: float = float(r.get("y_offset", 0.0))
+			var r_bottom: float = r_top + float(r.get("height", 0.0)) + image_padding
+			if line_top >= r_bottom or line_bottom <= r_top:
+				continue
+			var w: float = float(r.get("width", 0.0))
+			var side: String = String(r.get("side", "right"))
+			if side == "right":
+				end_x = minf(end_x, size.x - w - image_padding)
+			elif side == "left":
+				start_x = maxf(start_x, w + image_padding)
+	elif image_width > 0.0 and image_height > 0.0:
+		var r_bottom: float = image_height + image_padding
+		if not (line_top >= r_bottom or line_bottom <= 0.0):
+			end_x = size.x - image_width - image_padding
+	if end_x < start_x:
+		end_x = start_x
+	return Vector2(start_x, end_x)
 
 
 func _draw_line(
 		font: Font,
 		words: Array[String],
+		x: float,
 		y: float,
 		ascent: float) -> void:
 	var line_str: String = " ".join(words)
 	draw_string(
 		font,
-		Vector2(0, y + ascent),
+		Vector2(x, y + ascent),
 		line_str,
 		HORIZONTAL_ALIGNMENT_LEFT,
 		-1,

@@ -13,8 +13,12 @@ const HOW_TO_PLAY_PAGES: Array[Dictionary] = [
 	},
 	{
 		"title": "Two Grids, One Nebula",
-		"screenshot": "res://assets/screenshots/05_command_grid.png",
-		"body": "The top row has two tabs: Command Grid and Target Grid. Same 80 by 20 battlefield, two views.\n\nCommand Grid shows your fleet in full color. Yellow triangles mark which way each ship is facing. This is your board.\n\nTarget Grid shows what your probes and your incoming damage have told you about the enemy. Mostly fog. The enemy lives here, but you only see what you've paid to see.\n\nScroll to zoom. Middle-mouse drag to pan. Click a ship on the Command Grid to open its Ship Panel on the left.",
+		"images": [
+			{"path": "res://assets/screenshots/05a_grid_tabs.png",        "side": "right", "y_offset": 0.0,   "width": 400.0, "height": 150.0},
+			{"path": "res://assets/screenshots/05b_command_ships.png",    "side": "left",  "y_offset": 206.0, "width": 400.0, "height": 170.0},
+			{"path": "res://assets/screenshots/05c_target_grid_mixed.png","side": "right", "y_offset": 384.0, "width": 400.0, "height": 170.0},
+		],
+		"body": "Two tabs at the top of the screen. Same nebula, two different problems.\n\nThe Command Grid is your side of the story. Your ships in full color, each with a little yellow triangle pointing wherever its captain thinks is a good idea. Nothing is hidden from you here. Savor it, because the other tab is about to kick that feeling in the teeth, steal your lunch money, and leave you with a participation trophy.\n\nThe Target Grid is where the enemy lives. Mostly fog, the kind of fog that hides warheads, grudges, and at least one destroyer already rehearsing what it's going to do to your afternoon. You only see what you pay for: a probe caught someone mid-sneak, or one of your shots hit something solid enough to pin on the map. Everything else, the nebula keeps to itself for fun, profit, and the sheer joy of watching you flail.\n\nScroll to zoom. Middle-mouse drag to pan across the 80-by-20 battlefield. Click one of your ships on the Command Grid and the Ship Panel opens on the left, full of sliders, buttons, and one polite reminder that you are, in fact, in a war, not a sandwich assembly line.",
 	},
 	{
 		"title": "Probes Are Flashlights",
@@ -48,6 +52,8 @@ const HOW_TO_PLAY_PAGES: Array[Dictionary] = [
 @onready var music_button: Button = $MenuContainer/MusicToggle
 @onready var page_title: Label = $HowToPlayOverlay/Panel/PageTitle
 @onready var page_screenshot: TextureRect = $HowToPlayOverlay/Panel/ContentArea/PageScreenshot
+@onready var page_screenshot2: TextureRect = $HowToPlayOverlay/Panel/ContentArea/PageScreenshot2
+@onready var page_screenshot3: TextureRect = $HowToPlayOverlay/Panel/ContentArea/PageScreenshot3
 @onready var page_body: TextWrap = $HowToPlayOverlay/Panel/ContentArea/PageBody
 @onready var page_indicator: Label = $HowToPlayOverlay/Panel/NavRow/PageIndicator
 @onready var previous_button: Button = $HowToPlayOverlay/Panel/NavRow/PreviousButton
@@ -93,21 +99,70 @@ func _on_next_page_pressed() -> void:
 func _render_page() -> void:
 	var page: Dictionary = HOW_TO_PLAY_PAGES[current_page]
 	page_title.text = page["title"]
-	var screenshot_path: String = page["screenshot"]
 	var body: String = page["body"]
-	if screenshot_path.is_empty():
-		page_screenshot.visible = false
-		page_screenshot.texture = null
-		page_body.image_width = 0.0
-		page_body.image_height = 0.0
-	else:
-		page_screenshot.visible = true
-		if ResourceLoader.exists(screenshot_path):
-			page_screenshot.texture = load(screenshot_path)
+	# Reset all three TextureRects before applying the active schema.
+	var slots: Array[TextureRect] = [page_screenshot, page_screenshot2, page_screenshot3]
+	for slot in slots:
+		slot.visible = false
+		slot.texture = null
+	page_body.regions = []
+	page_body.image_width = 0.0
+	page_body.image_height = 0.0
+	if page.has("images"):
+		var images: Array = page["images"]
+		var content_w: float = page_body.size.x
+		if content_w <= 0.0:
+			content_w = 920.0  # ContentArea custom_minimum_size.x, matches tscn
+		var regions: Array = []
+		for i in range(min(images.size(), slots.size())):
+			var img: Dictionary = images[i]
+			var slot: TextureRect = slots[i]
+			var w: float = float(img.get("width", 400.0))
+			var h: float = float(img.get("height", 170.0))
+			var y: float = float(img.get("y_offset", 0.0))
+			var side: String = String(img.get("side", "right"))
+			var x: float = content_w - w if side == "right" else 0.0
+			slot.anchor_left = 0.0
+			slot.anchor_top = 0.0
+			slot.anchor_right = 0.0
+			slot.anchor_bottom = 0.0
+			slot.offset_left = x
+			slot.offset_top = y
+			slot.offset_right = x + w
+			slot.offset_bottom = y + h
+			slot.visible = true
+			var path: String = String(img.get("path", ""))
+			if not path.is_empty() and ResourceLoader.exists(path):
+				slot.texture = load(path)
+			regions.append({
+				"side": side,
+				"y_offset": y,
+				"width": w,
+				"height": h,
+			})
+		page_body.regions = regions
+	elif page.has("screenshot"):
+		var screenshot_path: String = page["screenshot"]
+		if screenshot_path.is_empty():
+			page_screenshot.visible = false
 		else:
-			page_screenshot.texture = null
-		page_body.image_width = 560.0
-		page_body.image_height = 315.0
+			# Restore the legacy top-right 560x315 anchors. The multi-image
+			# branch above overwrites these to (0,0,0,0) with pixel offsets, so
+			# without this reset, returning to a single-screenshot page leaves
+			# the TextureRect collapsed at the top-left corner.
+			page_screenshot.anchor_left = 1.0
+			page_screenshot.anchor_top = 0.0
+			page_screenshot.anchor_right = 1.0
+			page_screenshot.anchor_bottom = 0.0
+			page_screenshot.offset_left = -560.0
+			page_screenshot.offset_top = 0.0
+			page_screenshot.offset_right = 0.0
+			page_screenshot.offset_bottom = 315.0
+			page_screenshot.visible = true
+			if ResourceLoader.exists(screenshot_path):
+				page_screenshot.texture = load(screenshot_path)
+			page_body.image_width = 560.0
+			page_body.image_height = 315.0
 	page_body.text = body
 	page_indicator.text = "Page %d of %d" % [current_page + 1, HOW_TO_PLAY_PAGES.size()]
 	previous_button.disabled = current_page == 0

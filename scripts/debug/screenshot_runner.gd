@@ -48,6 +48,18 @@ const SHOT_04_POSITIONS: Array = [
 	{"type": "cruiser",    "pos": Vector2i(25, 17), "facing": 1},
 ]
 
+# Shot 05b needs a tight cluster of ships with varied facings inside the
+# 19-cell-wide crop window. These are packed into cols 25-36, rows 7-13 so the
+# crop at cam_center (30, 10) catches all five. Shot 05a reuses this fleet for
+# its grid-strip context but crops higher up, so only the battleship row shows.
+const SHOT_05B_POSITIONS: Array = [
+	{"type": "battleship", "pos": Vector2i(25, 7),  "facing": 1},  # right
+	{"type": "destroyer",  "pos": Vector2i(32, 7),  "facing": 2},  # down
+	{"type": "probe_ship", "pos": Vector2i(30, 10), "facing": 2},  # down
+	{"type": "destroyer",  "pos": Vector2i(36, 8),  "facing": 3},  # left
+	{"type": "cruiser",    "pos": Vector2i(27, 12), "facing": 1},  # right
+]
+
 
 func _ready() -> void:
 	print("[screenshot_runner] starting")
@@ -65,6 +77,9 @@ func _run_all() -> void:
 	await _shot_03_fleet_placement_empty()
 	await _shot_04_fleet_placement_full()
 	await _shot_05_command_grid()
+	await _shot_05a_grid_tabs()
+	await _shot_05b_command_ships()
+	await _shot_05c_target_grid_mixed()
 	await _shot_06_probe_aiming()
 	await _shot_07_probe_revealed()
 	await _shot_08_ship_panel_sliders()
@@ -112,6 +127,36 @@ func _capture(filename: String) -> void:
 		push_error("[screenshot_runner] save_png failed for %s: %d" % [out_path, err])
 	else:
 		print("[screenshot_runner] captured %s" % filename)
+
+
+# Crop-capture: same as _capture() but saves only the given rect of the
+# viewport image. Used for the page-3 triptych where each image is a focused
+# slice of a larger scene rather than the whole screen.
+func _capture_cropped(filename: String, rect: Rect2i) -> void:
+	await _wait_frames(3)
+	await RenderingServer.frame_post_draw
+	var tex: ViewportTexture = get_viewport().get_texture()
+	if tex == null:
+		push_error("[screenshot_runner] viewport texture null for %s" % filename)
+		return
+	var img: Image = tex.get_image()
+	if img == null:
+		push_error("[screenshot_runner] image null for %s" % filename)
+		return
+	# Clamp rect to image bounds so a slightly-too-big crop doesn't fail.
+	var clamped := Rect2i(rect)
+	clamped.position.x = clampi(clamped.position.x, 0, img.get_width())
+	clamped.position.y = clampi(clamped.position.y, 0, img.get_height())
+	clamped.size.x = clampi(clamped.size.x, 1, img.get_width() - clamped.position.x)
+	clamped.size.y = clampi(clamped.size.y, 1, img.get_height() - clamped.position.y)
+	var cropped: Image = img.get_region(clamped)
+	var out_path: String = OUT_DIR.path_join(filename)
+	var err: int = cropped.save_png(out_path)
+	if err != OK:
+		push_error("[screenshot_runner] save_png failed for %s: %d" % [out_path, err])
+	else:
+		print("[screenshot_runner] captured %s (%dx%d)" % [
+			filename, clamped.size.x, clamped.size.y])
 
 
 func _ensure_out_dir() -> void:
@@ -239,6 +284,39 @@ func _zoom_in_placement_camera(scene: Node) -> void:
 		grid_node.queue_redraw()
 
 
+# Zooms the camera so the grid's 20 rows fill the SubViewportContainer
+# vertically and centered, killing the letterbox bands that
+# _fit_gameplay_cameras' fit-whole-grid zoom leaves above and below the 4:1
+# grid in a ~1.64:1 container. The horizontal center is the caller's choice
+# (`center_col`) so different shots can frame different slices of the 80-col
+# grid. Vertical center is always grid_h/2 — anything else re-introduces a
+# top or bottom gray band. The SubViewport doesn't need resizing; with
+# stretch=true, the container already syncs the viewport size to its own.
+func _gameplay_fill_view(
+		gp: Node,
+		container_path: String,
+		subvp_path: String,
+		cam_path: String,
+		center_col: int) -> void:
+	var container: SubViewportContainer = gp.get_node_or_null(container_path)
+	var subvp: SubViewport = gp.get_node_or_null(subvp_path)
+	var cam: Camera2D = gp.get_node_or_null(cam_path)
+	if container == null or subvp == null or cam == null:
+		return
+	var cs: Vector2 = container.size
+	if cs.x <= 0.0 or cs.y <= 0.0:
+		return
+	var grid_h: float = float(GRID_ROWS) * float(CELL_SIZE)
+	var z: float = cs.y / grid_h
+	cam.zoom = Vector2(z, z)
+	cam.position = Vector2(
+		float(center_col) * float(CELL_SIZE) + float(CELL_SIZE) / 2.0,
+		grid_h / 2.0)
+	var renderer: Node2D = subvp.get_node_or_null("GridNode")
+	if renderer != null:
+		renderer.queue_redraw()
+
+
 # ---------------------------------------------------------------------------
 # State builders
 # ---------------------------------------------------------------------------
@@ -360,6 +438,134 @@ func _shot_05_command_grid() -> void:
 	await _change_scene("res://scenes/gameplay.tscn")
 	_fit_gameplay_cameras(get_tree().current_scene)
 	await _capture("05_command_grid.png")
+
+
+# Page-3 triptych, image 1: top tab row (Command Grid / Target Grid / End Turn)
+# with zoomed-in grid visible directly below — no letterbox gray. Crop is
+# 800x300 (2.67:1, matches the overlay's 400x150 display slot at 2x). Reuses
+# the state from shot 05 (fleet built, gameplay loaded, command grid active).
+func _shot_05a_grid_tabs() -> void:
+	var gp: Node = get_tree().current_scene
+	if gp == null:
+		push_error("[screenshot_runner] shot 05a: current_scene is null")
+		return
+	# Rebuild P1 with the SHOT_05B positions; 05b keeps the same fleet so we
+	# don't toggle it twice. At cam center col 30 the crop window catches the
+	# top of the battleship's row (y=7) just below the tab strip. Everything
+	# below that is empty grid, which is fine — this shot's subject is the
+	# tab row itself.
+	var p1_fleet: Array = []
+	for entry in SHOT_05B_POSITIONS:
+		p1_fleet.append(_make_ship(entry["type"], entry["pos"], entry["facing"]))
+	GameState.players[0]["fleet"] = p1_fleet
+	_gameplay_fill_view(
+		gp,
+		"MainLayout/GridArea/CommandViewport",
+		"MainLayout/GridArea/CommandViewport/SubViewport",
+		"MainLayout/GridArea/CommandViewport/SubViewport/GridNode/Camera2D",
+		30)
+	var renderer: Node2D = gp.get_node_or_null(
+		"MainLayout/GridArea/CommandViewport/SubViewport/GridNode")
+	if renderer != null:
+		renderer.queue_redraw()
+	await _capture_cropped("05a_grid_tabs.png", Rect2i(800, 0, 800, 300))
+
+
+# Page-3 triptych, image 2: a few command-grid ships with varied facings
+# visible, cropped to the grid area (no left panel, no top bar). Rebuilds the
+# P1 fleet from SHOT_04_POSITIONS so facings aren't all the same. 800x340 crop
+# (2.35:1, matches the overlay's 400x170 display slot at 2x).
+func _shot_05b_command_ships() -> void:
+	var gp: Node = get_tree().current_scene
+	if gp == null:
+		push_error("[screenshot_runner] shot 05b: current_scene is null")
+		return
+	# P1 fleet is already in the SHOT_05B layout from shot 05a. Keep the cam
+	# center at col 30 (same as 05a); the only change vs 05a is the crop rect,
+	# which now samples the middle of the grid where the ships cluster.
+	_gameplay_fill_view(
+		gp,
+		"MainLayout/GridArea/CommandViewport",
+		"MainLayout/GridArea/CommandViewport/SubViewport",
+		"MainLayout/GridArea/CommandViewport/SubViewport/GridNode/Camera2D",
+		30)
+	var renderer: Node2D = gp.get_node_or_null(
+		"MainLayout/GridArea/CommandViewport/SubViewport/GridNode")
+	if renderer != null:
+		renderer.queue_redraw()
+	# Crop centered on the SHOT_05B ship cluster. With window 1600x900, GridArea
+	# starts at (200, 48) and the camera fills it at zoom ~1.33; the cluster's
+	# screen-space bounds are roughly (666..1177) x (346..644), so an 800x340
+	# crop starting at (521, 325) puts the ships in the middle of the image with
+	# ~145px margin on each side and ~21px top/bottom.
+	await _capture_cropped("05b_command_ships.png", Rect2i(521, 325, 800, 340))
+
+
+# Page-3 triptych, image 3: target grid showing (a) a ship visible inside an
+# active probe, (b) a ghost marker from an expired probe, (c) a blind-hit cell.
+# All three rendered via CellRecords injected into P1's fog state — the runner
+# doesn't walk real turns.
+func _shot_05c_target_grid_mixed() -> void:
+	var gp: Node = get_tree().current_scene
+	if gp == null:
+		push_error("[screenshot_runner] shot 05c: current_scene is null")
+		return
+	var cell_records: Dictionary = GameState.players[0]["cell_records"]
+	cell_records.clear()
+	# Active probe: 6x6 centered on the P2 probe ship at (60, 9-12). The ship
+	# sits inside the probe area so each of its cells gets a fog record that
+	# renders in full detail on the target grid.
+	var probe_ship_p2: ShipInstance = GameState.players[1]["fleet"][1]
+	var probe_fog: FogShipRecord = FogShipRecord.from_ship(probe_ship_p2)
+	var probe_ship_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
+		probe_ship_p2.ship_type, probe_ship_p2.position, probe_ship_p2.facing)
+	var probe_center := Vector2i(60, 10)
+	var half: int = 3
+	for y in range(probe_center.y - half, probe_center.y - half + 6):
+		for x in range(probe_center.x - half, probe_center.x - half + 6):
+			if x < 0 or x >= GRID_COLS or y < 0 or y >= GRID_ROWS:
+				continue
+			var cell := Vector2i(x, y)
+			var fog: FogShipRecord = probe_fog if probe_ship_cells.has(cell) else null
+			cell_records[cell] = CellRecord.make_probe(fog, 2)
+	# Ghost marker: represent the P2 destroyer at (55, 9) as last-seen intel.
+	# make_ship_ghost produces a CellRecord with has_probe=false + a ship fog
+	# record — the classic "we saw this here once" appearance.
+	var destroyer_p2: ShipInstance = GameState.players[1]["fleet"][2]
+	var ghost_fog: FogShipRecord = FogShipRecord.from_ship(destroyer_p2)
+	var ghost_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
+		destroyer_p2.ship_type, destroyer_p2.position, destroyer_p2.facing)
+	for cell in ghost_cells:
+		cell_records[cell] = CellRecord.make_ship_ghost(ghost_fog)
+	# Blind hit: a single cell between the two ships, outside the probe area.
+	cell_records[Vector2i(68, 10)] = CellRecord.make_blind_hit()
+	# Switch to target grid and frame all three features.
+	gp.call("_switch_grid", 1)  # ActiveGrid.TARGET
+	_gameplay_fill_view(
+		gp,
+		"MainLayout/GridArea/TargetViewport",
+		"MainLayout/GridArea/TargetViewport/SubViewport",
+		"MainLayout/GridArea/TargetViewport/SubViewport/GridNode/Camera2D",
+		62)
+	var target_renderer: Node2D = gp.get_node_or_null(
+		"MainLayout/GridArea/TargetViewport/SubViewport/GridNode")
+	if target_renderer != null:
+		target_renderer.queue_redraw()
+	# Crop centered on the probe area. Probe spans window x (667..922) and
+	# y (346..602) at cam center_col=62; an 800x340 crop starting at (394, 304)
+	# puts the probe near the image center without clipping the ghost (col 55,
+	# window x~582) or the blind hit (col 68, window x~1178).
+	await _capture_cropped("05c_target_grid_mixed.png", Rect2i(394, 304, 800, 340))
+	# Restore clean state so downstream shots (06+) see the original fleet
+	# layout + empty fog. 05b/05c both mutated live state; a scene reload is
+	# the simplest way to hand shot 06 the same conditions it would have had
+	# if 05a/05b/05c didn't exist.
+	_reset_state()
+	_build_both_fleets()
+	GameState.current_player = 0
+	GameState.turn_number = 1
+	await _change_scene("res://scenes/gameplay.tscn")
+	_fit_gameplay_cameras(get_tree().current_scene)
 
 
 func _shot_06_probe_aiming() -> void:
