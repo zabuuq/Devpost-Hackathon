@@ -60,6 +60,18 @@ const SHOT_05B_POSITIONS: Array = [
 	{"type": "cruiser",    "pos": Vector2i(27, 12), "facing": 1},  # right
 ]
 
+# Shot 14 is the "Kill Everything" wreckage tableau: four destroyed P1 ships
+# clustered in cols 28..36, rows 7..10, with all four facings represented so
+# the wreckage spans read as varied (horizontal, vertical) rather than a tidy
+# parade. get_ship_cells() grows from origin TOWARD the facing direction, so
+# each origin here is the stern of the ship, not the bow.
+const SHOT_14_POSITIONS: Array = [
+	{"type": "destroyer",  "pos": Vector2i(28, 10), "facing": 0},  # up,    cells (28, 8..10)
+	{"type": "destroyer",  "pos": Vector2i(36, 8),  "facing": 3},  # left,  cells (34..36, 8)
+	{"type": "probe_ship", "pos": Vector2i(30, 7),  "facing": 1},  # right, cells (30..33, 7)
+	{"type": "cruiser",    "pos": Vector2i(33, 9),  "facing": 2},  # down,  cells (33, 9..10)
+]
+
 
 func _ready() -> void:
 	print("[screenshot_runner] starting")
@@ -89,6 +101,7 @@ func _run_all() -> void:
 	await _shot_11_probe_closeup()
 	await _shot_12_battle_log_detail()
 	await _shot_13_command_overview()
+	await _shot_14_destroyed_ships()
 
 
 # ---------------------------------------------------------------------------
@@ -795,6 +808,49 @@ func _shot_12_battle_log_detail() -> void:
 		})
 	gp.call("_show_left_tab", "battle_log")
 	await _capture("12_battle_log_detail.png")
+
+
+func _shot_14_destroyed_ships() -> void:
+	# Wreckage tableau for the How to Play "Kill Everything" page. Builds a
+	# P1-only fleet of four pre-destroyed ships with varied facings, loads the
+	# gameplay scene on the Command Grid, zooms in on the cluster, and crops to
+	# the grid slice. The ships' `is_destroyed` flag is set before the scene
+	# loads so the first draw already shows wreckage cells (dimmed boxes with
+	# X markers) instead of live ship colors.
+	_reset_state()
+	var p1_fleet: Array = []
+	for entry in SHOT_14_POSITIONS:
+		var s: ShipInstance = _make_ship(entry["type"], entry["pos"], entry["facing"])
+		s.is_destroyed = true
+		p1_fleet.append(s)
+	GameState.players[0]["fleet"] = p1_fleet
+	# P2 fleet stays empty — this shot frames only the Command Grid.
+	GameState.current_player = 0
+	GameState.turn_number = 1
+	await _change_scene("res://scenes/gameplay.tscn")
+	var gp: Node = get_tree().current_scene
+	if gp == null:
+		push_error("[screenshot_runner] shot 14: current_scene is null")
+		return
+	gp.call("_switch_grid", 0)  # COMMAND
+	# Zoom 2.5x centered on the cluster. Cluster world center is col 32 (x=1040)
+	# and the midpoint between rows 8 and 9 (y = 9 * CELL_SIZE = 288). At zoom
+	# 2.5 inside the 1600x900 window, the cluster spans x=540..1260 and
+	# y=299..619 in screen space, so an 800x340 crop centered on the container
+	# center (900, 459) gives ~40px horizontal padding and ~10px vertical padding
+	# between the outermost wreckage and the crop edge.
+	var cam: Camera2D = gp.get_node(
+		"MainLayout/GridArea/CommandViewport/SubViewport/GridNode/Camera2D")
+	cam.zoom = Vector2(2.5, 2.5)
+	cam.position = Vector2(
+		float(32) * float(CELL_SIZE) + float(CELL_SIZE) / 2.0,
+		float(9) * float(CELL_SIZE))
+	var command_renderer: Node2D = gp.get_node(
+		"MainLayout/GridArea/CommandViewport/SubViewport/GridNode")
+	command_renderer.queue_redraw()
+	# Crop aspect 800/340 = 2.353:1 matches page 9's 452x192 slot (2.354:1), so
+	# the TextureRect stretches without visible distortion.
+	await _capture_cropped("14_destroyed_ships.png", Rect2i(500, 289, 800, 340))
 
 
 func _shot_13_command_overview() -> void:

@@ -55,8 +55,10 @@ const HOW_TO_PLAY_PAGES: Array[Dictionary] = [
 	},
 	{
 		"title": "Kill Everything",
-		"screenshot": "res://assets/screenshots/10_active_probe_enemy_panel.png",
-		"body": "A ship dies when its armor hits zero. Shields are a buffer; they don't protect the hull once they're gone. Destroyed ships leave wreckage on the grid, passable and inert.\n\nThe first commander to destroy all five enemy ships wins. The Victory screen shows probes launched, hits scored, and the player who walked out of the nebula.\n\nBetween turns, a handoff screen reports the hit count to the incoming commander. No coordinates. No ship names. No damage numbers. If someone tries to peek at the screen, slide the laptop back at them. This is a two-player game.",
+		"images": [
+			{"path": "res://assets/screenshots/14_destroyed_ships.png", "side": "right", "y_offset": 0.0, "width": 452.0, "height": 192.0},
+		],
+		"body": "Armor hits zero, ship stops being a ship. Shields were a polite suggestion, like the 'wet floor' sign outside a water park. Once the hull pops, whatever's inside is the universe's problem, not yours. What's left is wreckage: a cold obstacle drifting across the grid like a shopping cart with one busted wheel, which is not the metaphor your captain would have picked.\n\nWreckage doesn't shoot, doesn't flinch, doesn't even bother to soak up your last desperate probe. It just sits there, minding its own business, letting you gnaw your reconstituted turkey sandwich in peace while the universe pretends not to notice. You can fly straight through it. The ship's not coming back for it, and neither are you, unless you've got a thing for collecting space garbage. In which case, seek help.\n\nFirst commander to turn all enemy ships into space confetti wins. No points, no comeback mechanic, no last-minute plot twist where everyone hugs it out and splits a bag of freeze-dried disappointment. You break their hulls, they break yours, and whoever runs out of ships first gets a neat row of wreckage markers, zero trophy, and the bracing silence of a laptop that wishes it had better hobbies.\n\nWhen the last enemy hull pops like a sad balloon at a clown funeral, the Victory screen barges in to state the obvious and slap a stat sheet in your face: probes launched, hits scored, sandwiches uneaten, dignity questionable. Congratulations, you've officially ruined someone else's day. Go ahead, bask in it. The nebula couldn't care less.",
 	},
 ]
 
