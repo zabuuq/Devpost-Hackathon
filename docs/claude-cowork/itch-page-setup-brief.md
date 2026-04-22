@@ -20,13 +20,15 @@ The public URL without the `?secret=...` query string returns 404 because the pa
 
 ## 2. Theme update
 
+The hex values below originate from `docs/color-scheme.md` (the project-wide palette reference). This section carries the itch.io-facing subset inline so you don't have to cross-reference. If anything ever looks off, treat `docs/color-scheme.md` as the source of truth.
+
 Scroll down the `Edit game` page to the `Theme` section. itch.io gives you a simple preset picker by default. Click `Custom` to expose every color field. Set these exact hex values:
 
 | Field | Hex | Source |
 |---|---|---|
-| Background color | `#0d0d26` | Main menu Background ColorRect (`scenes/main_menu.tscn:17`) and `COLOR_BG` in `scripts/ui/grid_renderer.gd:8`. Matches the in-game nebula backdrop. |
-| Text color | `#9999cc` | Subtitle label `font_color` in `scenes/main_menu.tscn:42`. Soft blue-lavender, readable on the dark background. |
-| Link color | `#66ccff` | Game title `font_color` in `scenes/main_menu.tscn:36`. Same bright cyan as the "NEBULA" title. |
+| Background color | `#0d0d26` | Main menu Background ColorRect (`scenes/main_menu.tscn:18`) and `COLOR_BG` in `scripts/ui/grid_renderer.gd:8`. Matches the in-game nebula backdrop. |
+| Text color | `#9999cc` | Subtitle label `font_color` in `scenes/main_menu.tscn:43`. Soft blue-lavender, readable on the dark background. |
+| Link color | `#66ccff` | Game title `font_color` in `scenes/main_menu.tscn:37`. Same bright cyan as the "NEBULA" title. |
 | Link hover color | `#4db3ff` | `COLOR_PROBE_BORDER` in `scripts/ui/grid_renderer.gd:11`. Matches the probe halo ring in-game. |
 | Button color | `#3366ff` | `SHIP_COLORS.battleship` in `scripts/ui/grid_renderer.gd:18`. The Battleship blue is the strongest fleet color and reads as a call-to-action. |
 | Button text color | `#ffffff` | Pure white for contrast against `#3366ff`. |

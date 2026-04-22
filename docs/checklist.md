@@ -170,7 +170,7 @@
   Acceptance: Every section from the original file is present with rewritten copy. Voice matches tutorial pages 1-9. Zero em dashes. Screenshot references unchanged. Live URL and GitHub URL unchanged. Grammarly-polished text applied verbatim.
   Verify: Read the rewritten file end to end against tutorial page 1 ("Welcome, Commander") and page 6 ("Probes Are Flashlights"). Confirm the register matches. Grep for `—`. Grep for every banned word in `docs/writing-voice.md`.
 
-- [ ] **I2-10. Create `docs/color-scheme.md` as standalone project palette reference**
+- [x] **I2-10. Create `docs/color-scheme.md` as standalone project palette reference**
   Spec ref: New (not in original spec)
   What to build: Create `docs/color-scheme.md` as the project-wide color reference. Sample every color in use from `scenes/*.tscn`, `scripts/ui/grid_renderer.gd`, and any style resources. For each color document: hex code, RGB if useful, intended role (background / text / accent / ship tint / state marker / etc.), source file and line. Group by function (base palette, UI chrome, ship fleet colors, probe/fog state, combat markers). Include a short header explaining what the doc is and how to extend it. Update `docs/claude-cowork/itch-page-setup-brief.md` Section 2 to reference `docs/color-scheme.md` as the source of truth (keep the itch.io field mapping table inline so Cowork doesn't need to read both docs, but note at the top that the hex values originate from `docs/color-scheme.md`). Adhere to `docs/writing-voice.md`.
   Acceptance: `docs/color-scheme.md` exists. Every color is sourced to a concrete file and line (or marked "convention" where no single source exists). `itch-page-setup-brief.md` points to it without duplicating the full palette. Zero em dashes.
