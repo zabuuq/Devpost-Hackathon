@@ -41,7 +41,9 @@ const HOW_TO_PLAY_PAGES: Array[Dictionary] = [
 	},
 	{
 		"title": "Move In Preview",
-		"screenshot": "res://assets/screenshots/09_move_preview.png",
+		"images": [
+			{"path": "res://assets/screenshots/09_move_preview.png", "side": "right", "y_offset": 0.0, "width": 452.0, "height": 192.0},
+		],
 		"body": "Click Move Ship in the Ship Panel. A ghost copy of your hull peels off and waits for orders, while the real ship sits there pretending it isn't paying attention, but it is definitely judging you. Nothing leaves the dock until you sign for it, so go ahead, slide the ghost around, regret your choices, slide it somewhere even worse, regret harder. Welcome to your new hobby: indecision.\n\nWASD slides the ghost. W up, S down, A left, D right, screen-relative, like a top-down dungeon crawl, and ignoring whichever way your captain swears is \"forward.\" Q and E rotate. Spin it ninety degrees and commit, or chicken out and pretend you never tried.\n\nLiving ships don't move for you, so you'll bonk off your own fleet like a drunk tourist at a wax museum. Wreckage is passable and won't file a complaint. The Cruiser gets a bigger move budget than the rest of the fleet, because some son of a motherless goat on the design committee thought \"fast\" was a personality trait.\n\nMove Points and Energy cost are listed at the bottom of the screen. Forward, the direction your captain insists is forward, costs half a move point. Every other direction costs a full one, because parallel parking in zero-G is just as much of a mother puss bucket as it is on Earth. Your move budget is whatever energy you didn't blow on Laser Power, so if you spent it all zapping asteroids, congrats: you're now a stationary target with delusions of tactical genius.",
 	},
 	{
