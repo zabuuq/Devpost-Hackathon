@@ -664,8 +664,9 @@ func _shot_08a_ship_panel_tight() -> void:
 
 
 func _shot_09_move_preview() -> void:
-	# Deselect the battleship, select the cruiser, enter move preview, and
-	# shift the ghost two cells right (equivalent to pressing D twice).
+	# Rotate the cruiser to face right, enter move preview, and set the ghost to
+	# two squares right + one square down with the same facing. Zooms the command
+	# camera in on the pair so both hulls read large in the tutorial overlay.
 	var gp: Node = get_tree().current_scene
 	if gp == null:
 		return
@@ -673,11 +674,25 @@ func _shot_09_move_preview() -> void:
 	var cruiser: ShipInstance = _p1_ship("cruiser")
 	if cruiser == null:
 		return
+	cruiser.facing = 1  # right (0=up, 1=right, 2=down, 3=left)
 	gp.call("_select_ship", cruiser)
 	gp.call("_enter_move_preview", cruiser)
-	var current_pos: Vector2i = gp.get("move_preview_position")
-	gp.set("move_preview_position", current_pos + Vector2i(2, 0))
+	var origin: Vector2i = cruiser.position
+	gp.set("move_preview_position", origin + Vector2i(2, 1))
+	gp.set("move_preview_new_facing", 1)
 	gp.call("_update_move_preview")
+	# Zoom in on the cruiser + ghost pair. Center lands between the real hull
+	# (origin.x..origin.x+1, origin.y) and the ghost (origin.x+2..origin.x+3,
+	# origin.y+1), i.e. cell (origin.x + 2, origin.y + 0.5) in world coords.
+	var cam: Camera2D = gp.get_node(
+		"MainLayout/GridArea/CommandViewport/SubViewport/GridNode/Camera2D")
+	cam.zoom = Vector2(2.5, 2.5)
+	cam.position = Vector2(
+		float(origin.x + 2) * float(CELL_SIZE) + float(CELL_SIZE) / 2.0,
+		(float(origin.y) + 1.0) * float(CELL_SIZE))
+	var command_renderer: Node2D = gp.get_node(
+		"MainLayout/GridArea/CommandViewport/SubViewport/GridNode")
+	command_renderer.queue_redraw()
 	await _capture("09_move_preview.png")
 
 
