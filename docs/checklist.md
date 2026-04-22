@@ -176,7 +176,7 @@
   Acceptance: `docs/color-scheme.md` exists. Every color is sourced to a concrete file and line (or marked "convention" where no single source exists). `itch-page-setup-brief.md` points to it without duplicating the full palette. Zero em dashes.
   Verify: Read `docs/color-scheme.md`. Pick three colors at random, open the referenced file:line, confirm the hex matches. Open the brief, confirm the pointer to `docs/color-scheme.md` is present.
 
-- [ ] **I2-11. Cowork executes theme + custom description upload on itch.io**
+- [x] **I2-11. Cowork executes theme + custom description upload on itch.io**
   Spec ref: `docs/claude-cowork/itch-page-setup-brief.md`
   What to build: User drives a fresh Cowork session using the updated `docs/claude-cowork/itch-page-setup-brief.md`. Cowork logs into itch.io (already authenticated), applies the custom theme using the hex codes from `docs/color-scheme.md` (via the brief's Section 2 field map), clears and pastes the rewritten `docs/itch-io-description.md` into the Description field, uploads screenshots to the Screenshots gallery, and saves. The page stays a draft — no visibility flip in this session. Cowork verifies via the secret URL and writes a one-line pass/fail + notes to `docs/claude-cowork/itch-page-setup-delivered.txt`.
   Acceptance: `docs/claude-cowork/itch-page-setup-delivered.txt` exists with a pass marker and the session date. The secret URL renders the custom theme, the rewritten description, and the screenshot gallery. Any Cowork fallbacks (e.g., inline image fallback from brief Section 3) are recorded in the delivered note. Page stays a draft.
@@ -184,7 +184,7 @@
 
 ---
 
-<!-- HOLD — item 12 is the final submission step. Do not /build this item until all iteration work is complete. -->
+<!-- HOLD LIFTED 2026-04-22 — all iteration work is complete (I2-9, I2-10, I2-11 done; Cowork confirmed theme + description live on the itch.io draft). User has signed off on proceeding with item 12. This item drives external side effects (butler push, itch.io public flip, Devpost submit), so /build should operate in guided-with-gates mode: pause for explicit user confirmation before each external action, and surface any irreversible step clearly. -->
 
 - [ ] **12. HTML5 export, itch.io deploy, and Devpost submission**
   Spec ref: `spec.md > Runtime & Deployment`, `prd.md > 12. Success Criteria`
