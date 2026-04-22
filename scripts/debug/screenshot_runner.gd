@@ -83,6 +83,7 @@ func _run_all() -> void:
 	await _shot_06_probe_aiming()
 	await _shot_07_probe_revealed()
 	await _shot_08_ship_panel_sliders()
+	await _shot_08a_ship_panel_tight()
 	await _shot_09_move_preview()
 	await _shot_10_active_probe_enemy_panel()
 	await _shot_11_probe_closeup()
@@ -628,6 +629,38 @@ func _shot_08_ship_panel_sliders() -> void:
 	if ship_panel != null:
 		ship_panel.call("show_ship", battleship)
 	await _capture("08_ship_panel_sliders.png")
+
+
+func _shot_08a_ship_panel_tight() -> void:
+	# Reuses shot 08's state (battleship selected, sliders set, Ship Panel tab
+	# active) and crops to the LeftPanel region for the How to Play "Ship Panel"
+	# page. The crop rect is tuned to the 1600x900 viewport: x=0..200 matches
+	# the LeftPanel's width exactly so no grid pixels bleed in on the right;
+	# y=40..540 skips the top bar and captures the panel content down through
+	# the action buttons.
+	var gp: Node = get_tree().current_scene
+	if gp == null:
+		return
+	gp.call("_show_left_tab", "ship_panel")
+	var ship_panel: Variant = gp.get("ship_panel")
+	if ship_panel != null:
+		var battleship: ShipInstance = _p1_ship("battleship")
+		if battleship != null:
+			ship_panel.call("show_ship", battleship)
+	# Workaround for the "empty-state label persists when ship selected" bug
+	# (see docs/backlog.md). The ShipPanelEmpty label in gameplay.tscn stays
+	# visible above the populated panel whenever a ship is active. Hide it
+	# for this capture only; restore afterwards so subsequent shots see the
+	# original tree state.
+	var empty_label: CanvasItem = gp.get_node_or_null(
+		"MainLayout/LeftPanel/ShipPanelContainer/ShipPanelEmpty") as CanvasItem
+	var was_visible: bool = true
+	if empty_label != null:
+		was_visible = empty_label.visible
+		empty_label.visible = false
+	await _capture_cropped("08a_ship_panel_tight.png", Rect2i(0, 40, 200, 500))
+	if empty_label != null:
+		empty_label.visible = was_visible
 
 
 func _shot_09_move_preview() -> void:

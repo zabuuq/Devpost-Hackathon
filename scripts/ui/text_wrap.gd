@@ -13,6 +13,10 @@ extends Control
 ##      overlap horizontally at the same y range (text needs a path through).
 ##
 ## Single newlines are hard line breaks; double newlines produce a paragraph gap.
+##
+## Inline bold: wrap a phrase in `**` to render it faux-bold. The control draws
+## each bold word twice with a 1px horizontal offset, so the effect works with
+## the default theme font without requiring a separate bold font asset.
 
 @export_multiline var text: String = "":
 	set(value):
@@ -81,48 +85,74 @@ func _draw() -> void:
 		var sub_lines: PackedStringArray = para.split("\n")
 		for s_idx in range(sub_lines.size()):
 			var sl: String = sub_lines[s_idx]
-			cursor_y = _layout_segment(font, sl, cursor_y, line_h, space_w, ascent)
+			var tokens: Array = _tokenize_line(sl)
+			cursor_y = _layout_tokens(font, tokens, cursor_y, line_h, space_w, ascent)
 		if p_idx < paragraphs.size() - 1:
 			cursor_y += para_gap
 
 
-func _layout_segment(
+# Split a line on `**` bold markers and further on spaces into word tokens.
+# Returns Array of {text: String, bold: bool}. Even-indexed segments (outside
+# `**`) are non-bold; odd-indexed segments (between pairs of `**`) are bold.
+func _tokenize_line(s: String) -> Array:
+	var tokens: Array = []
+	var parts: PackedStringArray = s.split("**")
+	for i in range(parts.size()):
+		var is_bold: bool = (i % 2) == 1
+		var segment: String = parts[i]
+		if segment.is_empty():
+			continue
+		var words: PackedStringArray = segment.split(" ")
+		for w in words:
+			if w.is_empty():
+				continue
+			tokens.append({"text": w, "bold": is_bold})
+	return tokens
+
+
+func _layout_tokens(
 		font: Font,
-		segment: String,
+		tokens: Array,
 		start_y: float,
 		line_h: float,
 		space_w: float,
 		ascent: float) -> float:
 	var cursor_y: float = start_y
-	var words: PackedStringArray = segment.split(" ", false)
-	var line: Array[String] = []
+	var line: Array = []
 	var line_w: float = 0.0
 	var x_range: Vector2 = _line_x_range(cursor_y, line_h)
 	var line_start_x: float = x_range.x
 	var available_w: float = x_range.y - x_range.x
-	for word in words:
-		if word.is_empty():
-			continue
-		var word_w: float = font.get_string_size(
-			word, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	for token in tokens:
+		var word_w: float = _token_width(font, token)
 		var trial_w: float = line_w + word_w
 		if not line.is_empty():
 			trial_w += space_w
 		if line.is_empty() or trial_w <= available_w:
-			line.append(word)
+			line.append(token)
 			line_w = trial_w
 		else:
-			_draw_line(font, line, line_start_x, cursor_y, ascent)
+			_draw_line_tokens(font, line, line_start_x, cursor_y, ascent, space_w)
 			cursor_y += line_h
 			x_range = _line_x_range(cursor_y, line_h)
 			line_start_x = x_range.x
 			available_w = x_range.y - x_range.x
-			line = [word]
+			line = [token]
 			line_w = word_w
 	if not line.is_empty():
-		_draw_line(font, line, line_start_x, cursor_y, ascent)
+		_draw_line_tokens(font, line, line_start_x, cursor_y, ascent, space_w)
 		cursor_y += line_h
 	return cursor_y
+
+
+func _token_width(font: Font, token: Dictionary) -> float:
+	var w: float = font.get_string_size(
+		token["text"], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	# Faux-bold draws twice with 1px horizontal offset, so the effective glyph
+	# advance grows by 1px.
+	if token["bold"]:
+		w += 1.0
+	return w
 
 
 func _line_x_range(line_top: float, line_h: float) -> Vector2:
@@ -150,18 +180,37 @@ func _line_x_range(line_top: float, line_h: float) -> Vector2:
 	return Vector2(start_x, end_x)
 
 
-func _draw_line(
+func _draw_line_tokens(
 		font: Font,
-		words: Array[String],
+		tokens: Array,
 		x: float,
 		y: float,
-		ascent: float) -> void:
-	var line_str: String = " ".join(words)
-	draw_string(
-		font,
-		Vector2(x, y + ascent),
-		line_str,
-		HORIZONTAL_ALIGNMENT_LEFT,
-		-1,
-		font_size,
-		font_color)
+		ascent: float,
+		space_w: float) -> void:
+	var cur_x: float = x
+	var baseline_y: float = y + ascent
+	for i in range(tokens.size()):
+		var token: Dictionary = tokens[i]
+		var word_text: String = token["text"]
+		var is_bold: bool = token["bold"]
+		draw_string(
+			font,
+			Vector2(cur_x, baseline_y),
+			word_text,
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1,
+			font_size,
+			font_color)
+		if is_bold:
+			# Second pass, offset 1px, to fake a heavier weight.
+			draw_string(
+				font,
+				Vector2(cur_x + 1.0, baseline_y),
+				word_text,
+				HORIZONTAL_ALIGNMENT_LEFT,
+				-1,
+				font_size,
+				font_color)
+		cur_x += _token_width(font, token)
+		if i < tokens.size() - 1:
+			cur_x += space_w
