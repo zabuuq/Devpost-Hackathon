@@ -23,9 +23,16 @@ const HOW_TO_PLAY_PAGES: Array[Dictionary] = [
 	{
 		"title": "The Ship Panel",
 		"images": [
-			{"path": "res://assets/screenshots/08a_ship_panel_tight.png", "side": "left", "y_offset": 0.0, "width": 200.0, "height": 500.0},
+			{"path": "res://assets/screenshots/08a_ship_panel_tight.png", "side": "left", "y_offset": 0.0, "width": 200.0, "height": 540.0},
 		],
 		"body": "Click any ship on the Command Grid, and the Ship Panel lights up like an overcaffeinated ensign on their first day. This is the command deck for that specific hull.\n\nAt the top, you get the ship's name and a parade of numbers nobody cares about until they're all in the red: shields, armor, energy, probes left, missiles left, and whatever's left of your will to live after three turns in this cosmic meat grinder.\n\nUnder the stats, you get two sliders. **Shield Regen** eats energy to regrow your shields. Shields come back. Armor? Sorry, not sorry. **Laser Power** loads the gun. Drag the sliders, argue with yourself, and try to remember you're working with a finite pile of energy, and both sliders are hungry. Spoiler: you'll allocate wrong. Everyone does. The ones who say they don't are either lying or already a smear on the nebula.\n\nBelow the sliders: four big shiny buttons. **Launch Probe** lights up a chunk of nebula, like poking a haunted closet with a flashlight. **Shoot Laser** picks a cell and burns a hole in it, assuming your target isn't just a figment of your imagination. **Launch Missile** hurls a chunk of angry metal into someone's otherwise peaceful lunch break. **Move Ship** does what it says. Don't act surprised.\n\nOne action per ship per turn. Pick the wrong one and, three turns later, a ghost marker with your lunch money and your dignity in its crosshairs will punt both out the nearest airlock. Don't say I didn't warn you.",
+	},
+	{
+		"title": "Spend Your Energy",
+		"images": [
+			{"path": "res://assets/screenshots/08a_ship_panel_tight.png", "side": "left", "y_offset": 0.0, "width": 200.0, "height": 540.0},
+		],
+		"body": "Every probe, every laser blast, every missile you yeet into the void, every shield you duct-tape back together, every awkward shuffle across the map. Same wallet. Energy. You've already met the sliders. Now say hello to the math that's about to mug you.\n\nEvery ship in your fleet gets 50 energy at the top of the turn. Doesn't matter if it took a torpedo to the face, vaporized a scout, or spent the round contemplating its own existential dread. The reactor doesn't care about your ship's tragic backstory, just that it's still here to make someone else's day worse. Unused energy piles up.\n\nShields don't patch up the second you drag the slider. They wait until the end of your turn, like a lazy janitor clocking in late. You'll watch your energy bleed out as you probe, shoot, and scoot; whatever crumbs are left get vacuumed into your shields on your way out. That Energy after the sliders number? That's your next turn's mood ring, and it's usually stuck on 'regret.'\n\nRun a ship down to zero energy, and congratulations, you've got yourself a very expensive paperweight. No lasers, no probes, no movement, just vibes. Next turn it'll crawl back with 50 energy, which is enough to do approximately squat. Honestly, it probably deserves it for loitering.",
 	},
 	{
 		"title": "Probes Are Flashlights",
@@ -45,11 +52,6 @@ const HOW_TO_PLAY_PAGES: Array[Dictionary] = [
 			{"path": "res://assets/screenshots/09_move_preview.png", "side": "right", "y_offset": 0.0, "width": 452.0, "height": 192.0},
 		],
 		"body": "Click Move Ship in the Ship Panel. A ghost copy of your hull peels off and waits for orders, while the real ship sits there pretending it isn't paying attention, but it is definitely judging you. Nothing leaves the dock until you sign for it, so go ahead, slide the ghost around, regret your choices, slide it somewhere even worse, regret harder. Welcome to your new hobby: indecision.\n\nWASD slides the ghost. W up, S down, A left, D right, screen-relative, like a top-down dungeon crawl, and ignoring whichever way your captain swears is \"forward.\" Q and E rotate. Spin it ninety degrees and commit, or chicken out and pretend you never tried.\n\nLiving ships don't move for you, so you'll bonk off your own fleet like a drunk tourist at a wax museum. Wreckage is passable and won't file a complaint. The Cruiser gets a bigger move budget than the rest of the fleet, because some son of a motherless goat on the design committee thought \"fast\" was a personality trait.\n\nMove Points and Energy cost are listed at the bottom of the screen. Forward, the direction your captain insists is forward, costs half a move point. Every other direction costs a full one, because parallel parking in zero-G is just as much of a mother puss bucket as it is on Earth. Your move budget is whatever energy you didn't blow on Laser Power, so if you spent it all zapping asteroids, congrats: you're now a stationary target with delusions of tactical genius.",
-	},
-	{
-		"title": "Spend Your Energy",
-		"screenshot": "res://assets/screenshots/08_ship_panel_sliders.png",
-		"body": "Every ship regenerates 50 energy at the start of your turn. You split that energy between two sliders in the Ship Panel: Shield Regen and Laser Power.\n\nShield Regen fires at the end of your turn. Drag it up and your shields heal; energy drains as they fill. Drag Laser Power up and your next laser shot hits harder.\n\nShields take priority when energy is tight. If you set both sliders higher than your available energy, shields fill first and the laser drops to whatever is left. Plan your turn around that: probe early, allocate energy second, fire last.",
 	},
 	{
 		"title": "Kill Everything",

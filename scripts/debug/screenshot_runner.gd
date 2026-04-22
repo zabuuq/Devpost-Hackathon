@@ -634,10 +634,10 @@ func _shot_08_ship_panel_sliders() -> void:
 func _shot_08a_ship_panel_tight() -> void:
 	# Reuses shot 08's state (battleship selected, sliders set, Ship Panel tab
 	# active) and crops to the LeftPanel region for the How to Play "Ship Panel"
-	# page. The crop rect is tuned to the 1600x900 viewport: x=0..200 matches
-	# the LeftPanel's width exactly so no grid pixels bleed in on the right;
-	# y=40..540 skips the top bar and captures the panel content down through
-	# the action buttons.
+	# and "Spend Your Energy" pages. The crop rect is tuned to the 1600x900
+	# viewport: x=0..200 matches the LeftPanel's width exactly so no grid pixels
+	# bleed in on the right; y=40..580 skips the top bar and captures the panel
+	# content down through the action buttons with a little padding below.
 	var gp: Node = get_tree().current_scene
 	if gp == null:
 		return
@@ -658,7 +658,7 @@ func _shot_08a_ship_panel_tight() -> void:
 	if empty_label != null:
 		was_visible = empty_label.visible
 		empty_label.visible = false
-	await _capture_cropped("08a_ship_panel_tight.png", Rect2i(0, 40, 200, 500))
+	await _capture_cropped("08a_ship_panel_tight.png", Rect2i(0, 40, 200, 540))
 	if empty_label != null:
 		empty_label.visible = was_visible
 
