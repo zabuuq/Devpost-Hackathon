@@ -126,6 +126,35 @@ Jason made nearly all architectural decisions when given options. Notable moment
 
 **Issues:** None. No verification yet (checkpoint 3 is after item 9).
 
+### Step 12: HTML5 export, itch.io deploy, and Devpost submission
+
+**Mode:** Guided-with-gates, not autonomous. Item 12's HOLD LIFTED marker on 2026-04-22 explicitly required explicit user confirmation before each external action. Seven gates, all passed:
+
+1. HTML5 export to `export/web/` via `godot --headless --path . --export-release "Web"`.
+2. Local smoke test on `python -m http.server 8000`. Splash → menu → How to Play → Start verified by Jason.
+3. Butler push to `zabuuq/battlestations-nebula:html5`. New build #1632255 (version 3) replaces the April 11 I2-1 build #1608182. 99.14% patch savings — the 37 MB wasm blob was unchanged.
+4. Live-build verification at the secret URL before public flip.
+5. `git push origin main` — pushed e3f071b (I2-11) so the public repo matched the live build.
+6. itch.io page flipped Draft → Public via dashboard.
+7. Devpost submission.
+
+**What was drafted for submission:**
+- `docs/devpost-submission.md` — pasteable source mapping every Devpost form field. Three pages: overview, project details (name, tagline, elevator pitch, project story, built-with tags, try-it links, image gallery, video), and Learning Hackathon feedback (hours, rating, most valuable parts, stuck points, approach change, likelihood of reuse, what to change). Project story rewritten in the Gallows Deadpan voice consistent with the itch.io description and tutorial pages. User-edited tags after generation.
+- Elevator pitch (198 of 200 chars): "Hot-seat space combat tribute to my dad's 1980s Turbo Pascal game. Hide five ships in the nebula, fire probes to pull enemies out of fog, then shoot lasers and missiles before your intel goes stale."
+
+**Screenshot refinements done during item 12:**
+- Shot 12 converted from a full-viewport capture to a 200×540 LeftPanel crop matching shot 08a's dimensions. Now functions as a matched closeup pair with 08a in the Devpost gallery.
+- Shot 13 rewritten to use a seeded-random P1 fleet (SHOT_13_SEED=1337). Camera fills the viewport vertically via `_gameplay_fill_view` (no letterbox gray bands) and pans to the median ship x so the cluster lands in frame. At least three ships visible; the seed constant is the single knob for rerolling.
+
+**Gaps noted:**
+- `docs/claude-cowork/itch-page-setup-delivered.txt` was never written during I2-11 (the requirement wasn't communicated to Cowork). Jason confirmed the theme + description upload succeeded in practice and authorized trusting the I2-11 checkbox.
+
+**Memory written during item 12:**
+- `project_itch_devlog_on_updates.md` — reminder to draft a Gallows-Deadpan devlog note after every future butler push, for Jason to post manually via the itch.io Devlog editor.
+
+**Backlog additions during item 12:**
+- Two-line title treatment on splash / main menu / victory ("Battlestations:" on line 1, "NEBULA" on line 2, fully caps, larger font, stretched to match line 1's pixel width).
+
 ## /checklist
 
 ### Sequencing decisions and rationale

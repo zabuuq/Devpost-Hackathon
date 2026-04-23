@@ -60,6 +60,10 @@ const SHOT_05B_POSITIONS: Array = [
 	{"type": "cruiser",    "pos": Vector2i(27, 12), "facing": 1},  # right
 ]
 
+# Shot 13's fleet is seeded-random. Change this to reroll the layout.
+const SHOT_13_SEED: int = 1337
+
+
 # Shot 14 is the "Kill Everything" wreckage tableau: four destroyed P1 ships
 # clustered in cols 28..36, rows 7..10, with all four facings represented so
 # the wreckage spans read as varied (horizontal, vertical) rather than a tidy
@@ -770,8 +774,13 @@ func _shot_11_probe_closeup() -> void:
 
 
 func _shot_12_battle_log_detail() -> void:
-	# Reuse the shot-10 state, refit the target camera (shot 11 zoomed it in),
-	# populate the battle log with three synthetic entries, show battle log tab.
+	# Closeup of the battle log tab content, cropped to the same LeftPanel
+	# region as 08a (Rect2i(0, 40, 200, 540)) so both shots share identical
+	# 200x540 dimensions. The Devpost gallery shows this image alongside 08a
+	# as a matched pair of left-panel closeups (Ship Panel and Battle Log).
+	# Reuses shot-10/11 gameplay state; adds three synthetic log entries
+	# (probe, laser hit under active probe, move) so all three detail tiers
+	# are represented in the shot.
 	var gp: Node = get_tree().current_scene
 	if gp == null:
 		return
@@ -807,7 +816,7 @@ func _shot_12_battle_log_detail() -> void:
 			"energy_used": 50
 		})
 	gp.call("_show_left_tab", "battle_log")
-	await _capture("12_battle_log_detail.png")
+	await _capture_cropped("12_battle_log_detail.png", Rect2i(0, 40, 200, 540))
 
 
 func _shot_14_destroyed_ships() -> void:
@@ -854,9 +863,48 @@ func _shot_14_destroyed_ships() -> void:
 
 
 func _shot_13_command_overview() -> void:
-	# Clean P1 Turn 1 state, full-grid zoom on the command grid. Marketing shot.
+	# Full-screen marketing shot of the Command Grid with a randomized P1 fleet.
+	# Zoom fills the viewport vertically (no gray bands above or below the grid)
+	# and the camera pans horizontally to the median ship x so the fleet cluster
+	# lands in frame. Fleet layout uses a seeded RNG (SHOT_13_SEED) so the shot
+	# is reproducible — change the seed to reroll.
 	_reset_state()
-	_build_both_fleets()
+	_build_both_fleets()  # also populates P2 so downstream game state is sane
+	# Replace P1's fleet with a seeded-random layout. Ships are placed one at a
+	# time; overlaps and out-of-bounds positions retry up to 500 times per ship.
+	var rng := RandomNumberGenerator.new()
+	rng.seed = SHOT_13_SEED
+	var p1_fleet: Array = []
+	var occupied: Dictionary = {}
+	for ship_type in ShipDefinitions.FLEET:
+		var placed: bool = false
+		var tries: int = 0
+		while not placed and tries < 500:
+			tries += 1
+			var origin := Vector2i(
+				rng.randi_range(0, GRID_COLS - 1),
+				rng.randi_range(0, GRID_ROWS - 1))
+			var facing: int = rng.randi_range(0, 3)
+			var cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
+				ship_type, origin, facing)
+			if cells.is_empty():
+				continue
+			var valid: bool = true
+			for c in cells:
+				if c.x < 0 or c.x >= GRID_COLS or c.y < 0 or c.y >= GRID_ROWS:
+					valid = false
+					break
+				if occupied.has(c):
+					valid = false
+					break
+			if valid:
+				for c in cells:
+					occupied[c] = true
+				p1_fleet.append(_make_ship(ship_type, origin, facing))
+				placed = true
+		if not placed:
+			push_error("[screenshot_runner] shot 13: failed to place %s" % ship_type)
+	GameState.players[0]["fleet"] = p1_fleet
 	GameState.current_player = 0
 	GameState.turn_number = 1
 	await _change_scene("res://scenes/gameplay.tscn")
@@ -864,17 +912,20 @@ func _shot_13_command_overview() -> void:
 	if gp == null:
 		return
 	gp.call("_switch_grid", 0)  # COMMAND
-	var cam: Camera2D = gp.get_node("MainLayout/GridArea/CommandViewport/SubViewport/GridNode/Camera2D")
-	var vp: SubViewport = gp.get_node("MainLayout/GridArea/CommandViewport/SubViewport")
-	var vp_size: Vector2 = Vector2(vp.size)
-	if vp_size.x > 0.0 and vp_size.y > 0.0:
-		var grid_w: float = float(GRID_COLS) * float(CELL_SIZE)
-		var grid_h: float = float(GRID_ROWS) * float(CELL_SIZE)
-		var zx: float = vp_size.x / grid_w
-		var zy: float = vp_size.y / grid_h
-		var zoom: float = min(zx, zy)
-		cam.zoom = Vector2(zoom, zoom)
-		cam.position = Vector2(grid_w / 2.0, grid_h / 2.0)
-	var command_renderer: Node2D = gp.get_node("MainLayout/GridArea/CommandViewport/SubViewport/GridNode")
-	command_renderer.queue_redraw()
+	# Center the camera on the median ship x-position so the cluster of ships
+	# lands in the visible slice. With ~32 cols visible at this zoom, a median
+	# center is a reliable way to keep most (if not all) ships on screen.
+	var xs: Array = []
+	for s in p1_fleet:
+		xs.append(int(s.position.x))
+	xs.sort()
+	var center_col: int = (xs[xs.size() / 2] if xs.size() > 0 else GRID_COLS / 2)
+	_gameplay_fill_view(
+		gp,
+		"MainLayout/GridArea/CommandViewport",
+		"MainLayout/GridArea/CommandViewport/SubViewport",
+		"MainLayout/GridArea/CommandViewport/SubViewport/GridNode/Camera2D",
+		center_col)
+	print("[screenshot_runner] shot 13 center_col=%d, ship positions: %s" % [
+		center_col, xs])
 	await _capture("13_command_overview.png")
