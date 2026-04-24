@@ -6,6 +6,7 @@ const GRID_ROWS: int = 20
 const GRID_CENTER: Vector2i = Vector2i(40, 10)
 const MIN_ZOOM: float = 0.1
 const MAX_ZOOM: float = 4.0
+const DRAG_THRESHOLD_PX: float = 4.0
 
 const NEBULA_TEXTURE: Texture2D = preload("res://assets/backgrounds/nebula.jpg")
 const NEBULA_SRC_RECT: Rect2 = Rect2(0, 900, 5333, 1333)
@@ -35,6 +36,11 @@ var ship_buttons: Array[Button] = []
 var is_panning: bool = false
 var pan_start_mouse: Vector2 = Vector2.ZERO
 var pan_start_cam: Vector2 = Vector2.ZERO
+
+# Left-drag click-vs-pan disambiguation state
+var mouse_down: bool = false
+var mouse_down_pos: Vector2 = Vector2.ZERO
+var dragged: bool = false
 
 func _process(_delta: float) -> void:
 	if selected_ship_idx >= 0:
@@ -113,28 +119,55 @@ func _rotate_ghost(delta: int) -> void:
 func _on_viewport_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_zoom_camera(1.1)
+			if event.ctrl_pressed:
+				_zoom_camera_at(1.1)
+			elif event.shift_pressed:
+				camera.position.x += float(CELL_SIZE) / camera.zoom.x
+				_clamp_camera()
+				grid_node.queue_redraw()
+			else:
+				camera.position.y -= float(CELL_SIZE) / camera.zoom.y
+				_clamp_camera()
+				grid_node.queue_redraw()
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_zoom_camera(0.9)
-		elif event.button_index == MOUSE_BUTTON_MIDDLE:
+			if event.ctrl_pressed:
+				_zoom_camera_at(0.9)
+			elif event.shift_pressed:
+				camera.position.x -= float(CELL_SIZE) / camera.zoom.x
+				_clamp_camera()
+				grid_node.queue_redraw()
+			else:
+				camera.position.y += float(CELL_SIZE) / camera.zoom.y
+				_clamp_camera()
+				grid_node.queue_redraw()
+		elif event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
-				is_panning = true
+				mouse_down = true
+				dragged = false
+				mouse_down_pos = event.position
 				pan_start_mouse = event.position
 				pan_start_cam = camera.position
-			else:
 				is_panning = false
-		elif event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			if selected_ship_idx >= 0:
-				_try_place_ship()
+			else:
+				var was_dragged: bool = dragged
+				mouse_down = false
+				dragged = false
+				is_panning = false
+				if not was_dragged and selected_ship_idx >= 0:
+					_try_place_ship()
 		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 			selected_ship_idx = -1
 			grid_node.queue_redraw()
 	elif event is InputEventMouseMotion:
-		if is_panning and (event.button_mask & MOUSE_BUTTON_MASK_MIDDLE):
-			var delta: Vector2 = (pan_start_mouse - event.position) / camera.zoom
-			camera.position = pan_start_cam + delta
-			_clamp_camera()
-			grid_node.queue_redraw()
+		if mouse_down and (event.button_mask & MOUSE_BUTTON_MASK_LEFT):
+			if not dragged and event.position.distance_to(mouse_down_pos) >= DRAG_THRESHOLD_PX:
+				dragged = true
+				is_panning = true
+			if is_panning:
+				var delta: Vector2 = (pan_start_mouse - event.position) / camera.zoom
+				camera.position = pan_start_cam + delta
+				_clamp_camera()
+				grid_node.queue_redraw()
 
 func _screen_to_grid() -> Vector2i:
 	var world_pos: Vector2 = grid_node.get_local_mouse_position()
@@ -150,6 +183,21 @@ func _zoom_camera(factor: float) -> void:
 	var new_zoom: float = clampf(camera.zoom.x * factor, MIN_ZOOM, MAX_ZOOM)
 	camera.zoom = Vector2(new_zoom, new_zoom)
 	_clamp_camera()
+	grid_node.queue_redraw()
+
+func _zoom_camera_at(factor: float) -> void:
+	# Zoom while keeping the world point under the cursor stationary.
+	# grid_node is a Node2D at origin so its local mouse position == world space.
+	var world_before: Vector2 = grid_node.get_local_mouse_position()
+	var old_zoom: float = camera.zoom.x
+	var new_zoom: float = clampf(old_zoom * factor, MIN_ZOOM, MAX_ZOOM)
+	if is_equal_approx(new_zoom, old_zoom):
+		return
+	camera.zoom = Vector2(new_zoom, new_zoom)
+	var world_after: Vector2 = grid_node.get_local_mouse_position()
+	camera.position += world_before - world_after
+	_clamp_camera()
+	grid_node.queue_redraw()
 
 func _clamp_camera() -> void:
 	var grid_w: float = GRID_COLS * CELL_SIZE

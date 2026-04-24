@@ -623,11 +623,13 @@ func _save_camera_state(cam: Camera2D, is_command: bool) -> void:
 	}
 	GameState.players[GameState.current_player][key] = state
 
-func _restore_camera_state(cam: Camera2D, vp: SubViewport, is_command: bool) -> void:
+func _restore_camera_state(cam: Camera2D, _vp: SubViewport, is_command: bool) -> void:
+	# When there's no saved state for this player, leave the scene's camera
+	# defaults (zoom 0.3, position (1280, 320)) untouched. Per-input saves
+	# capture every pan/zoom, so the saved-state branch covers everything else.
 	var key: String = "command_camera" if is_command else "target_camera"
 	var saved: Dictionary = GameState.players[GameState.current_player][key]
 	if saved.is_empty():
-		_fit_camera(cam, Vector2(vp.size))
 		return
 	var saved_position: Vector2 = saved["position"]
 	var saved_zoom: float = saved["zoom"]
@@ -635,14 +637,11 @@ func _restore_camera_state(cam: Camera2D, vp: SubViewport, is_command: bool) -> 
 	cam.zoom = Vector2(saved_zoom, saved_zoom)
 	_clamp_camera(cam)
 
-func _exit_tree() -> void:
-	# Safety-net save in case we exit without going through _on_end_turn_pressed.
-	if GameState.phase != GameState.Phase.GAMEPLAY:
-		return
-	if not is_instance_valid(command_camera) or not is_instance_valid(target_camera):
-		return
-	_save_camera_state(command_camera, true)
-	_save_camera_state(target_camera, false)
+# No _exit_tree safety-net: turn_manager.turn_end() flips GameState.current_player
+# BEFORE change_scene_to_file, so a save here would write the outgoing player's
+# camera state into the incoming player's slot. Per-input saves cover the normal
+# pan/zoom path; the only thing we'd miss is a frame between the last pan and
+# end-turn, which is a non-issue.
 
 func _on_end_turn_pressed() -> void:
 	if interaction_state == InteractionState.MOVE_PREVIEW:
