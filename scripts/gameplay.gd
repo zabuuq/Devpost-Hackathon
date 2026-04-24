@@ -219,11 +219,14 @@ func _handle_grid_input(event: InputEvent, cam: Camera2D, container: SubViewport
 
 
 func _handle_grid_click(cell: Vector2i, is_command: bool) -> void:
-	# Bounds check
-	if cell.x < 0 or cell.x >= GRID_COLS or cell.y < 0 or cell.y >= GRID_ROWS:
-		return
+	# Bounds gate: probe targeting is the one path that accepts off-grid clicks
+	# (the probe center clamp in _execute_targeting_action keeps the probe area
+	# fully on-grid). Selection, laser, and missile clicks all need a real cell.
+	var in_bounds: bool = cell.x >= 0 and cell.x < GRID_COLS and cell.y >= 0 and cell.y < GRID_ROWS
 
 	if is_command:
+		if not in_bounds:
+			return
 		match interaction_state:
 			InteractionState.IDLE, InteractionState.SHIP_SELECTED:
 				_try_select_ship(cell)
@@ -232,8 +235,15 @@ func _handle_grid_click(cell: Vector2i, is_command: bool) -> void:
 	else:
 		# Target grid click
 		if interaction_state == InteractionState.TARGETING:
-			_execute_targeting_action(cell)
+			if targeting_action == "probe":
+				_execute_targeting_action(cell)  # off-grid OK; probe center is clamped
+			else:
+				if not in_bounds:
+					return
+				_execute_targeting_action(cell)
 		else:
+			if not in_bounds:
+				return
 			_try_select_enemy_ship(cell)
 
 
