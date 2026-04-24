@@ -5,6 +5,11 @@ const CELL_SIZE: int = 32
 const GRID_COLS: int = 80
 const GRID_ROWS: int = 20
 
+const NEBULA_TEXTURE: Texture2D = preload("res://assets/backgrounds/nebula.jpg")
+# Source is 5333x3555; grid is 4:1. Horizontal band 5333x1333 centered vertically
+# but shifted up (y=900) to keep the bright bottom-right orange star out of frame.
+const NEBULA_SRC_RECT: Rect2 = Rect2(0, 900, 5333, 1333)
+
 const COLOR_BG: Color = Color(0.05, 0.05, 0.15, 1.0)
 const COLOR_GRID_LINE: Color = Color(0.15, 0.15, 0.3, 0.8)
 const COLOR_PROBE_FILL: Color = Color(0.3, 0.7, 1.0, 0.2)
@@ -57,7 +62,8 @@ func _draw() -> void:
 	_draw_probe_highlight()
 
 func _draw_background() -> void:
-	draw_rect(Rect2(0.0, 0.0, GRID_COLS * CELL_SIZE, GRID_ROWS * CELL_SIZE), COLOR_BG)
+	var dest := Rect2(0.0, 0.0, GRID_COLS * CELL_SIZE, GRID_ROWS * CELL_SIZE)
+	draw_texture_rect_region(NEBULA_TEXTURE, dest, NEBULA_SRC_RECT)
 
 func _draw_grid_lines() -> void:
 	var grid_w: float = GRID_COLS * CELL_SIZE
