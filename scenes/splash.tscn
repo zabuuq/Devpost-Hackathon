@@ -20,21 +20,31 @@ texture = ExtResource("2_nebula")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Title" type="Label" parent="."]
+[node name="TitleBlock" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -60.0
-offset_right = 200.0
-offset_bottom = 60.0
-text = "BATTLESTATIONS: NEBULA"
+offset_left = -400.0
+offset_top = -120.0
+offset_right = 400.0
+offset_bottom = 120.0
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="TitleLine1" type="Label" parent="TitleBlock"]
+layout_mode = 2
+text = "Battlestations:"
 horizontal_alignment = 1
-vertical_alignment = 1
-theme_override_font_sizes/font_size = 72
+theme_override_font_sizes/font_size = 40
+
+[node name="TitleLine2" type="Label" parent="TitleBlock"]
+layout_mode = 2
+text = "NEBULA"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 100
 
 [node name="PressAnyKey" type="Label" parent="."]
 layout_mode = 1

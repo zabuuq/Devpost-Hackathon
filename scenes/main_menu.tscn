@@ -42,10 +42,23 @@ offset_right = 150.0
 offset_bottom = 200.0
 alignment = 1
 
-[node name="GameTitle" type="Label" parent="MenuContainer"]
+[node name="TitleBlock" type="VBoxContainer" parent="MenuContainer"]
+layout_mode = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="TitleLine1" type="Label" parent="MenuContainer/TitleBlock"]
+layout_mode = 2
+text = "Battlestations:"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.4, 0.8, 1.0, 1.0)
+
+[node name="GameTitle" type="Label" parent="MenuContainer/TitleBlock"]
+layout_mode = 2
 text = "NEBULA"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 64
+theme_override_font_sizes/font_size = 72
 theme_override_colors/font_color = Color(0.4, 0.8, 1.0, 1.0)
 
 [node name="Subtitle" type="Label" parent="MenuContainer"]
