@@ -381,7 +381,9 @@ func _update_move_preview() -> void:
 	elif facing_diff == 3:
 		net_rotation = -1
 
-	var cost: Dictionary = ActionResolver.calc_move_cost(move_preview_facing, net_displacement, net_rotation)
+	# Use move_preview_new_facing (post-rotation) so the 0.5-pt forward discount
+	# tracks the ship's CURRENT heading during preview, not its pre-rotation heading.
+	var cost: Dictionary = ActionResolver.calc_move_cost(move_preview_new_facing, net_displacement, net_rotation)
 	var available: float = ActionResolver.get_available_move_points(selected_ship)
 
 	var pts_used: float = cost["move_points"]

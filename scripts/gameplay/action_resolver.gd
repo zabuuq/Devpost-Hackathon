@@ -257,7 +257,9 @@ static func get_available_move_points(ship: ShipInstance) -> float:
 
 
 ## Calculate the move cost (points and energy) for a net displacement + rotation.
-## facing: the ship's CURRENT facing (before rotation).
+## facing: the ship's POST-rotation facing (i.e. starting facing rotated by
+##   net_rotation). "Forward" is evaluated against this facing so that
+##   displacement aligned with the new heading gets the 0.5-pt discount.
 ## net_displacement: total grid offset from current position.
 ## net_rotation: -1, 0, or 1 (CCW, none, CW).
 ## Returns { "move_points": float, "energy": int, "valid": bool }
@@ -270,7 +272,7 @@ static func calc_move_cost(facing: int, net_displacement: Vector2i, net_rotation
 		pts += 1.0
 		energy += 50
 
-	# Direction vector for "forward" based on current facing
+	# Direction vector for "forward" based on post-rotation facing
 	var forward: Vector2i
 	match facing:
 		0: forward = Vector2i(0, -1)
@@ -384,7 +386,9 @@ func resolve_move(acting_ship: ShipInstance, new_position: Vector2i, new_facing:
 	elif facing_diff == 3:
 		net_rotation = -1
 
-	var cost: Dictionary = calc_move_cost(acting_ship.facing, net_displacement, net_rotation)
+	# Use new_facing (post-rotation) so the forward-discount aligns with the
+	# ship's heading after the rotate, not its heading at the start of the move.
+	var cost: Dictionary = calc_move_cost(new_facing, net_displacement, net_rotation)
 	var available: float = get_available_move_points(acting_ship)
 
 	if cost["move_points"] > available + 0.001:
