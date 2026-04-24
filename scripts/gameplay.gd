@@ -5,6 +5,7 @@ const GRID_COLS: int = 80
 const GRID_ROWS: int = 20
 const MIN_ZOOM: float = 0.1
 const MAX_ZOOM: float = 4.0
+const DRAG_THRESHOLD_PX: float = 4.0
 
 enum ActiveGrid { COMMAND, TARGET }
 enum InteractionState { IDLE, SHIP_SELECTED, MOVE_PREVIEW, TARGETING }
@@ -38,6 +39,11 @@ var is_panning: bool = false
 var pan_start_mouse: Vector2 = Vector2.ZERO
 var pan_start_cam: Vector2 = Vector2.ZERO
 var active_camera: Camera2D
+
+# Left-drag click-vs-pan disambiguation state
+var mouse_down: bool = false
+var mouse_down_pos: Vector2 = Vector2.ZERO
+var dragged: bool = false
 
 # Interaction state machine
 var interaction_state: InteractionState = InteractionState.IDLE
@@ -147,26 +153,56 @@ func _handle_grid_input(event: InputEvent, cam: Camera2D, container: SubViewport
 		vp: SubViewport, renderer: GridRenderer) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_zoom_camera(cam, 1.1)
+			if event.ctrl_pressed:
+				_zoom_camera_at(cam, 1.1, event.position, container, vp)
+			elif event.shift_pressed:
+				# Shift+wheel-up → camera moves right (x increases)
+				cam.position.x += float(CELL_SIZE) / cam.zoom.x
+				_clamp_camera(cam)
+			else:
+				# Plain wheel-up → camera moves up (y decreases)
+				cam.position.y -= float(CELL_SIZE) / cam.zoom.y
+				_clamp_camera(cam)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_zoom_camera(cam, 0.9)
-		elif event.button_index == MOUSE_BUTTON_MIDDLE:
+			if event.ctrl_pressed:
+				_zoom_camera_at(cam, 0.9, event.position, container, vp)
+			elif event.shift_pressed:
+				# Shift+wheel-down → camera moves left (x decreases)
+				cam.position.x -= float(CELL_SIZE) / cam.zoom.x
+				_clamp_camera(cam)
+			else:
+				# Plain wheel-down → camera moves down (y increases)
+				cam.position.y += float(CELL_SIZE) / cam.zoom.y
+				_clamp_camera(cam)
+		elif event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
-				is_panning = true
+				# Begin potential drag-pan; defer click decision until release.
+				mouse_down = true
+				dragged = false
+				mouse_down_pos = event.position
 				pan_start_mouse = event.position
 				pan_start_cam = cam.position
-			else:
 				is_panning = false
-		elif event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			is_panning = false
-			var world_pos: Vector2 = _container_to_world(event.position, container, vp, cam)
-			var cell := Vector2i(int(world_pos.x / CELL_SIZE), int(world_pos.y / CELL_SIZE))
-			_handle_grid_click(cell, renderer == command_renderer)
+			else:
+				# Release: if we crossed the drag threshold, suppress the click.
+				var was_dragged: bool = dragged
+				mouse_down = false
+				dragged = false
+				is_panning = false
+				if not was_dragged:
+					var world_pos: Vector2 = _container_to_world(event.position, container, vp, cam)
+					var cell := Vector2i(int(world_pos.x / CELL_SIZE), int(world_pos.y / CELL_SIZE))
+					_handle_grid_click(cell, renderer == command_renderer)
 	elif event is InputEventMouseMotion:
-		if is_panning and (event.button_mask & MOUSE_BUTTON_MASK_MIDDLE):
-			var delta: Vector2 = (pan_start_mouse - event.position) / cam.zoom
-			cam.position = pan_start_cam + delta
-			_clamp_camera(cam)
+		# Promote a held left-button to a drag-pan once we cross the threshold.
+		if mouse_down and (event.button_mask & MOUSE_BUTTON_MASK_LEFT):
+			if not dragged and event.position.distance_to(mouse_down_pos) >= DRAG_THRESHOLD_PX:
+				dragged = true
+				is_panning = true
+			if is_panning:
+				var delta: Vector2 = (pan_start_mouse - event.position) / cam.zoom
+				cam.position = pan_start_cam + delta
+				_clamp_camera(cam)
 		renderer.set_mouse_world_pos(_container_to_world(event.position, container, vp, cam))
 
 
@@ -522,6 +558,19 @@ func _container_to_world(container_pos: Vector2, container: SubViewportContainer
 func _zoom_camera(cam: Camera2D, factor: float) -> void:
 	var new_zoom: float = clampf(cam.zoom.x * factor, MIN_ZOOM, MAX_ZOOM)
 	cam.zoom = Vector2(new_zoom, new_zoom)
+	_clamp_camera(cam)
+
+func _zoom_camera_at(cam: Camera2D, factor: float, container_pos: Vector2,
+		container: SubViewportContainer, vp: SubViewport) -> void:
+	# Zoom while keeping the world point under the cursor stationary.
+	var world_before: Vector2 = _container_to_world(container_pos, container, vp, cam)
+	var old_zoom: float = cam.zoom.x
+	var new_zoom: float = clampf(old_zoom * factor, MIN_ZOOM, MAX_ZOOM)
+	if is_equal_approx(new_zoom, old_zoom):
+		return
+	cam.zoom = Vector2(new_zoom, new_zoom)
+	var world_after: Vector2 = _container_to_world(container_pos, container, vp, cam)
+	cam.position += world_before - world_after
 	_clamp_camera(cam)
 
 func _clamp_camera(cam: Camera2D) -> void:
