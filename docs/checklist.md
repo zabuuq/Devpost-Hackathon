@@ -221,7 +221,7 @@ Source asset: `assets/backgrounds/nebula.jpg` (5333×3555, downloaded from Envat
   Acceptance: Title renders as two lines on splash, main menu, and victory. "NEBULA" is visibly larger and matches the width of "Battlestations:" above it.
   Verify: Run the game. Confirm splash, main menu, and victory each show the two-line title with "NEBULA" stretched to match "Battlestations:" width.
 
-- [ ] **I3-5. Use ship-type colors during fleet placement**
+- [x] **I3-5. Use ship-type colors during fleet placement**
   Spec ref: `backlog.md > Ship colors during placement`
   What to build: In `scripts/fleet_placement.gd` (and `scenes/fleet_placement.tscn` if relevant), update the ship-strip rendering in the left panel and the placed-ship rendering on the placement grid to use the same `SHIP_COLORS` dictionary used by `scripts/ui/grid_renderer.gd`. Today the placement renderer draws ships in a single uniform color. After this change, each ship type (battleship, probe_ship, destroyer, cruiser) renders in its assigned color in both the strip selector and on the grid. Ghost ship (cursor preview) keeps its current red-on-invalid behavior; the base ghost color may shift toward the ship's tint for clarity.
   Acceptance: Ship strips in the left panel render in their ship-type colors. Placed ships on the grid render in their ship-type colors. Two destroyers share the destroyer color (intended — they are the same ship type). No regression in placement validation, rotation, or Done-button behavior.

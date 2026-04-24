@@ -55,6 +55,13 @@ func _setup_ship_list() -> void:
 		var squares: int = ShipDefinitions.SHIPS[stype]["squares"]
 		btn.text = "%s (%d sq)" % [SHIP_NAMES.get(stype, stype), squares]
 		btn.custom_minimum_size = Vector2(160, 36)
+		# Tint each ship-type button in its canonical color. Use font color overrides
+		# so placement-state signaling via `modulate` (green on placed) still works.
+		var tint: Color = GridRenderer.SHIP_COLORS.get(stype, Color.WHITE)
+		btn.add_theme_color_override("font_color", tint)
+		btn.add_theme_color_override("font_hover_color", tint.lightened(0.2))
+		btn.add_theme_color_override("font_pressed_color", tint.lightened(0.3))
+		btn.add_theme_color_override("font_focus_color", tint)
 		btn.pressed.connect(_on_ship_button_pressed.bind(i))
 		ship_list_container.add_child(btn)
 		ship_buttons.append(btn)
@@ -192,16 +199,22 @@ func _draw_grid() -> void:
 	for idx in placed_ships:
 		var inst: ShipInstance = placed_ships[idx]
 		var cells := ShipDefinitions.get_ship_cells(inst.ship_type, inst.position, inst.facing)
+		var ship_color: Color = GridRenderer.SHIP_COLORS.get(inst.ship_type, Color.WHITE)
 		for cell in cells:
 			var rect := Rect2(cell.x * CELL_SIZE + 1, cell.y * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2)
-			grid_node.draw_rect(rect, Color(0.2, 0.6, 1.0, 0.8))
+			grid_node.draw_rect(rect, ship_color)
 		if cells.size() > 0:
 			var front := cells[cells.size() - 1]
 			_draw_facing_triangle_on_grid(grid_node, front, inst.facing)
 	if selected_ship_idx >= 0:
 		var stype: String = ShipDefinitions.FLEET[selected_ship_idx]
 		ghost_valid = _is_placement_valid(stype, ghost_position, ghost_facing)
-		var ghost_color := Color(0.3, 1.0, 0.3, 0.5) if ghost_valid else Color(1.0, 0.2, 0.2, 0.5)
+		# Valid ghost: blend the ship's tint toward green for a go-signal that still
+		# reads as the selected ship type. Invalid ghost stays pure red.
+		var ship_tint: Color = GridRenderer.SHIP_COLORS.get(stype, Color.WHITE)
+		var valid_ghost: Color = ship_tint.lerp(Color(0.3, 1.0, 0.3, 1.0), 0.5)
+		valid_ghost.a = 0.5
+		var ghost_color := valid_ghost if ghost_valid else Color(1.0, 0.2, 0.2, 0.5)
 		var cells := ShipDefinitions.get_ship_cells(stype, ghost_position, ghost_facing)
 		for cell in cells:
 			if cell.x >= 0 and cell.x < GRID_COLS and cell.y >= 0 and cell.y < GRID_ROWS:
