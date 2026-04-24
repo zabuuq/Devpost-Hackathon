@@ -304,3 +304,55 @@ Subagent gotchas worth noting for future work:
 - The `docs/color-scheme.md` rewrite in I3-6 included a "parking lot" note that the itch.io page theme (set in I2-11 from the old palette) is now stale. Cowork follow-up if Jason wants in-game and itch.io to match.
 
 Overall impression: cleanest iteration yet. Nebula was load-bearing for the marketing copy ("hide five ships in the nebula"), and pulling it in closed the gap between what the game promised and what it actually rendered. Probe-darken UX flip was a subtle but important call — turns the probe from "fog" to "clearing." Two-line title is a small pixel win that punches above its weight in the hero shots.
+
+## /iterate — Iteration 4
+
+Started 2026-04-24. Devpost edit window closes 2026-04-29. This iteration is a viewport baseline fix plus a three-bug sweep; Jason listed them unprompted.
+
+### What Jason chose and why
+Two concerns driving the pass:
+1. **Hi-res scaling.** On large monitors, buttons and text read as too small. itch.io also exposes a "Viewport dimensions" field that Jason wants to set correctly.
+2. **Three latent bugs** that have been sitting in `backlog.md` since at least I3 — Cruiser forward-move cost after rotation, first-turn energy regen exceeding max, and the empty-state label persisting in the Ship Panel when a ship is selected.
+
+### What the review pass surfaced
+- `project.godot` has **no `[display]` section at all**. Godot's default 1152×648 viewport + `disabled` stretch mode are live. That's why UI looks tiny on big monitors — canvas grows, UI stays pixel-fixed.
+- The game's scenes are laid out against 1600×900 in practice. The screenshot runner's crop math at `scripts/debug/screenshot_runner.gd` is keyed to a 1600×900 window, and every in-editor tuning pass so far has been done at that size. So the project's "real" base is 1600×900; `project.godot` just never got the memo.
+- Web export preset already has `html/canvas_resize_policy=2` (Adaptive), which is the right setting to pair with `canvas_items` stretch. No export preset change needed.
+- Empty-state label bug has a temporary workaround in `_shot_08a_ship_panel_tight()` that needs to be removed once the real fix lands — flagged in the backlog entry.
+
+### Scoping decisions
+- **Base resolution:** 1600×900 (matches screenshot runner + existing scene layouts, no re-tuning expected).
+- **Stretch mode:** `canvas_items` + `expand` aspect. Scales UI proportionally, text stays crisp (no framebuffer scaling blur), widescreen canvases get extra horizontal space rather than letterboxing.
+- **itch.io viewport field:** set to 1600×900 during I4-5 redeploy.
+- **Redeploy handling:** I4-5 is guided-with-gates per item #12's model. Three explicit pauses: before butler push, before the itch.io field edit, and at the devlog draft stage. No draft/public state flip — page is already public. Devlog draft is required per `project_itch_devlog_on_updates.md` memory.
+
+### Iteration size
+5 items. One viewport/stretch fix, three bug fixes, one gated redeploy.
+
+### Observations
+Jason flagged the itch.io viewport field as the trigger for pulling this iteration together. That's a good catch — the field was never set, and the hi-res scaling issue had the same root cause. Bundling the three dormant bugs with the viewport fix also makes the redeploy worthwhile (one butler push, multiple fixes landing together) rather than shipping the viewport change solo.
+
+### Build summary (autonomous + gated)
+
+5 items completed. Autonomous dispatch for I4-1 through I4-4; I4-5 ran in guided-with-gates mode per item #12's model.
+
+Commits (chronological):
+- `b7a2c5d` I4-1 — `[display]` section added to `project.godot` (viewport 1600×900, `canvas_items` stretch, `expand` aspect).
+- `62eab09` I4-2 — forward-cost discount now tracks post-rotation facing. Fix in `action_resolver.gd::resolve_move` and `gameplay.gd::_update_move_preview` (both passed the pre-rotation facing into `calc_move_cost`).
+- `de0c2ae` I4-3 — `turn_start()` energy regen clamps to `max_energy` via `mini()`. First-turn overshoot resolved.
+- `d2c6b0e` I4-4 — `ship_panel.gd` caches `_empty_label` and toggles it alongside `_container` in `show_ship` / `show_enemy_ship` / `clear_ship`. Screenshot-runner workaround in `_shot_08a_ship_panel_tight()` removed. Four shots regenerated on-disk (`06_probe_aiming`, `08_ship_panel_sliders`, `10_active_probe_enemy_panel`, `11_probe_closeup`, plus the intended `08a_ship_panel_tight`). Commit bundled the regenerated PNGs.
+- `<pending>` I4-5 — deploy commit with checklist tick + devlog draft + this summary.
+
+Checkpoint notes:
+- **CP1 (after I4-3):** Jason approved without tuning — "I approve these changes."
+- **I4-5 gates:**
+  - Gate 1 (local smoke test at `http://localhost:8000`, python http.server): approved with "approve."
+  - Gate 2 (itch.io Viewport dimensions field edit to 1600 × 900): Jason executed manually on the live page and confirmed with "I did it."
+  - Gate 3 (devlog draft): saved as `docs/claude-cowork/devlog-i4.md`, Gallows-Deadpan voice, ~255 words, titled "Your monitor is not a postage stamp." Three bold lede phrases mirror the I3 devlog structure. Post manually from the itch.io Devlog editor.
+
+Butler push result:
+- New build **#1634061** (version 5) replaces prior live **#1632951** (I3 nebula build, version 4).
+- 95.08% patch savings — only 3.46 MiB fresh data. Build was processing at push time; should be live on the itch.io URL shortly after the butler push.
+- Binary on disk reports Godot 4.6.1; `project.godot` feature tag is `4.6`, so export succeeds. Version-bump to 4.6.2 remains a latent cleanup item (noted originally in I2-1's deploy record).
+
+Overall impression: tight, clean sweep. The viewport fix was the most impactful single change of the iteration — the scenes had been tuned at 1600×900 the whole time, so flipping the stretch mode on essentially unlocked the work that was already done. The three bug fixes were small-surface, low-risk edits with clear root causes; no follow-on ambiguity surfaced during the dispatches.
