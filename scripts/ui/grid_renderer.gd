@@ -79,11 +79,15 @@ func _draw_grid_lines() -> void:
 
 func _draw_command_ships() -> void:
 	var fleet: Array = GameState.players[GameState.current_player]["fleet"]
+	# First pass: draw wreckage for destroyed ships so they sit under living ships
 	for ship: Variant in fleet:
 		var s: ShipInstance = ship
 		if s.is_destroyed:
 			_draw_wreckage_cells(s.get_occupied_cells())
-		else:
+	# Second pass: draw living ships + facing triangles on top
+	for ship: Variant in fleet:
+		var s: ShipInstance = ship
+		if not s.is_destroyed:
 			_draw_ship_cells(s.get_occupied_cells(), SHIP_COLORS.get(s.ship_type, Color.WHITE), 1.0)
 			_draw_facing_triangle(_get_front_cell(s.ship_type, s.position, s.facing), s.facing)
 
@@ -91,7 +95,6 @@ func _draw_command_ships() -> void:
 
 func _draw_target_cells() -> void:
 	var cell_records: Dictionary = GameState.players[GameState.current_player]["cell_records"]
-	var drawn_fog: Array = []
 	# Draw probe illumination overlay on all actively probed cells
 	for key: Variant in cell_records.keys():
 		var cell: Vector2i = key
@@ -101,15 +104,16 @@ func _draw_target_cells() -> void:
 				Rect2(cell.x * CELL_SIZE, cell.y * CELL_SIZE, CELL_SIZE, CELL_SIZE),
 				COLOR_PROBE_FILL
 			)
-	# Draw ships and blind hits on top of the illumination
+	# Collect fog ships once (dedupe) with their cells + probed state
+	var collected_fogs: Array = []
+	var fog_cells_list: Array = []
+	var fog_probed_list: Array = []
+	var seen_fog: Array = []
 	for key: Variant in cell_records.keys():
 		var cell: Vector2i = key
 		var record: CellRecord = cell_records[cell]
-		# Blind hit drawn unless cell has an active probe (active probe shows full detail instead)
-		if record.has_blind_hit and not record.has_probe:
-			_draw_blind_hit(cell)
-		if record.ship != null and not drawn_fog.has(record.ship):
-			drawn_fog.append(record.ship)
+		if record.ship != null and not seen_fog.has(record.ship):
+			seen_fog.append(record.ship)
 			var fog: FogShipRecord = record.ship
 			var ship_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(fog.ship_type, fog.position, fog.facing)
 			# Ship is active if ANY of its cells have an active probe
@@ -120,18 +124,35 @@ func _draw_target_cells() -> void:
 					if sc_rec.has_probe:
 						any_probed = true
 						break
-			# Destroyed ship with active probe: show wreckage
-			if fog.last_armor <= 0 and any_probed:
-				_draw_wreckage_cells(ship_cells)
-			else:
-				var alpha: float = 1.0 if any_probed else 0.35
-				_draw_ship_cells(
-					ship_cells,
-					SHIP_COLORS.get(fog.ship_type, Color.WHITE),
-					alpha
-				)
-				if any_probed:
-					_draw_facing_triangle(_get_front_cell(fog.ship_type, fog.position, fog.facing), fog.facing)
+			collected_fogs.append(fog)
+			fog_cells_list.append(ship_cells)
+			fog_probed_list.append(any_probed)
+	# First: wreckage for destroyed fog ships (below everything else)
+	for i in range(collected_fogs.size()):
+		var fog: FogShipRecord = collected_fogs[i]
+		var any_probed: bool = fog_probed_list[i]
+		if fog.last_armor <= 0 and any_probed:
+			_draw_wreckage_cells(fog_cells_list[i])
+	# Next: blind hits (unchanged rule — suppressed on cells with an active probe)
+	for key: Variant in cell_records.keys():
+		var cell: Vector2i = key
+		var record: CellRecord = cell_records[cell]
+		if record.has_blind_hit and not record.has_probe:
+			_draw_blind_hit(cell)
+	# Finally: living fog ships + facing triangles on top
+	for i in range(collected_fogs.size()):
+		var fog: FogShipRecord = collected_fogs[i]
+		var any_probed: bool = fog_probed_list[i]
+		if fog.last_armor <= 0 and any_probed:
+			continue  # already drawn as wreckage
+		var alpha: float = 1.0 if any_probed else 0.35
+		_draw_ship_cells(
+			fog_cells_list[i],
+			SHIP_COLORS.get(fog.ship_type, Color.WHITE),
+			alpha
+		)
+		if any_probed:
+			_draw_facing_triangle(_get_front_cell(fog.ship_type, fog.position, fog.facing), fog.facing)
 
 # --- Ghost ship + selection overlays ---
 
