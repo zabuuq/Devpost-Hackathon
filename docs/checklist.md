@@ -263,7 +263,7 @@ Context: `project.godot` ships with no `[display]` section, so Godot's default 1
   Acceptance: Start a Cruiser move. Rotate via Q/E to change facing. Move 1 square in the NEW facing direction — live preview shows 0.5 pts / 25 energy. Move 1 square in any other direction — live preview shows 1.0 pts / 50 energy. Holds whether the rotation is the first or second move action.
   Verify: Start gameplay. Select the Cruiser. Click Move. Rotate with E (or Q). Use WASD to move 1 square in the new forward direction — confirm the cost line shows 0.5 pts / 25 energy. Back out, try a non-forward direction — confirm 1.0 / 50.
 
-- [ ] **I4-3. Bug: first-turn energy regen exceeds max_energy**
+- [x] **I4-3. Bug: first-turn energy regen exceeds max_energy**
   Spec ref: `backlog.md > Bug: first-turn energy regen ignores cap`
   What to build: Fix the energy regen step in `scripts/gameplay/turn_manager.gd` (`turn_start()`) to clamp at `ship.max_energy`. Today, ships start at max_energy on fleet placement, so the +50 regen on the first turn_start pushes every ship 50 over its documented max (Battleship 1050 instead of 1000, etc.). Regen should be `energy = min(energy + 50, max_energy)`.
   Acceptance: On P1's very first turn (and P2's first turn), every ship's `energy` reads exactly its `max_energy` from ShipDefinitions — Battleship 1000, Probe Ship 1000, Destroyer 750, Destroyer 750, Cruiser 500. On subsequent turns, ships below max regen +50 but cap at max; ships already at max stay at max.

@@ -7,7 +7,8 @@ func turn_start() -> void:
 	age_cell_records(player.cell_records)
 	for ship in player.fleet:
 		if not ship.is_destroyed:
-			ship.current_energy += 50
+			var max_energy: int = ShipDefinitions.SHIPS[ship.ship_type]["max_energy"]
+			ship.current_energy = mini(ship.current_energy + 50, max_energy)
 			ship.action_taken = false
 			ship.move_actions_taken = 0
 			recalculate_sliders(ship)
