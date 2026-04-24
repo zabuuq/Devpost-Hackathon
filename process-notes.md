@@ -251,3 +251,56 @@ Jason is working as a collaborator rather than a learner at this point. He drove
 - **Page visibility:** Draft, kept draft intentionally for now. Public switch deferred until Iteration 2 is fully done. Secret URL is the access path Cowork (I2-2) and all downstream verification will use.
 - **Verification:** WebFetch against the secret URL confirmed a valid itch.io game page rendering `init_ViewHtmlGame`, "Run game" button, Godot tag, and game metadata. No in-browser playthrough run by the build agent; local smoke test skipped per autonomous-mode intent.
 - **Open note:** `itch-theme-screenshot.png` is at the project root and got auto-imported by Godot, so it's also bundled inside `index.pck` (trivial, ~43KB). Cleanup deferred to end of Iteration 2.
+
+## /iterate — Iteration 3
+
+Started 2026-04-23. Submission is live; Devpost edit window stays open until 2026-04-29. This pass is the final polish round before the deadline.
+
+### What Jason chose and why
+Graphics — specifically a real nebula background. The marketing copy (itch description, Devpost story, How to Play page 1, tagline "Hide five ships in the nebula") leans hard on the nebula concept, but the actual build still ships a flat `Color(0.05, 0.05, 0.15)` rectangle for every background. Closing that gap is the highest-impact visual change available before the deadline.
+
+### What the review pass surfaced
+- The nebula was actually in the original spec (`spec.md > Grid Rendering > GridRenderer` rendering layer 1, "nebula background texture") but got placeholdered in the build. This is debt payoff, not a new feature — single-insertion-point in `_draw_background()`.
+- The probe illumination overlay is already semi-transparent and drawn on top, so the famous "active probe over nebula" hero shot just appears once a texture is swapped in. No structural changes needed.
+- All four static scenes (splash/menu/handoff/victory) share the same flat dark color — natural extension if Jason wanted full atmospheric consistency. He did, picked Option B.
+- Backlog scan: three adjacent visual items bundle naturally because they touch files we're already editing — two-line title treatment (splash/menu/victory), ship colors during placement (fleet_placement), wreckage z-order bug (grid_renderer.gd). Pulled all three in at Jason's request.
+
+### Asset sourcing
+Jason's constraint: public domain or properly licensed only, no pending-permission images. He directed me to his Envato Elements account (Core plan, unlimited stock downloads, Lifetime Commercial License). Drove the browser via Playwright MCP — he signed in, I searched. Walked through 12 candidate thumbnails across two scrolls; he ranked his top 4 (#4 > #2 > #6 > #8) and picked #4 ("Nebula Cloud Formation in Space with Stars" by AveCalvar, 5333×3555). Downloaded to `assets/backgrounds/nebula.jpg` (13 MB).
+
+Important guidance Jason gave during selection: he wants the nebula to **fill** the frame ("ships are caught in the nebula") and is open to changing the game's color scheme to match the chosen image. Both shaped the checklist — I3-1 uses a centered horizontal-band crop, I3-3 uses Keep Aspect Covered, and I3-6 explicitly samples and applies a new palette.
+
+### Iteration size
+7 items. Bigger than the suggested 3-5, but defensible: Jason explicitly chose to expand scope (added all three backlog bundles). Each item maps to a single concern that benefits from its own acceptance/verify entry.
+
+Sequence rationale:
+1. I3-1 nebula on grids (the headline change)
+2. I3-2 wreckage z-order fix (piggyback on I3-1's file)
+3. I3-3 nebula on static scenes
+4. I3-4 two-line title (after backgrounds so titles can be tuned against the nebula)
+5. I3-5 ship colors during placement (independent visual fix)
+6. I3-6 color scheme update (last visual change so palette can be sampled with full context)
+7. I3-7 visual sanity + screenshot regen (final, captures everything in one pass)
+
+### Observations
+Jason continues to operate as a collaborator: gave clear sourcing constraints up front, used the Playwright session to drive the asset selection himself rather than delegating taste, and proactively asked "Are there any other items in the backlog about the color or look of the game?" — exactly the right question to ask once the iteration scope is forming. The bundling of three backlog items into the iteration came from him recognizing the file-overlap opportunity, not from me pushing it.
+
+### Build summary (autonomous mode)
+
+7 items completed across 3 checkpoints. Sequence held — no checklist revisions. Subagents handled each item; orchestrator paused at every-3 items for in-game verification per the checklist header.
+
+Mid-item user-driven additions (logged as `(cont.)` commits, not separate items):
+- **I3-1 (cont.)** `ee7ea67` — probe overlay flipped from cyan-additive (`Color(0.3, 0.7, 1.0, 0.2)`) to black-darken (`Color(0, 0, 0, 0.45)`). Jason's call: "you can see *through* the nebula better." Same commit added the nebula texture to the fleet placement grid (Jason flagged that placement should match gameplay). Both changes belonged conceptually to I3-1 so they were folded back into that step.
+- **I3-4 (cont.)** `ad6b174` — title line-1 sizes bumped twice (40→60→56 splash, 28→44→41 main_menu, 16→24→22 victory). The original 2.5× ratio overshot — width-equalizing ratio in the default Godot font is closer to 1.8× because uppercase letters are wide and "NEBULA" is 6 of them.
+
+Checkpoint observations:
+- **CP1 (after I3-3):** Approved without tuning.
+- **CP2 (after I3-6):** Approved after the title-size tune. Two rounds: first bump (I told user line 1 was likely too small at 40% of line 2 → moved to 60%), Jason said "slightly bigger than NEBULA," tuned down ~7% to land. Subagent's eyeball was workable but needed the human-in-loop pass.
+- **CP3 (after I3-7):** Final item is itself a verification pass — subagent ran the screenshot script via the godot CLI runner per CLAUDE.md, spot-checked the regenerated PNGs, reported no tuning needed.
+
+Subagent gotchas worth noting for future work:
+- Subagents can't see rendered output. Width-matching font sizes via character-count ratio is unreliable; needs human verification or font metric measurement. Future similar items should either use a measured approach or include explicit "expect to tune at checkpoint."
+- The screenshot runner lives at `scripts/debug/screenshot_runner.gd` and is invoked with `godot --path . -- --screenshot`. Subagent had to find Godot's binary (it was at `/c/Users/jcmcc/OneDrive/Godot/godot.exe`). Worth recording for future iterations.
+- The `docs/color-scheme.md` rewrite in I3-6 included a "parking lot" note that the itch.io page theme (set in I2-11 from the old palette) is now stale. Cowork follow-up if Jason wants in-game and itch.io to match.
+
+Overall impression: cleanest iteration yet. Nebula was load-bearing for the marketing copy ("hide five ships in the nebula"), and pulling it in closed the gap between what the game promised and what it actually rendered. Probe-darken UX flip was a subtle but important call — turns the probe from "fog" to "clearing." Two-line title is a small pixel win that punches above its weight in the hero shots.
