@@ -17,7 +17,9 @@ var players: Array = [
 		"turn_stats": {
 			"probes_launched": 0,
 			"hits_scored": 0
-		}
+		},
+		"command_camera": {},
+		"target_camera": {}
 	},
 	{
 		"fleet": [],
@@ -25,7 +27,9 @@ var players: Array = [
 		"turn_stats": {
 			"probes_launched": 0,
 			"hits_scored": 0
-		}
+		},
+		"command_camera": {},
+		"target_camera": {}
 	}
 ]
 
@@ -42,7 +46,9 @@ func reset() -> void:
 			"turn_stats": {
 				"probes_launched": 0,
 				"hits_scored": 0
-			}
+			},
+			"command_camera": {},
+			"target_camera": {}
 		},
 		{
 			"fleet": [],
@@ -50,7 +56,9 @@ func reset() -> void:
 			"turn_stats": {
 				"probes_launched": 0,
 				"hits_scored": 0
-			}
+			},
+			"command_camera": {},
+			"target_camera": {}
 		}
 	]
 

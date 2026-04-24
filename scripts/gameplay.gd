@@ -75,6 +75,10 @@ func _ready() -> void:
 	command_renderer.refresh()
 	target_renderer.refresh()
 
+	# Restore per-player camera state (or fall back to fit-to-grid default).
+	_restore_camera_state(command_camera, command_subviewport, true)
+	_restore_camera_state(target_camera, target_subviewport, false)
+
 	# Set up ship panel
 	_setup_ship_panel()
 
@@ -151,29 +155,36 @@ func _on_target_viewport_gui_input(event: InputEvent) -> void:
 
 func _handle_grid_input(event: InputEvent, cam: Camera2D, container: SubViewportContainer,
 		vp: SubViewport, renderer: GridRenderer) -> void:
+	var is_command: bool = renderer == command_renderer
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			if event.ctrl_pressed:
 				_zoom_camera_at(cam, 1.1, event.position, container, vp)
+				_save_camera_state(cam, is_command)
 			elif event.shift_pressed:
 				# Shift+wheel-up → camera moves right (x increases)
 				cam.position.x += float(CELL_SIZE) / cam.zoom.x
 				_clamp_camera(cam)
+				_save_camera_state(cam, is_command)
 			else:
 				# Plain wheel-up → camera moves up (y decreases)
 				cam.position.y -= float(CELL_SIZE) / cam.zoom.y
 				_clamp_camera(cam)
+				_save_camera_state(cam, is_command)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			if event.ctrl_pressed:
 				_zoom_camera_at(cam, 0.9, event.position, container, vp)
+				_save_camera_state(cam, is_command)
 			elif event.shift_pressed:
 				# Shift+wheel-down → camera moves left (x decreases)
 				cam.position.x -= float(CELL_SIZE) / cam.zoom.x
 				_clamp_camera(cam)
+				_save_camera_state(cam, is_command)
 			else:
 				# Plain wheel-down → camera moves down (y increases)
 				cam.position.y += float(CELL_SIZE) / cam.zoom.y
 				_clamp_camera(cam)
+				_save_camera_state(cam, is_command)
 		elif event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
 				# Begin potential drag-pan; defer click decision until release.
@@ -192,7 +203,7 @@ func _handle_grid_input(event: InputEvent, cam: Camera2D, container: SubViewport
 				if not was_dragged:
 					var world_pos: Vector2 = _container_to_world(event.position, container, vp, cam)
 					var cell := Vector2i(int(world_pos.x / CELL_SIZE), int(world_pos.y / CELL_SIZE))
-					_handle_grid_click(cell, renderer == command_renderer)
+					_handle_grid_click(cell, is_command)
 	elif event is InputEventMouseMotion:
 		# Promote a held left-button to a drag-pan once we cross the threshold.
 		if mouse_down and (event.button_mask & MOUSE_BUTTON_MASK_LEFT):
@@ -203,6 +214,7 @@ func _handle_grid_input(event: InputEvent, cam: Camera2D, container: SubViewport
 				var delta: Vector2 = (pan_start_mouse - event.position) / cam.zoom
 				cam.position = pan_start_cam + delta
 				_clamp_camera(cam)
+				_save_camera_state(cam, is_command)
 		renderer.set_mouse_world_pos(_container_to_world(event.position, container, vp, cam))
 
 
@@ -588,6 +600,39 @@ func _fit_camera(cam: Camera2D, vp_size: Vector2) -> void:
 		var zoom_y: float = vp_size.y / grid_h
 		var fit_zoom: float = min(zoom_x, zoom_y)
 		cam.zoom = Vector2(fit_zoom, fit_zoom)
+
+# ---------------------------------------------------------------------------
+# Per-player camera state persistence (I5-2)
+# ---------------------------------------------------------------------------
+
+func _save_camera_state(cam: Camera2D, is_command: bool) -> void:
+	var key: String = "command_camera" if is_command else "target_camera"
+	var state: Dictionary = {
+		"position": cam.position,
+		"zoom": cam.zoom.x,
+	}
+	GameState.players[GameState.current_player][key] = state
+
+func _restore_camera_state(cam: Camera2D, vp: SubViewport, is_command: bool) -> void:
+	var key: String = "command_camera" if is_command else "target_camera"
+	var saved: Dictionary = GameState.players[GameState.current_player][key]
+	if saved.is_empty():
+		_fit_camera(cam, Vector2(vp.size))
+		return
+	var saved_position: Vector2 = saved["position"]
+	var saved_zoom: float = saved["zoom"]
+	cam.position = saved_position
+	cam.zoom = Vector2(saved_zoom, saved_zoom)
+	_clamp_camera(cam)
+
+func _exit_tree() -> void:
+	# Safety-net save in case we exit without going through _on_end_turn_pressed.
+	if GameState.phase != GameState.Phase.GAMEPLAY:
+		return
+	if not is_instance_valid(command_camera) or not is_instance_valid(target_camera):
+		return
+	_save_camera_state(command_camera, true)
+	_save_camera_state(target_camera, false)
 
 func _on_end_turn_pressed() -> void:
 	if interaction_state == InteractionState.MOVE_PREVIEW:
