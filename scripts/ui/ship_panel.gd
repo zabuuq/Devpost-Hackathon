@@ -4,6 +4,7 @@ signal action_requested(action: String, ship: ShipInstance)
 
 var _ship: ShipInstance = null
 var _container: VBoxContainer = null
+var _empty_label: Label = null
 
 # UI references
 var _name_label: Label = null
@@ -24,6 +25,10 @@ func _ready() -> void:
 
 
 func _build_ui() -> void:
+	# Cache sibling "Click a ship..." label so we can hide it whenever a ship
+	# is selected (otherwise it bleeds through above the populated panel).
+	_empty_label = get_parent().get_node_or_null("ShipPanelEmpty") as Label
+
 	_container = VBoxContainer.new()
 	_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_child(_container)
@@ -127,6 +132,8 @@ func _build_ui() -> void:
 func show_ship(ship: ShipInstance) -> void:
 	_ship = ship
 	_container.visible = true
+	if _empty_label != null:
+		_empty_label.visible = false
 	# Restore visibility of controls that show_enemy_ship may have hidden
 	_shield_slider.get_parent().visible = true
 	_laser_slider.get_parent().visible = true
@@ -141,6 +148,8 @@ func show_ship(ship: ShipInstance) -> void:
 func show_enemy_ship(fog: FogShipRecord) -> void:
 	_ship = null
 	_container.visible = true
+	if _empty_label != null:
+		_empty_label.visible = false
 	var stats: Dictionary = ShipDefinitions.SHIPS[fog.ship_type]
 	var display_name: String = fog.ship_type.replace("_", " ").capitalize()
 
@@ -172,6 +181,8 @@ func clear_ship() -> void:
 		_laser_btn.visible = true
 		_missile_btn.visible = true
 		_move_btn.visible = true
+	if _empty_label != null:
+		_empty_label.visible = true
 
 
 func _refresh_display() -> void:

@@ -664,20 +664,7 @@ func _shot_08a_ship_panel_tight() -> void:
 		var battleship: ShipInstance = _p1_ship("battleship")
 		if battleship != null:
 			ship_panel.call("show_ship", battleship)
-	# Workaround for the "empty-state label persists when ship selected" bug
-	# (see docs/backlog.md). The ShipPanelEmpty label in gameplay.tscn stays
-	# visible above the populated panel whenever a ship is active. Hide it
-	# for this capture only; restore afterwards so subsequent shots see the
-	# original tree state.
-	var empty_label: CanvasItem = gp.get_node_or_null(
-		"MainLayout/LeftPanel/ShipPanelContainer/ShipPanelEmpty") as CanvasItem
-	var was_visible: bool = true
-	if empty_label != null:
-		was_visible = empty_label.visible
-		empty_label.visible = false
 	await _capture_cropped("08a_ship_panel_tight.png", Rect2i(0, 40, 200, 540))
-	if empty_label != null:
-		empty_label.visible = was_visible
 
 
 func _shot_09_move_preview() -> void:
