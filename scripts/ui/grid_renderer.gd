@@ -12,7 +12,7 @@ const NEBULA_SRC_RECT: Rect2 = Rect2(0, 900, 5333, 1333)
 
 const COLOR_BG: Color = Color(0.05, 0.05, 0.15, 1.0)
 const COLOR_GRID_LINE: Color = Color(0.15, 0.15, 0.3, 0.8)
-const COLOR_PROBE_FILL: Color = Color(0.3, 0.7, 1.0, 0.2)
+const COLOR_PROBE_FILL: Color = Color(0.0, 0.0, 0.0, 0.45)
 const COLOR_PROBE_BORDER: Color = Color(0.3, 0.7, 1.0, 0.9)
 const COLOR_WRECKAGE: Color = Color(0.35, 0.25, 0.15, 1.0)
 const COLOR_WRECKAGE_X: Color = Color(0.55, 0.45, 0.3, 1.0)

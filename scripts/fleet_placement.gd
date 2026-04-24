@@ -7,6 +7,9 @@ const GRID_CENTER: Vector2i = Vector2i(40, 10)
 const MIN_ZOOM: float = 0.1
 const MAX_ZOOM: float = 4.0
 
+const NEBULA_TEXTURE: Texture2D = preload("res://assets/backgrounds/nebula.jpg")
+const NEBULA_SRC_RECT: Rect2 = Rect2(0, 900, 5333, 1333)
+
 const SHIP_NAMES: Dictionary = {
 	"battleship": "Battleship",
 	"probe_ship": "Probe Ship",
@@ -174,7 +177,11 @@ func _is_placement_valid(stype: String, origin: Vector2i, facing: int) -> bool:
 	return true
 
 func _draw_grid() -> void:
-	grid_node.draw_rect(Rect2(0, 0, GRID_COLS * CELL_SIZE, GRID_ROWS * CELL_SIZE), Color(0.05, 0.05, 0.2, 1.0))
+	grid_node.draw_texture_rect_region(
+		NEBULA_TEXTURE,
+		Rect2(0, 0, GRID_COLS * CELL_SIZE, GRID_ROWS * CELL_SIZE),
+		NEBULA_SRC_RECT
+	)
 	var line_color := Color(0.2, 0.2, 0.4, 0.6)
 	for col in range(GRID_COLS + 1):
 		var x: float = col * CELL_SIZE
