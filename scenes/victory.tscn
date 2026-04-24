@@ -58,7 +58,7 @@ alignment = 1
 [node name="TitleLine1" type="Label" parent="VBoxContainer/TitleBlock"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.9, 0.85, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 22
 text = "Battlestations:"
 horizontal_alignment = 1
 
