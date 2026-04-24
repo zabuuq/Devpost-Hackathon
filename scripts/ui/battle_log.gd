@@ -9,10 +9,10 @@ const SHIP_DISPLAY_NAMES: Dictionary = {
 	"cruiser": "Cruiser",
 }
 
-const COLOR_HIT: Color = Color(1.0, 0.45, 0.3)
-const COLOR_DESTROY: Color = Color(1.0, 0.2, 0.1)
+const COLOR_HIT: Color = Color(1.0, 0.6, 0.5)
+const COLOR_DESTROY: Color = Color(1.0, 0.3, 0.2)
 const COLOR_MISS: Color = Color(0.6, 0.6, 0.65)
-const COLOR_PROBE: Color = Color(0.4, 0.75, 1.0)
+const COLOR_PROBE: Color = Color(0.4, 0.85, 0.82)
 const COLOR_MOVE: Color = Color(0.7, 0.85, 0.7)
 
 var _content: VBoxContainer = null

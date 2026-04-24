@@ -406,7 +406,7 @@ func _update_move_preview() -> void:
 	# Update info label
 	move_info_label.text = "Move Points: %.1f / %.1f | Energy cost: %d" % [pts_used, available, energy_cost]
 	if not valid:
-		move_info_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
+		move_info_label.add_theme_color_override("font_color", Color(1.0, 0.45, 0.4))
 	else:
 		move_info_label.add_theme_color_override("font_color", Color(0.6, 1.0, 0.6))
 

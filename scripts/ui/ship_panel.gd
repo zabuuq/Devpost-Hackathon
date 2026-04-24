@@ -31,13 +31,13 @@ func _build_ui() -> void:
 	# Ship name
 	_name_label = Label.new()
 	_name_label.add_theme_font_size_override("font_size", 14)
-	_name_label.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0))
+	_name_label.add_theme_color_override("font_color", Color(0.36, 0.88, 0.82))
 	_container.add_child(_name_label)
 
 	# Stats
 	_stats_label = Label.new()
 	_stats_label.add_theme_font_size_override("font_size", 11)
-	_stats_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
+	_stats_label.add_theme_color_override("font_color", Color(0.7, 0.77, 0.8))
 	_stats_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	_container.add_child(_stats_label)
 
@@ -97,7 +97,7 @@ func _build_ui() -> void:
 	var action_label: Label = Label.new()
 	action_label.text = "Actions:"
 	action_label.add_theme_font_size_override("font_size", 12)
-	action_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.6))
+	action_label.add_theme_color_override("font_color", Color(0.8, 0.85, 0.67))
 	_container.add_child(action_label)
 
 	_probe_btn = Button.new()

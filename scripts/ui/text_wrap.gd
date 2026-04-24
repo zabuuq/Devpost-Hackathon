@@ -50,7 +50,7 @@ var regions: Array = []:
 		font_size = value
 		queue_redraw()
 
-@export var font_color: Color = Color(0.85, 0.9, 1.0, 1.0):
+@export var font_color: Color = Color(0.85, 0.94, 0.92, 1.0):
 	set(value):
 		font_color = value
 		queue_redraw()

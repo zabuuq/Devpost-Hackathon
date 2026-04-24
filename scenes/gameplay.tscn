@@ -18,7 +18,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.05, 0.05, 0.15, 1.0)
+color = Color(0.08, 0.06, 0.16, 1.0)
 
 [node name="TopBar" type="HBoxContainer" parent="."]
 layout_mode = 1
@@ -35,7 +35,7 @@ size_flags_horizontal = 3
 text = "Player 1 — Turn 1"
 vertical_alignment = 1
 theme_override_font_sizes/font_size = 16
-theme_override_colors/font_color = Color(0.4, 0.8, 1.0, 1.0)
+theme_override_colors/font_color = Color(0.36, 0.88, 0.82, 1.0)
 
 [node name="CommandGridBtn" type="Button" parent="TopBar"]
 custom_minimum_size = Vector2(140, 40)
@@ -48,7 +48,7 @@ text = "Target Grid"
 [node name="EndTurnButton" type="Button" parent="TopBar"]
 custom_minimum_size = Vector2(120, 40)
 text = "End Turn"
-theme_override_colors/font_color = Color(1.0, 0.6, 0.2, 1.0)
+theme_override_colors/font_color = Color(1.0, 0.7, 0.4, 1.0)
 
 [node name="MainLayout" type="HBoxContainer" parent="."]
 layout_mode = 1
@@ -80,7 +80,7 @@ size_flags_horizontal = 3
 [node name="BattleLogEmpty" type="Label" parent="MainLayout/LeftPanel/BattleLogPanel/BattleLogContent"]
 text = "No events yet."
 theme_override_font_sizes/font_size = 12
-theme_override_colors/font_color = Color(0.5, 0.5, 0.6, 1.0)
+theme_override_colors/font_color = Color(0.5, 0.58, 0.62, 1.0)
 
 [node name="ShipPanelContainer" type="VBoxContainer" parent="MainLayout/LeftPanel"]
 size_flags_vertical = 3
@@ -90,7 +90,7 @@ visible = false
 text = "Click a ship on the\nCommand Grid to select it."
 autowrap_mode = 2
 theme_override_font_sizes/font_size = 12
-theme_override_colors/font_color = Color(0.5, 0.5, 0.6, 1.0)
+theme_override_colors/font_color = Color(0.5, 0.58, 0.62, 1.0)
 
 [node name="GridArea" type="Control" parent="MainLayout"]
 size_flags_horizontal = 3
@@ -156,6 +156,7 @@ visible = false
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.6, 1.0, 0.6, 1.0)
 
+
 [node name="MoveButtons" type="HBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 7
@@ -179,7 +180,7 @@ theme_override_colors/font_color = Color(0.3, 1.0, 0.3, 1.0)
 [node name="CancelMoveBtn" type="Button" parent="MoveButtons"]
 custom_minimum_size = Vector2(100, 32)
 text = "Cancel"
-theme_override_colors/font_color = Color(1.0, 0.4, 0.4, 1.0)
+theme_override_colors/font_color = Color(1.0, 0.55, 0.5, 1.0)
 
 [node name="ConfirmMoveDialog" type="ConfirmationDialog" parent="."]
 title = "Confirm Move"

@@ -227,7 +227,7 @@ Source asset: `assets/backgrounds/nebula.jpg` (5333×3555, downloaded from Envat
   Acceptance: Ship strips in the left panel render in their ship-type colors. Placed ships on the grid render in their ship-type colors. Two destroyers share the destroyer color (intended — they are the same ship type). No regression in placement validation, rotation, or Done-button behavior.
   Verify: Run the game to fleet placement. Confirm the five ships in the left panel show distinct colors per ship type. Place each ship and confirm the placed sprite uses the same color. Rotate and re-place to confirm color persists.
 
-- [ ] **I3-6. Update color scheme to harmonize with the nebula**
+- [x] **I3-6. Update color scheme to harmonize with the nebula**
   Spec ref: `docs/color-scheme.md` (will be rewritten)
   What to build: Sample 5–6 dominant colors from `assets/backgrounds/nebula.jpg` (teal/cyan center, coral rim, navy background, warm orange highlight, off-white star color). Define a refreshed palette and apply it across the project:
   - **Backgrounds** (where flat color still shows behind UI panels): shift from `Color(0.05, 0.05, 0.15)` to a sampled nebula-edge navy.

@@ -10,19 +10,19 @@ const NEBULA_TEXTURE: Texture2D = preload("res://assets/backgrounds/nebula.jpg")
 # but shifted up (y=900) to keep the bright bottom-right orange star out of frame.
 const NEBULA_SRC_RECT: Rect2 = Rect2(0, 900, 5333, 1333)
 
-const COLOR_BG: Color = Color(0.05, 0.05, 0.15, 1.0)
-const COLOR_GRID_LINE: Color = Color(0.15, 0.15, 0.3, 0.8)
+const COLOR_BG: Color = Color(0.08, 0.06, 0.16, 1.0)
+const COLOR_GRID_LINE: Color = Color(0.12, 0.15, 0.25, 0.8)
 const COLOR_PROBE_FILL: Color = Color(0.0, 0.0, 0.0, 0.45)
-const COLOR_PROBE_BORDER: Color = Color(0.3, 0.7, 1.0, 0.9)
+const COLOR_PROBE_BORDER: Color = Color(0.4, 0.88, 0.82, 0.9)
 const COLOR_WRECKAGE: Color = Color(0.35, 0.25, 0.15, 1.0)
 const COLOR_WRECKAGE_X: Color = Color(0.55, 0.45, 0.3, 1.0)
-const COLOR_BLIND_HIT: Color = Color(1.0, 0.6, 0.2, 1.0)
+const COLOR_BLIND_HIT: Color = Color(1.0, 0.7, 0.4, 1.0)
 const COLOR_FACING: Color = Color(1.0, 1.0, 0.3, 1.0)
 
 const SHIP_COLORS: Dictionary = {
 	"battleship": Color(0.2, 0.4, 1.0, 1.0),
 	"probe_ship": Color(0.2, 0.85, 0.45, 1.0),
-	"destroyer": Color(0.3, 0.8, 1.0, 1.0),
+	"destroyer": Color(0.35, 0.65, 1.0, 1.0),
 	"cruiser": Color(1.0, 0.65, 0.2, 1.0),
 }
 

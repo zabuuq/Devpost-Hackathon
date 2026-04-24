@@ -52,20 +52,20 @@ layout_mode = 2
 text = "Battlestations:"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 28
-theme_override_colors/font_color = Color(0.4, 0.8, 1.0, 1.0)
+theme_override_colors/font_color = Color(0.36, 0.88, 0.82, 1.0)
 
 [node name="GameTitle" type="Label" parent="MenuContainer/TitleBlock"]
 layout_mode = 2
 text = "NEBULA"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 72
-theme_override_colors/font_color = Color(0.4, 0.8, 1.0, 1.0)
+theme_override_colors/font_color = Color(0.36, 0.88, 0.82, 1.0)
 
 [node name="Subtitle" type="Label" parent="MenuContainer"]
 text = "A Space Combat Tribute"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 16
-theme_override_colors/font_color = Color(0.6, 0.6, 0.8, 1.0)
+theme_override_colors/font_color = Color(0.6, 0.72, 0.8, 1.0)
 
 [node name="Spacer" type="Control" parent="MenuContainer"]
 custom_minimum_size = Vector2(0, 40)
@@ -98,7 +98,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.0, 0.0, 0.1, 0.9)
+color = Color(0.04, 0.03, 0.1, 0.9)
 
 [node name="Panel" type="VBoxContainer" parent="HowToPlayOverlay"]
 layout_mode = 1
@@ -117,7 +117,7 @@ theme_override_constants/separation = 12
 text = "How to Play"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 28
-theme_override_colors/font_color = Color(0.4, 0.8, 1.0, 1.0)
+theme_override_colors/font_color = Color(0.36, 0.88, 0.82, 1.0)
 
 [node name="ContentArea" type="Control" parent="HowToPlayOverlay/Panel"]
 custom_minimum_size = Vector2(920, 540)
@@ -134,7 +134,7 @@ image_width = 560.0
 image_height = 315.0
 image_padding = 16.0
 font_size = 15
-font_color = Color(0.85, 0.9, 1.0, 1.0)
+font_color = Color(0.85, 0.94, 0.92, 1.0)
 
 [node name="PageScreenshot" type="TextureRect" parent="HowToPlayOverlay/Panel/ContentArea"]
 layout_mode = 1
@@ -171,7 +171,7 @@ custom_minimum_size = Vector2(140, 40)
 text = "Page 1 of 8"
 horizontal_alignment = 1
 vertical_alignment = 1
-theme_override_colors/font_color = Color(0.6, 0.6, 0.8, 1.0)
+theme_override_colors/font_color = Color(0.6, 0.72, 0.8, 1.0)
 
 [node name="NextButton" type="Button" parent="HowToPlayOverlay/Panel/NavRow"]
 custom_minimum_size = Vector2(140, 40)

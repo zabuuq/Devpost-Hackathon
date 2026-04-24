@@ -189,7 +189,7 @@ func _draw_grid() -> void:
 		Rect2(0, 0, GRID_COLS * CELL_SIZE, GRID_ROWS * CELL_SIZE),
 		NEBULA_SRC_RECT
 	)
-	var line_color := Color(0.2, 0.2, 0.4, 0.6)
+	var line_color := Color(0.15, 0.2, 0.32, 0.6)
 	for col in range(GRID_COLS + 1):
 		var x: float = col * CELL_SIZE
 		grid_node.draw_line(Vector2(x, 0), Vector2(x, GRID_ROWS * CELL_SIZE), line_color, 1.0)
