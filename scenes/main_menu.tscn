@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://bmenu000000001"]
+[gd_scene load_steps=4 format=3 uid="uid://bmenu000000001"]
 
 [ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_menu"]
 [ext_resource type="Script" path="res://scripts/ui/text_wrap.gd" id="2_wrap"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/nebula.jpg" id="3_nebula"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -10,12 +11,23 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_menu")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.05, 0.05, 0.15, 1.0)
+mouse_filter = 2
+texture = ExtResource("3_nebula")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="DimLayer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
 
 [node name="MenuContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
