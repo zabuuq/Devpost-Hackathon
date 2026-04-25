@@ -10,6 +10,8 @@ var last_turn_results: Array = []  # action results from opponent's turn, replay
 var sfx_enabled: bool = true
 var music_enabled: bool = true
 
+const BATTLE_LOG_CAP: int = 200
+
 var players: Array = [
 	{
 		"fleet": [],
@@ -19,7 +21,8 @@ var players: Array = [
 			"hits_scored": 0
 		},
 		"command_camera": {},
-		"target_camera": {}
+		"target_camera": {},
+		"battle_log": []
 	},
 	{
 		"fleet": [],
@@ -29,7 +32,8 @@ var players: Array = [
 			"hits_scored": 0
 		},
 		"command_camera": {},
-		"target_camera": {}
+		"target_camera": {},
+		"battle_log": []
 	}
 ]
 
@@ -48,7 +52,8 @@ func reset() -> void:
 				"hits_scored": 0
 			},
 			"command_camera": {},
-			"target_camera": {}
+			"target_camera": {},
+			"battle_log": []
 		},
 		{
 			"fleet": [],
@@ -58,9 +63,24 @@ func reset() -> void:
 				"hits_scored": 0
 			},
 			"command_camera": {},
-			"target_camera": {}
+			"target_camera": {},
+			"battle_log": []
 		}
 	]
+
+func append_battle_log(player_idx: int, entry: Dictionary) -> void:
+	var log: Array = players[player_idx]["battle_log"]
+	log.append(entry)
+	while log.size() > BATTLE_LOG_CAP:
+		log.pop_front()
+
+func append_battle_log_divider(player_idx: int, turn_number_arg: int, is_opponent: bool) -> void:
+	var entry: Dictionary = {
+		"type": "divider",
+		"turn_number": turn_number_arg,
+		"is_opponent": is_opponent
+	}
+	append_battle_log(player_idx, entry)
 
 func get_opponent_idx() -> int:
 	return 1 - current_player

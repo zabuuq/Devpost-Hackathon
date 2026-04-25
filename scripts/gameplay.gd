@@ -66,10 +66,17 @@ func _ready() -> void:
 	_update_player_label()
 	_switch_grid(ActiveGrid.COMMAND)
 	_show_left_tab("battle_log")
-	# Replay opponent's last turn results into the battle log
-	for result in GameState.last_turn_results:
-		battle_log_panel.add_entry(result)
+
+	GameState.append_battle_log_divider(GameState.current_player, GameState.turn_number, false)
+	if not GameState.last_turn_results.is_empty():
+		GameState.append_battle_log_divider(GameState.current_player, GameState.turn_number, true)
+		for result in GameState.last_turn_results:
+			var entry: Dictionary = result.duplicate()
+			entry["turn_number"] = GameState.turn_number
+			entry["owner"] = 1
+			GameState.append_battle_log(GameState.current_player, entry)
 	GameState.last_turn_results = []
+	battle_log_panel.render_from_state()
 
 	turn_manager.turn_start()
 	command_renderer.refresh()

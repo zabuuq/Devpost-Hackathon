@@ -14,6 +14,7 @@ const COLOR_DESTROY: Color = Color(1.0, 0.3, 0.2)
 const COLOR_MISS: Color = Color(0.6, 0.6, 0.65)
 const COLOR_PROBE: Color = Color(0.4, 0.85, 0.82)
 const COLOR_MOVE: Color = Color(0.7, 0.85, 0.7)
+const COLOR_DIVIDER: Color = Color(0.45, 0.5, 0.55)
 
 var _content: VBoxContainer = null
 var _placeholder_cleared: bool = false
@@ -39,40 +40,98 @@ func _clear_placeholder() -> void:
 
 
 func add_entry(result: Dictionary) -> void:
+	var entry: Dictionary = result.duplicate()
+	if not entry.has("turn_number"):
+		entry["turn_number"] = GameState.turn_number
+	if not entry.has("owner"):
+		entry["owner"] = 0
+	GameState.append_battle_log(GameState.current_player, entry)
 	_clear_placeholder()
+	_insert_entry_at_top(entry)
 
-	var action_type: String = result.get("type", "")
+
+func render_from_state() -> void:
+	if _content == null:
+		return
+	for child in _content.get_children():
+		child.queue_free()
+	_placeholder_cleared = true
+
+	var log: Array = GameState.players[GameState.current_player]["battle_log"]
+	if log.is_empty():
+		var empty_label: Label = Label.new()
+		empty_label.name = "BattleLogEmpty"
+		empty_label.text = "No events yet."
+		empty_label.add_theme_font_size_override("font_size", 12)
+		empty_label.add_theme_color_override("font_color", Color(0.5, 0.58, 0.62))
+		_content.add_child(empty_label)
+		_placeholder_cleared = false
+		return
+
+	for i in range(log.size() - 1, -1, -1):
+		_append_entry_label(log[i])
+
+
+func _insert_entry_at_top(entry: Dictionary) -> void:
+	var label: Label = _build_entry_label(entry)
+	if label == null:
+		return
+	_content.add_child(label)
+	_content.move_child(label, 0)
+	await get_tree().process_frame
+	scroll_vertical = 0
+
+
+func _append_entry_label(entry: Dictionary) -> void:
+	var label: Label = _build_entry_label(entry)
+	if label == null:
+		return
+	_content.add_child(label)
+
+
+func _build_entry_label(entry: Dictionary) -> Label:
+	var action_type: String = entry.get("type", "")
 	var text: String = ""
 	var color: Color = COLOR_MISS
 
 	match action_type:
+		"divider":
+			text = _format_divider(entry)
+			color = COLOR_DIVIDER
 		"probe":
-			text = _format_probe(result)
+			text = _format_probe(entry)
 			color = COLOR_PROBE
 		"laser", "missile":
-			text = _format_fire(result)
-			if result.get("destroyed", false):
+			text = _format_fire(entry)
+			if entry.get("destroyed", false):
 				color = COLOR_DESTROY
-			elif result.get("hit", false):
+			elif entry.get("hit", false):
 				color = COLOR_HIT
 			else:
 				color = COLOR_MISS
 		"move":
-			text = _format_move(result)
+			text = _format_move(entry)
 			color = COLOR_MOVE
 		_:
-			text = str(result)
+			text = str(entry)
 
 	var label: Label = Label.new()
 	label.text = text
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_font_size_override("font_size", 13)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_content.add_child(label)
+	if action_type == "divider":
+		label.add_theme_font_size_override("font_size", 12)
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	return label
 
-	# Auto-scroll to bottom after layout updates
-	await get_tree().process_frame
-	ensure_control_visible(label)
+
+func _format_divider(entry: Dictionary) -> String:
+	var turn_num: int = entry.get("turn_number", 0)
+	var is_opponent: bool = entry.get("is_opponent", false)
+	if is_opponent:
+		return "— Enemy Turn %d —" % turn_num
+	return "— Turn %d —" % turn_num
 
 
 func _format_probe(result: Dictionary) -> String:
