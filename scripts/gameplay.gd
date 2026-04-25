@@ -70,8 +70,11 @@ func _ready() -> void:
 	GameState.append_battle_log_divider(GameState.current_player, GameState.turn_number, false)
 	if not GameState.last_turn_results.is_empty():
 		GameState.append_battle_log_divider(GameState.current_player, GameState.turn_number, true)
+		var defender_cells: Array[Vector2i] = _collect_defender_living_cells()
 		for result in GameState.last_turn_results:
-			var entry: Dictionary = result.duplicate()
+			var entry: Dictionary = _filter_opponent_entry(result, defender_cells)
+			if entry.is_empty():
+				continue
 			entry["turn_number"] = GameState.turn_number
 			entry["owner"] = 1
 			GameState.append_battle_log(GameState.current_player, entry)
@@ -97,6 +100,47 @@ func _ready() -> void:
 	move_submit_btn.pressed.connect(_on_move_submit_pressed)
 	move_cancel_btn.pressed.connect(_on_move_cancel_pressed)
 	confirm_dialog.confirmed.connect(_on_move_confirmed)
+
+
+func _collect_defender_living_cells() -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	var fleet: Array = GameState.players[GameState.current_player]["fleet"]
+	for ship in fleet:
+		if ship.is_destroyed:
+			continue
+		cells.append_array(ShipDefinitions.get_ship_cells(ship.ship_type, ship.position, ship.facing))
+	return cells
+
+
+func _filter_opponent_entry(result: Dictionary, defender_cells: Array[Vector2i]) -> Dictionary:
+	var entry: Dictionary = result.duplicate()
+	var action_type: String = entry.get("type", "")
+
+	if action_type == "probe":
+		if int(entry.get("ships_detected", 0)) == 0:
+			return {}
+		entry["ship_type"] = "enemy"
+		return entry
+
+	if action_type == "laser" or action_type == "missile":
+		var hit: bool = entry.get("hit", false)
+		if not hit:
+			var target: Vector2i = entry.get("target", Vector2i.ZERO)
+			var near: bool = false
+			for cell in defender_cells:
+				var dx: int = absi(cell.x - target.x)
+				var dy: int = absi(cell.y - target.y)
+				var cheby: int = maxi(dx, dy)
+				if cheby == 1:
+					near = true
+					break
+			if not near:
+				return {}
+		entry["ship_type"] = "enemy"
+		return entry
+
+	entry["ship_type"] = "enemy"
+	return entry
 
 
 func _setup_ship_panel() -> void:

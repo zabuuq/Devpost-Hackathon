@@ -25,6 +25,8 @@ func _ready() -> void:
 
 
 func _ship_name(ship_type: String) -> String:
+	if ship_type == "enemy":
+		return "Enemy"
 	if SHIP_DISPLAY_NAMES.has(ship_type):
 		return SHIP_DISPLAY_NAMES[ship_type]
 	return ship_type.capitalize()
