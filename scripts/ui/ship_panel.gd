@@ -241,7 +241,7 @@ func _update_slider_labels() -> void:
 	_laser_value_label.text = str(int(_laser_slider.value))
 	var used: int = int(_shield_slider.value) + int(_laser_slider.value)
 	var remaining: int = _ship.current_energy - used
-	_energy_remaining_label.text = "Energy after sliders: %d" % remaining
+	_energy_remaining_label.text = "Energy after use: %d" % remaining
 
 
 func _on_shield_slider_changed(value: float) -> void:

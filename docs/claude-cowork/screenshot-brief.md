@@ -115,7 +115,7 @@ Run this exact path. Cell coordinates are `(column, row)` with column 0 to 79 le
     - Take screenshot 07 of the Target Grid right after the probe fires, with the revealed Battleship visible inside the blue probe overlay.
 12. **Fire a laser at the probed target.**
     - Click `Command Grid` to switch back. Click your `Battleship` at `(10, 9)`. The Ship Panel opens.
-    - Drag the `Laser Power` slider to the right (any value above 0; aim for around 250 if the slider allows). Note the live `Energy after sliders` readout updating.
+    - Drag the `Laser Power` slider to the right (any value above 0; aim for around 250 if the slider allows). Note the live `Energy after use` readout updating.
     - Take screenshot 08 of the Ship Panel with sliders mid-drag and the action buttons visible.
     - Click `Shoot Laser`. The view auto-switches to the Target Grid.
     - Left click cell `(70, 11)`. The laser fires and lands on the Battleship. The Battle Log gets a new entry; SFX plays. The Target Grid still shows the probed Battleship with updated shield/armor numbers if you click it.
