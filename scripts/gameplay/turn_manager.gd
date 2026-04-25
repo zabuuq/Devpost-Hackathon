@@ -53,7 +53,11 @@ func age_cell_records(cell_records: Dictionary) -> void:
 			record.expires_in -= 1
 			if record.expires_in <= 0:
 				record.has_probe = false
-				if record.ship == null and not record.has_blind_hit and not record.has_miss:
+				# Only erase the record when nothing else is keeping it alive.
+				# was_probed is the historical-overlay marker (I7-4) — cells that
+				# carry it stay in the dictionary so the Target Grid can render a
+				# faint "you've looked here" border after the probe fades.
+				if record.ship == null and not record.has_blind_hit and not record.has_miss and not record.was_probed:
 					to_delete.append(cell)
 				elif record.ship != null and record.ship.last_armor <= 0:
 					# Destroyed ship — no point ghosting wreckage, remove it

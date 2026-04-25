@@ -8,12 +8,18 @@ var has_blind_hit: bool = false
 var hit_turn: int = 0                    # in-progress turn number when blind hit was recorded
 var has_miss: bool = false
 var miss_turn: int = 0                   # in-progress turn number when miss was recorded
+var was_probed: bool = false             # historical: cell has been inside an active probe
+                                         # area at least once. Persists after probes expire so
+                                         # the Target Grid can render a faint "you've looked here"
+                                         # marker. Cleared only when GameState.reset() builds a
+                                         # fresh cell_records dict.
 var ship: FogShipRecord = null           # null if no ship detected in this cell
 
 static func make_probe(fog_ship: FogShipRecord, probe_expires_in: int) -> CellRecord:
 	var record := CellRecord.new()
 	record.has_probe = true
 	record.expires_in = probe_expires_in
+	record.was_probed = true
 	record.ship = fog_ship
 	return record
 

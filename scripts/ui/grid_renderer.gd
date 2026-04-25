@@ -14,6 +14,10 @@ const COLOR_BG: Color = Color(0.08, 0.06, 0.16, 1.0)
 const COLOR_GRID_LINE: Color = Color(0.12, 0.15, 0.25, 0.8)
 const COLOR_PROBE_FILL: Color = Color(0.0, 0.0, 0.0, 0.45)
 const COLOR_PROBE_BORDER: Color = Color(0.4, 0.88, 0.82, 0.9)
+# I7-4: faint "you've looked here" border drawn on cells that were once inside
+# an active probe area but no longer have active coverage. Sits below the active
+# probe fill so live coverage always reads on top.
+const COLOR_HISTORICAL_PROBE: Color = Color(0.5, 0.7, 0.9, 0.25)
 const COLOR_WRECKAGE: Color = Color(0.35, 0.25, 0.15, 1.0)
 const COLOR_WRECKAGE_X: Color = Color(0.55, 0.45, 0.3, 1.0)
 const COLOR_HIT_FULL: Color = Color(0.8, 0.4, 0.4, 0.9)
@@ -98,6 +102,15 @@ func _draw_command_ships() -> void:
 
 func _draw_target_cells() -> void:
 	var cell_records: Dictionary = GameState.players[GameState.current_player]["cell_records"]
+	# I7-4: historical probe overlay. Cells previously inside an active probe
+	# area (was_probed = true) keep a faint interior border once the probe expires
+	# so the player can see where they've already looked. Cells with active
+	# coverage skip this layer — the active fill below them takes precedence.
+	for key: Variant in cell_records.keys():
+		var cell: Vector2i = key
+		var record: CellRecord = cell_records[cell]
+		if record.was_probed and not record.has_probe:
+			_draw_historical_probe_border(cell)
 	# Draw probe illumination overlay on all actively probed cells
 	for key: Variant in cell_records.keys():
 		var cell: Vector2i = key
@@ -224,6 +237,18 @@ func _draw_ship_cells(cells: Array[Vector2i], color: Color, alpha: float) -> voi
 			Rect2(cell.x * CELL_SIZE + 1, cell.y * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2),
 			c
 		)
+
+func _draw_historical_probe_border(cell: Vector2i) -> void:
+	# Thin 1px border drawn inside the cell, leaving a 1px inset so it doesn't
+	# fight the grid lines. Four draw_line calls form the rectangle.
+	var x0: float = cell.x * CELL_SIZE + 1.0
+	var y0: float = cell.y * CELL_SIZE + 1.0
+	var x1: float = (cell.x + 1) * CELL_SIZE - 1.0
+	var y1: float = (cell.y + 1) * CELL_SIZE - 1.0
+	draw_line(Vector2(x0, y0), Vector2(x1, y0), COLOR_HISTORICAL_PROBE, 1.0)
+	draw_line(Vector2(x1, y0), Vector2(x1, y1), COLOR_HISTORICAL_PROBE, 1.0)
+	draw_line(Vector2(x1, y1), Vector2(x0, y1), COLOR_HISTORICAL_PROBE, 1.0)
+	draw_line(Vector2(x0, y1), Vector2(x0, y0), COLOR_HISTORICAL_PROBE, 1.0)
 
 func _draw_wreckage_cells(cells: Array[Vector2i]) -> void:
 	for cell in cells:
