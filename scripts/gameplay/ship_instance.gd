@@ -30,12 +30,7 @@ static func create(p_ship_type: String) -> ShipInstance:
 	inst.missiles_remaining = stats["missiles"]
 	inst.probes_remaining = stats["probes"]
 	inst.shield_regen_setting = 0
-	# Probe Ship's laser slider defaults to 100 (its laser_max is 200, so
-	# half-power on a fresh ship); other ship types default to 0.
-	if p_ship_type == "probe_ship":
-		inst.laser_power_setting = 100
-	else:
-		inst.laser_power_setting = 0
+	inst.laser_power_setting = 0
 	return inst
 
 func get_occupied_cells() -> Array[Vector2i]:
