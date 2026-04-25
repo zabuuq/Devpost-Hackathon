@@ -190,9 +190,21 @@ func _format_fire(result: Dictionary) -> String:
 			var near_ships: Array = result.get("near_miss_ships", [])
 			if near_ships.is_empty():
 				return "%s %s fired at (%d, %d). Miss." % [ship, weapon, target.x, target.y]
-			var names: Array[String] = []
+			var counts: Dictionary = {}
+			var order: Array[String] = []
 			for ship_type in near_ships:
-				names.append(_ship_name(str(ship_type)))
+				var key: String = str(ship_type)
+				if counts.has(key):
+					counts[key] = int(counts[key]) + 1
+				else:
+					counts[key] = 1
+					order.append(key)
+			var names: Array[String] = []
+			for key in order:
+				var display: String = _ship_name(key)
+				if int(counts[key]) > 1:
+					display += "s"
+				names.append(display)
 			return "%s %s fired at (%d, %d). Miss. Near miss to your %s." % [ship, weapon, target.x, target.y, _join_names(names)]
 		return "%s %s fired. Miss." % [ship, weapon]
 

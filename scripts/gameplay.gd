@@ -67,11 +67,8 @@ func _ready() -> void:
 	_switch_grid(ActiveGrid.COMMAND)
 	_show_left_tab("battle_log")
 
-	var own_turn_number: int = GameState.players[GameState.current_player]["turns_played"] + 1
 	var opponent_turn_number: int = GameState.players[1 - GameState.current_player]["turns_played"]
-	GameState.append_battle_log_divider(GameState.current_player, own_turn_number, false)
 	if not GameState.last_turn_results.is_empty():
-		GameState.append_battle_log_divider(GameState.current_player, opponent_turn_number, true)
 		var defender_cells: Array[Vector2i] = _collect_defender_living_cells()
 		for result in GameState.last_turn_results:
 			var entry: Dictionary = _filter_opponent_entry(result, defender_cells)
@@ -80,6 +77,7 @@ func _ready() -> void:
 			entry["turn_number"] = opponent_turn_number
 			entry["owner"] = 1
 			GameState.append_battle_log(GameState.current_player, entry)
+		GameState.append_battle_log_divider(GameState.current_player, opponent_turn_number, true)
 	GameState.last_turn_results = []
 	battle_log_panel.render_from_state()
 
@@ -146,8 +144,7 @@ func _filter_opponent_entry(result: Dictionary, defender_cells: Array[Vector2i])
 						break
 				if ship_is_near:
 					near = true
-					if not near_types.has(ship.ship_type):
-						near_types.append(ship.ship_type)
+					near_types.append(ship.ship_type)
 			if not near:
 				return {}
 			entry["near_miss_ships"] = near_types

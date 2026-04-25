@@ -20,10 +20,12 @@ func turn_end() -> void:
 			fire_shield_regen(ship)
 	# Refresh opponent's probe records so they see updated shield values
 	_refresh_opponent_probes_after_regen()
+	GameState.players[GameState.current_player]["turns_played"] += 1
+	var turns_played: int = GameState.players[GameState.current_player]["turns_played"]
+	GameState.append_battle_log_divider(GameState.current_player, turns_played, false)
 	if check_win_condition():
 		get_tree().change_scene_to_file("res://scenes/victory.tscn")
 	else:
-		GameState.players[GameState.current_player]["turns_played"] += 1
 		GameState.current_player = 1 - GameState.current_player
 		get_tree().change_scene_to_file("res://scenes/handoff.tscn")
 
