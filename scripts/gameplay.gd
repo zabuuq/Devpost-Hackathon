@@ -68,15 +68,24 @@ func _ready() -> void:
 	_show_left_tab("battle_log")
 
 	var opponent_turn_number: int = GameState.players[1 - GameState.current_player]["turns_played"]
-	if not GameState.last_turn_results.is_empty():
-		var defender_cells: Array[Vector2i] = _collect_defender_living_cells()
-		for result in GameState.last_turn_results:
-			var entry: Dictionary = _filter_opponent_entry(result, defender_cells)
-			if entry.is_empty():
-				continue
-			entry["turn_number"] = opponent_turn_number
-			entry["owner"] = 1
-			GameState.append_battle_log(GameState.current_player, entry)
+	if opponent_turn_number > 0:
+		var entries_pushed: int = 0
+		if not GameState.last_turn_results.is_empty():
+			var defender_cells: Array[Vector2i] = _collect_defender_living_cells()
+			for result in GameState.last_turn_results:
+				var entry: Dictionary = _filter_opponent_entry(result, defender_cells)
+				if entry.is_empty():
+					continue
+				entry["turn_number"] = opponent_turn_number
+				entry["owner"] = 1
+				GameState.append_battle_log(GameState.current_player, entry)
+				entries_pushed += 1
+		if entries_pushed == 0:
+			GameState.append_battle_log(GameState.current_player, {
+				"type": "empty_report",
+				"turn_number": opponent_turn_number,
+				"owner": 1,
+			})
 		GameState.append_battle_log_divider(GameState.current_player, opponent_turn_number, true)
 	GameState.last_turn_results = []
 	battle_log_panel.render_from_state()

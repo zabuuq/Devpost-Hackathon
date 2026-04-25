@@ -126,6 +126,9 @@ func _build_entry_label(entry: Dictionary) -> RichTextLabel:
 		"move":
 			text = _format_move(entry)
 			color = COLOR_MOVE
+		"empty_report":
+			text = "Nothing to report."
+			color = COLOR_MISS
 		_:
 			text = str(entry)
 
