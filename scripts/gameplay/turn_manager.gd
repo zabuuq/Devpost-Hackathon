@@ -45,18 +45,23 @@ func age_cell_records(cell_records: Dictionary) -> void:
 	var destroyed_fogs: Array = []  # FogShipRecords of destroyed ships losing probe coverage
 	for cell in cell_records.keys():
 		var record: CellRecord = cell_records[cell]
+		# A miss inside an active probe area is shown for its turn only; once the
+		# probing player's next turn starts, the X is cleared even though the probe persists.
+		if record.has_probe and record.has_miss:
+			record.has_miss = false
 		if record.has_probe:
 			record.expires_in -= 1
 			if record.expires_in <= 0:
 				record.has_probe = false
-				if record.ship == null:
+				if record.ship == null and not record.has_blind_hit and not record.has_miss:
 					to_delete.append(cell)
-				elif record.ship.last_armor <= 0:
+				elif record.ship != null and record.ship.last_armor <= 0:
 					# Destroyed ship — no point ghosting wreckage, remove it
 					if not destroyed_fogs.has(record.ship):
 						destroyed_fogs.append(record.ship)
 					to_delete.append(cell)
 				# living ship != null: stays as ghost (has_probe=false, ship persists)
+				# blind hit or miss alone: stays alive
 	# Also clean up ghost cells (outside probe area) for destroyed ships
 	if not destroyed_fogs.is_empty():
 		for cell in cell_records.keys():

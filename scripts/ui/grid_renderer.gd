@@ -17,6 +17,8 @@ const COLOR_PROBE_BORDER: Color = Color(0.4, 0.88, 0.82, 0.9)
 const COLOR_WRECKAGE: Color = Color(0.35, 0.25, 0.15, 1.0)
 const COLOR_WRECKAGE_X: Color = Color(0.55, 0.45, 0.3, 1.0)
 const COLOR_BLIND_HIT: Color = Color(1.0, 0.7, 0.4, 1.0)
+const COLOR_MISS_FULL: Color = Color(0.8, 0.4, 0.4, 0.9)
+const COLOR_MISS_FADED: Color = Color(0.8, 0.4, 0.4, 0.4)
 const COLOR_FACING: Color = Color(1.0, 1.0, 0.3, 1.0)
 
 const SHIP_COLORS: Dictionary = {
@@ -134,6 +136,13 @@ func _draw_target_cells() -> void:
 		if fog.last_armor <= 0 and any_probed:
 			_draw_wreckage_cells(fog_cells_list[i])
 	# Next: blind hits (unchanged rule — suppressed on cells with an active probe)
+	# Miss X markers drawn before blind hits so blind hits sit on top
+	var current_turn_number: int = GameState.players[GameState.current_player]["turns_played"] + 1
+	for key: Variant in cell_records.keys():
+		var cell: Vector2i = key
+		var record: CellRecord = cell_records[cell]
+		if record.has_miss:
+			_draw_miss_x(cell, record.miss_turn == current_turn_number)
 	for key: Variant in cell_records.keys():
 		var cell: Vector2i = key
 		var record: CellRecord = cell_records[cell]
@@ -257,6 +266,16 @@ func _draw_blind_hit(cell: Vector2i) -> void:
 	var cx: float = cell.x * CELL_SIZE + CELL_SIZE * 0.5
 	var cy: float = cell.y * CELL_SIZE + CELL_SIZE * 0.5
 	draw_circle(Vector2(cx, cy), CELL_SIZE * 0.28, COLOR_BLIND_HIT)
+
+func _draw_miss_x(cell: Vector2i, full_intensity: bool) -> void:
+	var margin: float = CELL_SIZE * 0.25
+	var x0: float = cell.x * CELL_SIZE + margin
+	var y0: float = cell.y * CELL_SIZE + margin
+	var x1: float = (cell.x + 1) * CELL_SIZE - margin
+	var y1: float = (cell.y + 1) * CELL_SIZE - margin
+	var color: Color = COLOR_MISS_FULL if full_intensity else COLOR_MISS_FADED
+	draw_line(Vector2(x0, y0), Vector2(x1, y1), color, 2.0)
+	draw_line(Vector2(x1, y0), Vector2(x0, y1), color, 2.0)
 
 func _draw_probe_highlight() -> void:
 	if probe_highlight_size <= 0:

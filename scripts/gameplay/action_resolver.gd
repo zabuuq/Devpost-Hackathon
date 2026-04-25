@@ -136,6 +136,14 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 	var target_ship: ShipInstance = find_ship_at_cell(target_cell, opponent_fleet)
 	if target_ship == null:
 		player_data.turn_stats.total_misses += 1
+		var miss_turn_number: int = player_data["turns_played"] + 1
+		var cell_records_miss: Dictionary = player_data.cell_records
+		if cell_records_miss.has(target_cell):
+			var existing: CellRecord = cell_records_miss[target_cell]
+			existing.has_miss = true
+			existing.miss_turn = miss_turn_number
+		else:
+			cell_records_miss[target_cell] = CellRecord.make_miss(miss_turn_number)
 		return {
 			"type": "laser",
 			"ship_type": acting_ship.ship_type,
@@ -175,7 +183,11 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 			record = CellRecord.new()
 			cell_records[target_cell] = record
 		record.has_blind_hit = true
+		record.has_miss = false
 		record.ship = null
+	else:
+		var record: CellRecord = cell_records[target_cell]
+		record.has_miss = false
 
 	# Refresh probe records so the attacker sees updated shields/armor
 	_refresh_probe_records_for_ship(target_ship, player_idx)
@@ -215,6 +227,14 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 	var target_ship: ShipInstance = find_ship_at_cell(target_cell, opponent_fleet)
 	if target_ship == null:
 		player_data.turn_stats.total_misses += 1
+		var miss_turn_number: int = player_data["turns_played"] + 1
+		var cell_records_miss: Dictionary = player_data.cell_records
+		if cell_records_miss.has(target_cell):
+			var existing: CellRecord = cell_records_miss[target_cell]
+			existing.has_miss = true
+			existing.miss_turn = miss_turn_number
+		else:
+			cell_records_miss[target_cell] = CellRecord.make_miss(miss_turn_number)
 		return {
 			"type": "missile",
 			"ship_type": acting_ship.ship_type,
@@ -261,7 +281,11 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 			record = CellRecord.new()
 			cell_records[target_cell] = record
 		record.has_blind_hit = true
+		record.has_miss = false
 		record.ship = null
+	else:
+		var record: CellRecord = cell_records[target_cell]
+		record.has_miss = false
 
 	# Refresh probe records so the attacker sees updated shields/armor
 	_refresh_probe_records_for_ship(target_ship, player_idx)
@@ -399,7 +423,7 @@ func _update_opponent_probes_after_move(ship: ShipInstance, old_cells: Array[Vec
 			if record.ship != null:
 				record.ship = null
 				# If cell was only a ghost reference (not an actual probe), remove it entirely
-				if not record.has_probe and not record.has_blind_hit:
+				if not record.has_probe and not record.has_blind_hit and not record.has_miss:
 					cell_records.erase(cell)
 
 	# Add ship to new cells that have active probes
