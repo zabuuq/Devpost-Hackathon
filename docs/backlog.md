@@ -40,7 +40,6 @@ Future features and ideas captured during development. Not committed to any time
 | Idea | Notes |
 |---|---|
 | Direct hits vs partial hits | Surfaced during /spec combat math discussion. Needs fleshing out — possible mechanic where hitting only part of a ship's cells produces partial damage vs hitting the full ship profile. |
-| Click-to-ghost movement during gameplay | During a move phase, allow player to click a ship and move it ghost-style (like placement) instead of WASD. Some players may prefer this. Evaluate in /iterate. |
 | Click-to-pick-up during placement | Clicking an already-placed ship on the grid should pick it back up so the player can reposition it. Currently ships are locked once placed. |
 | Ship naming | Allow players to name their individual ships before or during fleet placement. Would require distinguishing between the two Destroyers. |
 | Stay on Target Grid after action | After firing laser/missile or launching probe, stay on Target Grid and auto-switch left panel to Battle Log so player can see results. Currently snaps back to Command Grid after every action, forcing tedious back-and-forth. |
