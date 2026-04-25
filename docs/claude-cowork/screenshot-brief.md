@@ -108,7 +108,7 @@ Run this exact path. Cell coordinates are `(column, row)` with column 0 to 79 le
 10. **Gameplay Turn 1, Player 1.** Confirm you're on the Command Grid (default). Take screenshot 05 of the gameplay layout: Command Grid visible with all 5 P1 ships, Battle Log on the left.
 11. **Probe an enemy ship.**
     - Click your `Probe Ship` at `(20, 9)`. The Ship Panel opens on the left.
-    - Click `Launch Probe`. The view auto-switches to the Target Grid. A 6 by 6 highlight box follows the cursor.
+    - Click `Launch Probe`. The view auto-switches to the Target Grid. A 7 by 7 highlight box follows the cursor.
     - Hover the cursor over cell `(70, 11)`. The highlight should cover columns 67 to 72 and rows 8 to 13, which contains Player 2's Battleship at `(70, 9)`-`(70, 13)`.
     - Take screenshot 06 with the cursor steady on `(70, 11)` showing the probe highlight box hovering over the (still-hidden) enemy battleship area.
     - Left click to fire the probe. The Battleship reveals inside the illuminated box.
@@ -126,13 +126,13 @@ Run this exact path. Cell coordinates are `(column, row)` with column 0 to 79 le
     - Press `Enter`. The confirmation dialog opens. Click `OK`. The cruiser moves.
 14. **End turn.** Click `End Turn` in the top-right. Handoff loads.
 15. **Player 2 turn.** Click `Next`. The gameplay scene loads with `Player 2 — Turn 1`.
-    - Click P2's `Probe Ship` at `(60, 9)`. Click `Launch Probe`. Hover cell `(13, 11)`. The 6 by 6 highlight should cover the area around P1's Battleship at `(10, 9)`-`(10, 13)`. Left click to fire. The Battleship reveals.
+    - Click P2's `Probe Ship` at `(60, 9)`. Click `Launch Probe`. Hover cell `(13, 11)`. The 7 by 7 highlight should cover the area around P1's Battleship at `(10, 9)`-`(10, 13)`. Left click to fire. The Battleship reveals.
     - Click `Command Grid`. Click P2's `Battleship` at `(70, 9)`. Drag `Laser Power` slider above 0. Click `Shoot Laser`. Click cell `(10, 11)` on the Target Grid. The laser lands.
     - Click `End Turn`. Handoff loads. Click `Next`. The gameplay scene loads with `Player 1 — Turn 2`.
 16. **End state shot.** You're now on Player 1, Turn 2. The Target Grid still has an active probe over the Player 2 Battleship from Turn 1 (probes fade after 2 of your turns for a standard probe and 3 for a Probe Ship probe; this one is a Probe Ship probe so it's still fresh).
     - Click `Target Grid`.
     - Click cell `(70, 11)` to select the probed enemy Battleship. The Ship Panel switches to enemy view showing `Battleship (Enemy)` with current shields and armor.
-    - Take screenshot 10 of the Target Grid with the active 6 by 6 probe overlay visible over the enemy Battleship and the Ship Panel showing the enemy Battleship's stats.
+    - Take screenshot 10 of the Target Grid with the active 7 by 7 probe overlay visible over the enemy Battleship and the Ship Panel showing the enemy Battleship's stats.
     - Take screenshot 11 zoomed in (scroll wheel up a few clicks) on the same probed area so the nebula background, probe overlay, and ship cells are all readable up close.
 
 Timing hints:
@@ -151,11 +151,11 @@ Save all files to `assets/screenshots/` in the project repo. Filename pattern: `
 | 03 | `03_fleet_placement_empty.png` | Step 4 | Empty Player 1 fleet placement grid. Left panel shows all 5 ships listed. `Done` is greyed out. Player label reads `Player 1 — Place Your Fleet`. | No ship selected; no ghost on the grid |
 | 04 | `04_fleet_placement_full.png` | Step 6 | Player 1 grid with all 5 ships placed in a horizontal row across columns 10, 20, 30, 40, 50. Yellow facing triangles point north on each ship. `Done` button is enabled. | Cursor parked outside the grid; no active ghost |
 | 05 | `05_command_grid.png` | Step 10 | Gameplay Command Grid tab active. All 5 Player 1 ships visible in their starting columns. Battle Log tab visible on left (empty or with the Turn 1 start message). Top bar shows `Player 1 — Turn 1`. | No ship selected |
-| 06 | `06_probe_aiming.png` | Step 11 | Target Grid active. Empty fog-of-war background. A 6 by 6 light-blue probe highlight box hovers around cell `(70, 11)`. Top bar still shows `Player 1 — Turn 1`. | Cursor steady on `(70, 11)`; Probe Ship is the queued shooter |
-| 07 | `07_probe_revealed.png` | Step 11 | Target Grid showing the result of the probe firing: a 6 by 6 blue illumination overlay around `(70, 11)` with the Player 2 Battleship now visible inside it. Battle Log on the left has a new probe entry. | Cursor outside the highlight |
-| 08 | `08_ship_panel_sliders.png` | Step 12 | Ship Panel tab active on the left. Player 1 Battleship's stats are visible with `Shield Regen` and `Laser Power` sliders, the energy-after-sliders readout, and the four action buttons (`Launch Probe`, `Shoot Laser`, `Launch Missile`, `Move Ship`). | Cursor over the `Laser Power` slider thumb |
+| 06 | `06_probe_aiming.png` | Step 11 | Target Grid active. Empty fog-of-war background. A 7 by 7 light-blue probe highlight box hovers around cell `(70, 11)`. Top bar still shows `Player 1 — Turn 1`. | Cursor steady on `(70, 11)`; Probe Ship is the queued shooter |
+| 07 | `07_probe_revealed.png` | Step 11 | Target Grid showing the result of the probe firing: a 7 by 7 blue illumination overlay around `(70, 11)` with the Player 2 Battleship now visible inside it. Battle Log on the left has a new probe entry. | Cursor outside the highlight |
+| 08 | `08_ship_panel_sliders.png` | Step 12 | Ship Panel tab active on the left. Player 1 Battleship's stats are visible with `Shield Regen` and `Laser Power` sliders, the energy-after-use readout, and the four action buttons (`Launch Probe`, `Shoot Laser`, `Launch Missile`, `Move Ship`). | Cursor over the `Laser Power` slider thumb |
 | 09 | `09_move_preview.png` | Step 13 | Command Grid with the Cruiser at `(50, 9)` and a translucent ghost cruiser two cells to the right at `(52, 9)`. Bottom info label reads `Move Points: 1.0 / 2.0 \| Energy cost: 50` (or similar non-zero values). `Submit Move` and `Cancel Move` buttons visible. | Move preview active; no cursor over any button |
-| 10 | `10_active_probe_enemy_panel.png` | Step 16 | Target Grid with the 6 by 6 probe overlay still active over the Player 2 Battleship. Ship Panel on the left shows `Battleship (Enemy)` with current shields and armor. Top bar shows `Player 1 — Turn 2`. | Cursor near the probed area |
+| 10 | `10_active_probe_enemy_panel.png` | Step 16 | Target Grid with the 7 by 7 probe overlay still active over the Player 2 Battleship. Ship Panel on the left shows `Battleship (Enemy)` with current shields and armor. Top bar shows `Player 1 — Turn 2`. | Cursor near the probed area |
 | 11 | `11_probe_closeup.png` | Step 16 (zoomed) | Same scene as #10 but zoomed in 2x to 3x via scroll wheel. The nebula background, probe illumination, ship cells, and grid lines are all readable. This is the hero/marketing shot. | Cursor outside the visible area |
 | 12 | `12_battle_log_detail.png` | Optional, Step 16 | Close-up of the Battle Log panel after both players have fired. At least one probe entry, one laser-hit entry, and one move entry visible. | Cursor outside the panel |
 | 13 | `13_command_overview.png` | Optional, Step 10 | Wide marketing shot of the full Command Grid zoomed all the way out, showing the entire 80 by 20 grid with all 5 P1 ships in a horizontal row. | No selection |
