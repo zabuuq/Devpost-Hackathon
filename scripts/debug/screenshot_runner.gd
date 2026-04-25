@@ -519,10 +519,13 @@ func _shot_05b_command_ships() -> void:
 	await _capture_cropped("05b_command_ships.png", Rect2i(521, 325, 800, 340))
 
 
-# Page-3 triptych, image 3: target grid showing (a) a ship visible inside an
-# active probe, (b) a ghost marker from an expired probe, (c) a blind-hit cell.
-# All three rendered via CellRecords injected into P1's fog state — the runner
-# doesn't walk real turns.
+# Page-3 triptych, image 3 / Page-6 hero: target grid demonstrating the
+# I9-1 partial-reveal contract. A 7x7 active probe centered at (72, 8) catches
+# 3 of the P2 Battleship's 5 cells (the top three) plus all 2 of the P2 Cruiser's
+# cells. The Battleship's bottom 2 cells fall outside the probe area and stay
+# un-rendered (nebula visible) so the partial reveal reads at a glance: half a
+# Battleship inside the box, full Cruiser inside the box, and the rest of the
+# Battleship still hidden in the dust.
 func _shot_05c_target_grid_mixed() -> void:
 	var gp: Node = get_tree().current_scene
 	if gp == null:
@@ -530,55 +533,48 @@ func _shot_05c_target_grid_mixed() -> void:
 		return
 	var cell_records: Dictionary = GameState.players[0]["cell_records"]
 	cell_records.clear()
-	# Active probe: 7x7 centered on the P2 probe ship at (60, 9-12). The ship
-	# sits inside the probe area so each of its cells gets a fog record that
-	# renders in full detail on the target grid.
-	var probe_ship_p2: ShipInstance = GameState.players[1]["fleet"][1]
-	var probe_fog: FogShipRecord = FogShipRecord.from_ship(probe_ship_p2)
-	var probe_ship_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
-		probe_ship_p2.ship_type, probe_ship_p2.position, probe_ship_p2.facing)
-	var probe_center := Vector2i(60, 10)
+	# Battleship (P2) at (70, 9), facing=2 → cells (70, 9..13).
+	# Cruiser (P2) at (75, 9), facing=2 → cells (75, 9..10).
+	var battleship_p2: ShipInstance = GameState.players[1]["fleet"][0]
+	var battleship_fog: FogShipRecord = FogShipRecord.from_ship(battleship_p2)
+	var battleship_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
+		battleship_p2.ship_type, battleship_p2.position, battleship_p2.facing)
+	var cruiser_p2: ShipInstance = GameState.players[1]["fleet"][4]
+	var cruiser_fog: FogShipRecord = FogShipRecord.from_ship(cruiser_p2)
+	var cruiser_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
+		cruiser_p2.ship_type, cruiser_p2.position, cruiser_p2.facing)
+	# 7x7 probe centered at (72, 8) → x=69..75, y=5..11. Battleship cells
+	# (70,9)/(70,10)/(70,11) land inside; (70,12)/(70,13) stay nebula. Cruiser
+	# cells (75,9)/(75,10) both land inside.
+	var probe_center := Vector2i(72, 8)
 	var half: int = 3
-	for y in range(probe_center.y - half, probe_center.y - half + 6):
-		for x in range(probe_center.x - half, probe_center.x - half + 6):
+	for y in range(probe_center.y - half, probe_center.y - half + 7):
+		for x in range(probe_center.x - half, probe_center.x - half + 7):
 			if x < 0 or x >= GRID_COLS or y < 0 or y >= GRID_ROWS:
 				continue
 			var cell := Vector2i(x, y)
-			var fog: FogShipRecord = probe_fog if probe_ship_cells.has(cell) else null
+			var fog: FogShipRecord = null
+			if battleship_cells.has(cell):
+				fog = battleship_fog
+			elif cruiser_cells.has(cell):
+				fog = cruiser_fog
 			cell_records[cell] = CellRecord.make_probe(fog, 2)
-	# Ghost marker: represent the P2 destroyer at (55, 9) as last-seen intel.
-	# Under the I9-1 partial-reveal contract, ghosts are per-cell — only cells
-	# of a destroyer that fell inside a prior probe area linger as ghosts. We
-	# imagine a 3-wide probe region at rows y=8..10 covering the destroyer's
-	# stern and middle squares (55,9) and (55,10) but NOT its bow (55,11).
-	# That produces a 2-cell partial ghost — accurate to the new mechanic and
-	# visually distinct from the full-ship view inside the active probe.
-	var destroyer_p2: ShipInstance = GameState.players[1]["fleet"][2]
-	var ghost_fog: FogShipRecord = FogShipRecord.from_ship(destroyer_p2)
-	var ghost_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
-		destroyer_p2.ship_type, destroyer_p2.position, destroyer_p2.facing)
-	var imagined_probe_y_max: int = 10
-	for cell in ghost_cells:
-		if cell.y <= imagined_probe_y_max:
-			cell_records[cell] = CellRecord.make_ship_ghost(ghost_fog)
-	# Blind hit: a single cell between the two ships, outside the probe area.
-	cell_records[Vector2i(68, 10)] = CellRecord.make_blind_hit()
-	# Switch to target grid and frame all three features.
+	# Switch to target grid and frame the probe area + un-probed Battleship tail.
 	gp.call("_switch_grid", 1)  # ActiveGrid.TARGET
 	_gameplay_fill_view(
 		gp,
 		"MainLayout/GridArea/TargetViewport",
 		"MainLayout/GridArea/TargetViewport/SubViewport",
 		"MainLayout/GridArea/TargetViewport/SubViewport/GridNode/Camera2D",
-		62)
+		72)
 	var target_renderer: Node2D = gp.get_node_or_null(
 		"MainLayout/GridArea/TargetViewport/SubViewport/GridNode")
 	if target_renderer != null:
 		target_renderer.queue_redraw()
-	# Crop centered on the probe area. Probe spans window x (667..922) and
-	# y (346..602) at cam center_col=62; an 800x340 crop starting at (394, 304)
-	# puts the probe near the image center without clipping the ghost (col 55,
-	# window x~582) or the blind hit (col 68, window x~1178).
+	# Crop framed on the probe + un-probed Battleship tail. Cam center_col=72
+	# puts the probe at window center horizontally; the 800x340 crop at (394,
+	# 304) keeps the probe area centered while showing 1-2 cells of nebula
+	# above the probe and the un-probed Battleship cells (rows 12-13) below.
 	await _capture_cropped("05c_target_grid_mixed.png", Rect2i(394, 304, 800, 340))
 	# Restore clean state so downstream shots (06+) see the original fleet
 	# layout + empty fog. 05b/05c both mutated live state; a scene reload is
