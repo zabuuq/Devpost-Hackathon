@@ -129,18 +129,13 @@ func _draw_incoming_fire() -> void:
 	var log: Array = GameState.players[GameState.current_player]["battle_log"]
 	if log.is_empty():
 		return
-	# Find the most recent opponent fire turn_number across the log.
-	var latest_opp_turn: int = -1
-	for entry: Variant in log:
-		var e: Dictionary = entry
-		if e.get("owner", 0) != 1:
-			continue
-		var t: String = e.get("type", "")
-		if t != "laser" and t != "missile":
-			continue
-		var tn: int = int(e.get("turn_number", 0))
-		if tn > latest_opp_turn:
-			latest_opp_turn = tn
+	# Reference turn = the opponent's most recently completed turn count. Markers
+	# tagged with this number are full intensity; one less is faded; older skip.
+	# Driving the fade off the opponent's turn counter (not "max turn_number in
+	# log") makes the marker age every cycle, even when the opponent doesn't fire
+	# on the next turn — the player's "I just got hit" reference advances with
+	# time, not with whether the opponent shoots again.
+	var latest_opp_turn: int = GameState.players[1 - GameState.current_player]["turns_played"]
 	if latest_opp_turn <= 0:
 		return
 	# Draw markers from latest_opp_turn (full) and latest_opp_turn - 1 (faded).
@@ -200,8 +195,7 @@ func _draw_opponent_probe_boundary() -> void:
 	var opponent_records: Dictionary = GameState.players[opponent_idx]["cell_records"]
 	if opponent_records.is_empty():
 		return
-	# Collect every opponent cell with an active probe into a Vector2i->true set
-	# for O(1) "is this cell probed?" lookups when computing the contour.
+	# Collect every opponent cell with an active probe into a Vector2i->true set.
 	var probe_cells: Dictionary = {}
 	for key: Variant in opponent_records.keys():
 		var cell: Vector2i = key
@@ -210,46 +204,65 @@ func _draw_opponent_probe_boundary() -> void:
 			probe_cells[cell] = true
 	if probe_cells.is_empty():
 		return
-	# Gate: at least one cell of one of the viewer's living ships must overlap
-	# the probe set. Wreckage doesn't count — _collect_defender_living_cells in
-	# gameplay.gd already filters destroyed ships, but this draw path needs its
-	# own equivalent walk because GridRenderer doesn't see the gameplay node.
+	# Build the viewer's living-ship cell set (destroyed ships don't trigger the
+	# "you're being watched" boundary — wreckage is intel the opponent already
+	# has).
+	var ship_cells_set: Dictionary = {}
 	var fleet: Array = GameState.players[GameState.current_player]["fleet"]
-	var gate_open: bool = false
 	for ship_v: Variant in fleet:
 		var ship: ShipInstance = ship_v
 		if ship.is_destroyed:
 			continue
-		var ship_cells: Array[Vector2i] = ship.get_occupied_cells()
-		for sc: Vector2i in ship_cells:
-			if probe_cells.has(sc):
-				gate_open = true
-				break
-		if gate_open:
-			break
-	if not gate_open:
-		return
-	# Draw each probed cell's outline edges, skipping shared edges with adjacent
-	# probe cells so a multi-cell region renders as one closed contour. Off-grid
-	# neighbors are treated as not-in-set so the boundary closes along the edge
-	# of the grid.
+		for sc: Vector2i in ship.get_occupied_cells():
+			ship_cells_set[sc] = true
+	# Per-probe-region gate. Each connected component of probe_cells (4-connected
+	# so cell-adjacent probes merge into one region per spec) is shown only when
+	# that specific region overlaps a viewer ship cell. Disjoint regions over
+	# empty space stay hidden — the opponent isn't currently learning anything
+	# from them, so showing them would leak that the opponent probed at all.
+	var visited: Dictionary = {}
+	var visible_probe_cells: Dictionary = {}
+	var deltas: Array = [Vector2i(0, -1), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0)]
 	for key: Variant in probe_cells.keys():
+		var start: Vector2i = key
+		if visited.has(start):
+			continue
+		var component: Array = []
+		var has_overlap: bool = false
+		var queue: Array = [start]
+		visited[start] = true
+		while not queue.is_empty():
+			var cell: Vector2i = queue.pop_back()
+			component.append(cell)
+			if ship_cells_set.has(cell):
+				has_overlap = true
+			for delta: Vector2i in deltas:
+				var nb: Vector2i = cell + delta
+				if probe_cells.has(nb) and not visited.has(nb):
+					visited[nb] = true
+					queue.append(nb)
+		if has_overlap:
+			for cell: Vector2i in component:
+				visible_probe_cells[cell] = true
+	if visible_probe_cells.is_empty():
+		return
+	# Draw the contour around the visible regions only. Edges are skipped when
+	# the neighbor in that direction is also a visible probe cell, so contiguous
+	# probe regions render as a single closed contour. Off-grid neighbors are
+	# not-in-set, so the boundary closes along the grid edge.
+	for key: Variant in visible_probe_cells.keys():
 		var cell: Vector2i = key
 		var x0: float = cell.x * CELL_SIZE
 		var y0: float = cell.y * CELL_SIZE
 		var x1: float = (cell.x + 1) * CELL_SIZE
 		var y1: float = (cell.y + 1) * CELL_SIZE
-		# Top edge: skip if neighbor above is also a probe cell
-		if not probe_cells.has(cell + Vector2i(0, -1)):
+		if not visible_probe_cells.has(cell + Vector2i(0, -1)):
 			draw_line(Vector2(x0, y0), Vector2(x1, y0), COLOR_OPPONENT_PROBE_BOUNDARY, 2.0)
-		# Right edge
-		if not probe_cells.has(cell + Vector2i(1, 0)):
+		if not visible_probe_cells.has(cell + Vector2i(1, 0)):
 			draw_line(Vector2(x1, y0), Vector2(x1, y1), COLOR_OPPONENT_PROBE_BOUNDARY, 2.0)
-		# Bottom edge
-		if not probe_cells.has(cell + Vector2i(0, 1)):
+		if not visible_probe_cells.has(cell + Vector2i(0, 1)):
 			draw_line(Vector2(x1, y1), Vector2(x0, y1), COLOR_OPPONENT_PROBE_BOUNDARY, 2.0)
-		# Left edge
-		if not probe_cells.has(cell + Vector2i(-1, 0)):
+		if not visible_probe_cells.has(cell + Vector2i(-1, 0)):
 			draw_line(Vector2(x0, y1), Vector2(x0, y0), COLOR_OPPONENT_PROBE_BOUNDARY, 2.0)
 
 
@@ -394,16 +407,16 @@ func _draw_ship_cells(cells: Array[Vector2i], color: Color, alpha: float) -> voi
 		)
 
 func _draw_historical_probe_border(cell: Vector2i) -> void:
-	# Thin 1px border drawn inside the cell, leaving a 1px inset so it doesn't
-	# fight the grid lines. Four draw_line calls form the rectangle.
+	# 2px border drawn inside the cell, leaving a 1px inset so it doesn't fight
+	# the grid lines. Four draw_line calls form the rectangle.
 	var x0: float = cell.x * CELL_SIZE + 1.0
 	var y0: float = cell.y * CELL_SIZE + 1.0
 	var x1: float = (cell.x + 1) * CELL_SIZE - 1.0
 	var y1: float = (cell.y + 1) * CELL_SIZE - 1.0
-	draw_line(Vector2(x0, y0), Vector2(x1, y0), COLOR_HISTORICAL_PROBE, 1.0)
-	draw_line(Vector2(x1, y0), Vector2(x1, y1), COLOR_HISTORICAL_PROBE, 1.0)
-	draw_line(Vector2(x1, y1), Vector2(x0, y1), COLOR_HISTORICAL_PROBE, 1.0)
-	draw_line(Vector2(x0, y1), Vector2(x0, y0), COLOR_HISTORICAL_PROBE, 1.0)
+	draw_line(Vector2(x0, y0), Vector2(x1, y0), COLOR_HISTORICAL_PROBE, 2.0)
+	draw_line(Vector2(x1, y0), Vector2(x1, y1), COLOR_HISTORICAL_PROBE, 2.0)
+	draw_line(Vector2(x1, y1), Vector2(x0, y1), COLOR_HISTORICAL_PROBE, 2.0)
+	draw_line(Vector2(x0, y1), Vector2(x0, y0), COLOR_HISTORICAL_PROBE, 2.0)
 
 func _draw_wreckage_cells(cells: Array[Vector2i]) -> void:
 	for cell in cells:
