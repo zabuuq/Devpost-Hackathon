@@ -635,3 +635,43 @@ Worth raising at Jason's next iteration scope conversation. The split-panel + ac
 - **Working tree:** Clean after the resume-notes commit (this commit). Checklist ticks for I7-1/I7-2/I7-3 included.
 - **Branch:** `main`, ahead of `origin/main` by all I7 commits. Not pushed.
 - **Build mode:** Autonomous with verification checkpoints every 3 items per checklist header. Do not switch modes.
+
+## /build — Iteration 7 (resumed and shipped)
+
+Resumed 2026-04-25 on the new computer. The pause-time bug was the single
+most surprising thing in I7: gating `_refresh_opponent_probes_after_regen`
+and `_refresh_probe_records_for_ship` on `record.has_probe` instead of
+`record.ship != null` was a one-line fix that closed a multi-symptom leak.
+
+### Commits landed during the resume
+
+In order:
+- `230ca72` Freeze ghost FogShipRecords against opponent move/regen leaks (pre-I7-4 fix)
+- `11f05a4` Filter ghost cells by exact fog ref, not just has_miss (Checkpoint 1 follow-up after Jason found a ghost-resurrection bug post-miss-then-hit)
+- `d5a31a6` Complete step I7-4: Historical probe overlay on Target Grid
+- `573c88b` Complete step I7-5: Command Grid incoming hits and near misses with fade
+- `e3d53a9` Complete step I7-6: Command Grid opponent active probe boundaries
+- `62a5116` Fix I7-5/I7-6 checkpoint regressions: per-probe gating + time-based fade
+
+### Bugs found at Checkpoint 2 (one autonomous-build pattern worth noting)
+
+Checkpoint 2 surfaced two real regressions that the subagents missed:
+
+1. **I7-6 boundary gate was global, not per-region.** The original implementation set `gate_open` once any ship overlapped any probe cell, then drew boundaries around every probe cell in `probe_cells`. Result: an opponent probe over empty space drew a boundary the moment any *other* probe of theirs overlapped one of the viewer's ships. Jason caught it with a clean five-probe repro (two overlapping, three not) and the screenshots made it obvious. The fix groups `has_probe` cells into 4-connected components and only emits contours for components that overlap a viewer ship cell.
+
+2. **I7-5 fade was log-driven, not time-driven.** The agent computed `latest_opp_turn` by scanning the battle log for the largest `turn_number`. If the opponent didn't fire on a cycle, the reference didn't advance, so old markers stayed full-intensity indefinitely. The fix reads `GameState.players[1 - current_player]["turns_played"]` directly so the fade tracks the player's turn cadence regardless of whether the opponent fires.
+
+Lesson: when a subagent completes a feature and reports clean acceptance, the spec's acceptance bar is what got tested in their head, not what the human will exercise in five minutes of free play. Keep verification checkpoints frequent enough to catch these before the rationale fades.
+
+### Devpost / Devlog deliverables landed
+
+- **Build #1636456** pushed to itch.io via butler. 99.74% patch savings; 182.85 KiB patch over 234.80 KiB fresh data. Replaces previous live build #1635102.
+- **Devlog brief** at `docs/claude-cowork/devlog-i7.md` — title "The grids stop forgetting", ~280 words, three bold lede phrases, Gallows-Deadpan voice. Jason posts it manually from itch.io's Devlog editor.
+- **Backlog cleanup:** removed six rows from `docs/backlog.md` corresponding to the six I7 features (blind hit clears ghost; wreckage visible in newly probed areas; miss indicators on Target Grid; Command Grid incoming hits + near misses; Command Grid opponent active probes; historical probe overlay).
+
+### Outstanding state at I7-7 close
+
+- **Build:** complete. All checklist items checked.
+- **Branch:** `main`, all I7 commits about to be pushed to `origin/main`.
+- **Live game:** itch.io build #1636456 processing → live shortly.
+- **Next steps for Jason:** post the devlog brief manually, link it back into Devpost if useful, and consider scoping Iteration 8 from the eight backlog deltas added during the I7 session (split-panel + accordion + nebula-extends-bounds are the biggest structural ones).
