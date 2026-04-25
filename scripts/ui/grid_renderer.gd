@@ -24,6 +24,13 @@ const COLOR_HIT_FULL: Color = Color(0.8, 0.4, 0.4, 0.9)
 const COLOR_HIT_FADED: Color = Color(0.6, 0.6, 0.6, 0.4)
 const COLOR_MISS_FULL: Color = Color(0.8, 0.4, 0.4, 0.9)
 const COLOR_MISS_FADED: Color = Color(0.6, 0.6, 0.6, 0.4)
+# I7-5: incoming opponent fire markers on Command Grid. Hits = solid red dot.
+# Near misses = orange X. Latest opponent turn draws full alpha; the turn before
+# that draws at half alpha; older entries are skipped ("gone on the third").
+const COLOR_INCOMING_HIT_FULL: Color = Color(1.0, 0.15, 0.15, 1.0)
+const COLOR_INCOMING_HIT_FADED: Color = Color(1.0, 0.15, 0.15, 0.5)
+const COLOR_INCOMING_NEAR_MISS_FULL: Color = Color(1.0, 0.6, 0.2, 0.9)
+const COLOR_INCOMING_NEAR_MISS_FADED: Color = Color(1.0, 0.6, 0.2, 0.45)
 const COLOR_FACING: Color = Color(1.0, 1.0, 0.3, 1.0)
 
 const SHIP_COLORS: Dictionary = {
@@ -97,6 +104,79 @@ func _draw_command_ships() -> void:
 		if not s.is_destroyed:
 			_draw_ship_cells(s.get_occupied_cells(), SHIP_COLORS.get(s.ship_type, Color.WHITE), 1.0)
 			_draw_facing_triangle(_get_front_cell(s.ship_type, s.position, s.facing), s.facing)
+	# I7-5: incoming hits + near misses on top of living ships. Selection and
+	# ghost-ship overlays are still drawn after _draw_command_ships() returns,
+	# so they will sit above these markers if they coincide.
+	_draw_incoming_fire()
+
+# I7-5: Incoming opponent fire markers on the Command Grid. Reads the current
+# player's battle_log (entries pushed in gameplay.gd _ready() with owner == 1
+# and turn_number = the opponent's turns_played at fire time). Markers from the
+# most recent opponent turn render at full intensity; markers from the turn
+# before that render at half alpha. Older entries are skipped — "gone on the
+# third" rule from backlog. The I6 near-miss filter already excluded misses
+# that aren't 8-way Chebyshev adjacent to a defender ship cell, so every miss
+# entry in the log is a near miss by definition.
+func _draw_incoming_fire() -> void:
+	var log: Array = GameState.players[GameState.current_player]["battle_log"]
+	if log.is_empty():
+		return
+	# Find the most recent opponent fire turn_number across the log.
+	var latest_opp_turn: int = -1
+	for entry: Variant in log:
+		var e: Dictionary = entry
+		if e.get("owner", 0) != 1:
+			continue
+		var t: String = e.get("type", "")
+		if t != "laser" and t != "missile":
+			continue
+		var tn: int = int(e.get("turn_number", 0))
+		if tn > latest_opp_turn:
+			latest_opp_turn = tn
+	if latest_opp_turn <= 0:
+		return
+	# Draw markers from latest_opp_turn (full) and latest_opp_turn - 1 (faded).
+	for entry: Variant in log:
+		var e: Dictionary = entry
+		if e.get("owner", 0) != 1:
+			continue
+		var t: String = e.get("type", "")
+		if t != "laser" and t != "missile":
+			continue
+		var tn: int = int(e.get("turn_number", 0))
+		var full: bool
+		if tn == latest_opp_turn:
+			full = true
+		elif tn == latest_opp_turn - 1:
+			full = false
+		else:
+			continue
+		var target: Vector2i = e.get("target", Vector2i.ZERO)
+		var hit: bool = bool(e.get("hit", false))
+		if hit:
+			_draw_incoming_hit_dot(target, full)
+		else:
+			_draw_incoming_near_miss_x(target, full)
+
+
+func _draw_incoming_hit_dot(cell: Vector2i, full_intensity: bool) -> void:
+	var cx: float = cell.x * CELL_SIZE + CELL_SIZE * 0.5
+	var cy: float = cell.y * CELL_SIZE + CELL_SIZE * 0.5
+	var color: Color = COLOR_INCOMING_HIT_FULL if full_intensity else COLOR_INCOMING_HIT_FADED
+	draw_circle(Vector2(cx, cy), CELL_SIZE * 0.30, color)
+
+
+func _draw_incoming_near_miss_x(cell: Vector2i, full_intensity: bool) -> void:
+	# Mirror _draw_miss_x stroke + margin, just a different color.
+	var margin: float = CELL_SIZE * 0.25
+	var x0: float = cell.x * CELL_SIZE + margin
+	var y0: float = cell.y * CELL_SIZE + margin
+	var x1: float = (cell.x + 1) * CELL_SIZE - margin
+	var y1: float = (cell.y + 1) * CELL_SIZE - margin
+	var color: Color = COLOR_INCOMING_NEAR_MISS_FULL if full_intensity else COLOR_INCOMING_NEAR_MISS_FADED
+	draw_line(Vector2(x0, y0), Vector2(x1, y1), color, 2.0)
+	draw_line(Vector2(x1, y0), Vector2(x0, y1), color, 2.0)
+
 
 # --- Target Grid ---
 
