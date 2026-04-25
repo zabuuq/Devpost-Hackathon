@@ -397,17 +397,19 @@ func _execute_targeting_action(cell: Vector2i) -> void:
 	AudioManager.play_action_sfx(result)
 	GameState.last_turn_results.append(result)
 
-	# Return to command grid
+	# Stay on Target Grid; just clear targeting state.
 	_cancel_targeting()
-	_switch_grid(ActiveGrid.COMMAND)
 
 	# Refresh both grids
 	command_renderer.refresh()
 	target_renderer.refresh()
 
-	# Refresh ship panel
+	# Refresh ship panel (kept populated for if/when the user clicks the Ship Panel tab)
 	if selected_ship != null:
 		ship_panel.show_ship(selected_ship)
+
+	# Surface the freshly-logged action.
+	_show_left_tab("battle_log")
 
 
 # ---------------------------------------------------------------------------
