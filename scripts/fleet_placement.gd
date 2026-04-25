@@ -153,8 +153,11 @@ func _on_viewport_gui_input(event: InputEvent) -> void:
 				mouse_down = false
 				dragged = false
 				is_panning = false
-				if not was_dragged and selected_ship_idx >= 0:
-					_try_place_ship()
+				if not was_dragged:
+					if selected_ship_idx >= 0:
+						_try_place_ship()
+					else:
+						_try_pick_up_ship()
 		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 			selected_ship_idx = -1
 			grid_node.queue_redraw()
@@ -216,6 +219,33 @@ func _try_place_ship() -> void:
 	selected_ship_idx = -1
 	done_button.disabled = placed_ships.size() < ShipDefinitions.FLEET.size()
 	grid_node.queue_redraw()
+
+func _try_pick_up_ship() -> void:
+	var world_pos: Vector2 = grid_node.get_local_mouse_position()
+	var col: int = clampi(int(world_pos.x / CELL_SIZE), 0, GRID_COLS - 1)
+	var row: int = clampi(int(world_pos.y / CELL_SIZE), 0, GRID_ROWS - 1)
+	var cell := Vector2i(col, row)
+	var idx: int = _find_placed_ship_at(cell)
+	if idx < 0:
+		return
+	var inst: ShipInstance = placed_ships[idx]
+	placed_ships.erase(idx)
+	ship_buttons[idx].modulate = Color.WHITE
+	selected_ship_idx = idx
+	ghost_facing = inst.facing
+	ghost_position = inst.position
+	done_button.disabled = placed_ships.size() < ShipDefinitions.FLEET.size()
+	_update_detail_panel(ShipDefinitions.FLEET[idx])
+	AudioManager.play_sfx("click")
+	grid_node.queue_redraw()
+
+func _find_placed_ship_at(cell: Vector2i) -> int:
+	for idx in placed_ships:
+		var inst: ShipInstance = placed_ships[idx]
+		var cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(inst.ship_type, inst.position, inst.facing)
+		if cell in cells:
+			return idx
+	return -1
 
 func _is_placement_valid(stype: String, origin: Vector2i, facing: int) -> bool:
 	var cells := ShipDefinitions.get_ship_cells(stype, origin, facing)
