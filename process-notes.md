@@ -540,3 +540,98 @@ The 6-item Battle Log / Hit Display cluster — every backlog row that touches "
 Jason's iteration framing has stabilized into a repeatable pattern: ask for the live backlog list, drill into items he suspects are already done, prune them, then pick a category wholesale. Three iterations in a row now have started this way (I5, I6, I7). The "are these already done?" check at the start of I7 caught seven stale rows — bigger cleanup than usual because no one had swept the list since I3. Worth recording: backlog hygiene is iteration-boundary work, not in-flight work.
 
 The scoping question on item 5 was the only design call requiring real input. Jason gave a clean "what you have laid out looks great to me" once I framed the two readings explicitly — same pattern as I5 ("I have nothing to add" on the click-vs-drag threshold). When the spec is already substantively reasoned through, he doesn't need to redo the thinking; he just needs the choices laid out. Don't over-interview when the design has already been done.
+
+## /build — Iteration 7 (paused at Checkpoint 1, resume on new computer)
+
+Started 2026-04-25. Working through I7 autonomous build. I7-1, I7-2, I7-3 shipped. Pausing at Checkpoint 1 so Jason can switch computers; resume by running `/build` on the new machine after `git pull`.
+
+### Read this first when resuming
+
+There is **one open bug** still blocking the move past Checkpoint 1. Fix it before doing anything else (do NOT proceed to I7-4 first). After the fix, walk Jason back through the Checkpoint 1 verification path, and once approved, mark task #4 completed and dispatch I7-4.
+
+### Commits landed during the session
+
+In order:
+- `4ad6000` Complete step I7-1: Blind hit clears ghost ship reference on that cell only
+- `58b50e2` Complete step I7-2: Wreckage visible in newly probed areas
+- `4c6cfc8` Complete step I7-3: Miss indicators on Target Grid with persistence and decay
+- `c90bf8e` Fade miss Xs to gray instead of desaturated red (Jason's color tweak — `COLOR_MISS_FADED` switched from desaturated red to `Color(0.6, 0.6, 0.6, 0.4)`)
+- `5758a8b` Fix I7-1/I7-3 ghost+miss+hit interaction; add hit-marker fade
+- `7bd9e4a` Preserve ghost ship intel when enemy ship moves (gated old-cells loop in `_update_opponent_probes_after_move` on `record.has_probe`)
+- `6b1b097` Hide ghost ship cells where a miss has landed (renderer filter on `has_miss` in the living fog ship draw pass)
+
+### Behavior reversals from the original I7-1 spec — important context
+
+The original I7-1 task said "blind hit clears ghost ship reference on that cell." Jason course-corrected during Checkpoint 1: hits on a ghost cell should KEEP the ghost; only **misses** should clear ghost markers. The realized behavior in the codebase now is:
+
+- **Hit (blind) on a ghost cell:** shows the hit dot, clears any miss X on that cell, keeps the ghost rendering.
+- **Miss on any cell:** shows the miss X, clears any prior hit (`has_blind_hit`, `hit_turn`) and clears `record.ship`. Renderer also subtracts the miss cell from any overlapping ghost ship (the renderer filter in `6b1b097`).
+- **Hit + miss now share the same color palette:** `COLOR_HIT_FULL` / `COLOR_MISS_FULL` = desaturated red `Color(0.8, 0.4, 0.4, 0.9)` for the current turn; `COLOR_HIT_FADED` / `COLOR_MISS_FADED` = gray `Color(0.6, 0.6, 0.6, 0.4)` for older turns. Glyphs (filled circle vs X) differentiate them.
+
+The I7-1 checklist item title in `docs/checklist.md` still reads "Blind hit clears ghost ship reference on that cell only" — that's now misleading. Don't bother editing it; the realized behavior is captured in commits and these notes.
+
+### THE BUG TO FIX BEFORE PROCEEDING
+
+Jason reported, immediately before pausing:
+
+> Player 1 ghost ships on target grid. Player 2 moved one ship backward one square, another forward one square, and the third one pivoted. New ghost ships appeared where Player 2's ships are now located. A player should not see any kind of movement from their opponent's ships if they are not in an active probe.
+
+**Root cause:** Two helper functions update opponent fog records on EVERY cell where `record.ship != null`, not just cells with `record.has_probe == true`. So when an opponent moves or fires shield regen, the player's ghost cells get rebuilt to point at the OPPONENT's new FogShipRecord (which carries the new position). The renderer then collects two FogShipRecords (the old one frozen on cells that didn't get touched, and the new one written to cells the moved ship now sits on) and draws BOTH ghosts — original at old position, new at new position.
+
+**Files and fixes:**
+
+1. **`scripts/gameplay/turn_manager.gd::_refresh_opponent_probes_after_regen`** (around line 74-88). Current inner gate is `if record.ship != null:`. Change to `if record.has_probe:`. This stops shield-regen from leaking the opponent's current position and live shield/armor numbers into the player's ghost markers.
+
+2. **`scripts/gameplay/action_resolver.gd::_refresh_probe_records_for_ship`** (around line 397-408). Same pattern, same fix. Inner gate is `if record.ship != null:`. Change to `if record.has_probe:`. This is called after laser/missile damage — the attacker should see updated shields/armor on actively probed cells but ghost cells should freeze at the FogShipRecord they had when the probe last saw the ship.
+
+Both fixes are one-line each. Commit them together — same root cause, parallel logic.
+
+**Suggested commit message:**
+```
+Freeze ghost FogShipRecords against opponent move/regen leaks
+
+_refresh_opponent_probes_after_regen and _refresh_probe_records_for_ship
+were updating ship references on every cell where record.ship != null.
+That leaked the opponent's current ship position and live stats into
+ghost cells, causing new ghosts to render at the opponent's new
+positions whenever they moved or regenerated shields. Gate both updates
+on record.has_probe so only active-probe cells receive live updates.
+Ghost markers stay frozen at the FogShipRecord captured when the probe
+last saw the ship (per PRD 4.3 / 5.3 — ghost intel is a snapshot).
+```
+
+### Verification path after the fix
+
+1. P1 probes a P2 ship. Skip enough turns for the probe to expire — only ghost remains on P1's target grid.
+2. P2's turn: move that ship backward one square, pivot another, slide a third forward.
+3. P1's next turn: target grid should show ghosts at the OLD positions ONLY. No new ghosts at P2's new positions.
+4. Bonus check: P2 fires shield regen on a probed-then-ghosted ship. P1's ghost ship card (if visible via clicking) should NOT show updated shield numbers — values should stay frozen at the last probe snapshot.
+
+After Jason confirms the fix, also re-run the original Checkpoint 1 path (blind hit + ghost; miss + ghost; gray fade for older hits/misses; ghost preservation when opponent moves the ship to a non-overlapping position) to make sure nothing else regressed.
+
+### State to set after Checkpoint 1 clears
+
+- Mark task #4 (Checkpoint 1) `completed`.
+- Mark task #5 (I7-4) `in_progress`.
+- Dispatch the I7-4 subagent (Historical probe overlay on Target Grid). Prompt structure should mirror I7-1/I7-2/I7-3 dispatches: surgical context, no `git add -A`, ask for under-200-word report with commit SHA. The full I7-4 spec is in `docs/checklist.md` — load just that one item.
+
+### Backlog deltas added during this session (8 new rows, post-I7 candidates)
+
+These are appended at the bottom of `docs/backlog.md` "Ideas Surfaced During Development" table. None are committed to an iteration yet:
+- Reverse shift+scroll horizontal pan direction
+- Cell info tooltip on Target Grid hover (last probe / hit / miss with turn numbers)
+- Rename "Energy after sliders:" → "Energy after use:"
+- Probe Ship laser slider defaults to 100 (max stays 200)
+- Always-visible split left panel (ship panel top 2/3, battle log bottom 1/3)
+- Ship Panel as accordion ship list (clickable names expand + select on Command Grid)
+- Nebula extends beyond grid bounds (fills viewport at full zoom-out, scales with camera)
+- Escape cancels in-progress action (probe/laser/missile/move)
+
+Worth raising at Jason's next iteration scope conversation. The split-panel + accordion pair, and the nebula-extends-bounds item, are bigger structural changes that would warrant their own iteration.
+
+### Outstanding state at pause time
+
+- **Tasks:** #1, #2, #3 completed. #4 (Checkpoint 1) in_progress. #5–#9 pending.
+- **Working tree:** Clean after the resume-notes commit (this commit). Checklist ticks for I7-1/I7-2/I7-3 included.
+- **Branch:** `main`, ahead of `origin/main` by all I7 commits. Not pushed.
+- **Build mode:** Autonomous with verification checkpoints every 3 items per checklist header. Do not switch modes.
