@@ -92,19 +92,101 @@ theme_override_font_sizes/font_size = 22
 text = "Player 1"
 horizontal_alignment = 1
 
-[node name="P1Probes" type="Label" parent="VBoxContainer/StatsRow/P1Stats"]
+[node name="P1Grid" type="GridContainer" parent="VBoxContainer/StatsRow/P1Stats"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
-theme_override_font_sizes/font_size = 16
-text = "Probes launched: 0"
-horizontal_alignment = 1
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 4
+columns = 2
 
-[node name="P1Hits" type="Label" parent="VBoxContainer/StatsRow/P1Stats"]
+[node name="P1ProbesKey" type="Label" parent="VBoxContainer/StatsRow/P1Stats/P1Grid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
 theme_override_font_sizes/font_size = 16
-text = "Hits scored: 0"
-horizontal_alignment = 1
+text = "Probes launched"
+horizontal_alignment = 0
+
+[node name="P1Probes" type="Label" parent="VBoxContainer/StatsRow/P1Stats/P1Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
+
+[node name="P1LasersKey" type="Label" parent="VBoxContainer/StatsRow/P1Stats/P1Grid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "Laser shots"
+horizontal_alignment = 0
+
+[node name="P1Lasers" type="Label" parent="VBoxContainer/StatsRow/P1Stats/P1Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
+
+[node name="P1MissilesKey" type="Label" parent="VBoxContainer/StatsRow/P1Stats/P1Grid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "Missile shots"
+horizontal_alignment = 0
+
+[node name="P1Missiles" type="Label" parent="VBoxContainer/StatsRow/P1Stats/P1Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
+
+[node name="P1HitsKey" type="Label" parent="VBoxContainer/StatsRow/P1Stats/P1Grid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "Total hits"
+horizontal_alignment = 0
+
+[node name="P1Hits" type="Label" parent="VBoxContainer/StatsRow/P1Stats/P1Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
+
+[node name="P1DamageKey" type="Label" parent="VBoxContainer/StatsRow/P1Stats/P1Grid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "Total damage"
+horizontal_alignment = 0
+
+[node name="P1Damage" type="Label" parent="VBoxContainer/StatsRow/P1Stats/P1Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
+
+[node name="P1MissesKey" type="Label" parent="VBoxContainer/StatsRow/P1Stats/P1Grid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "Total misses"
+horizontal_alignment = 0
+
+[node name="P1Misses" type="Label" parent="VBoxContainer/StatsRow/P1Stats/P1Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
 
 [node name="P2Stats" type="VBoxContainer" parent="VBoxContainer/StatsRow"]
 layout_mode = 2
@@ -117,19 +199,101 @@ theme_override_font_sizes/font_size = 22
 text = "Player 2"
 horizontal_alignment = 1
 
-[node name="P2Probes" type="Label" parent="VBoxContainer/StatsRow/P2Stats"]
+[node name="P2Grid" type="GridContainer" parent="VBoxContainer/StatsRow/P2Stats"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
-theme_override_font_sizes/font_size = 16
-text = "Probes launched: 0"
-horizontal_alignment = 1
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 4
+columns = 2
 
-[node name="P2Hits" type="Label" parent="VBoxContainer/StatsRow/P2Stats"]
+[node name="P2ProbesKey" type="Label" parent="VBoxContainer/StatsRow/P2Stats/P2Grid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
 theme_override_font_sizes/font_size = 16
-text = "Hits scored: 0"
-horizontal_alignment = 1
+text = "Probes launched"
+horizontal_alignment = 0
+
+[node name="P2Probes" type="Label" parent="VBoxContainer/StatsRow/P2Stats/P2Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
+
+[node name="P2LasersKey" type="Label" parent="VBoxContainer/StatsRow/P2Stats/P2Grid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "Laser shots"
+horizontal_alignment = 0
+
+[node name="P2Lasers" type="Label" parent="VBoxContainer/StatsRow/P2Stats/P2Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
+
+[node name="P2MissilesKey" type="Label" parent="VBoxContainer/StatsRow/P2Stats/P2Grid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "Missile shots"
+horizontal_alignment = 0
+
+[node name="P2Missiles" type="Label" parent="VBoxContainer/StatsRow/P2Stats/P2Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
+
+[node name="P2HitsKey" type="Label" parent="VBoxContainer/StatsRow/P2Stats/P2Grid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "Total hits"
+horizontal_alignment = 0
+
+[node name="P2Hits" type="Label" parent="VBoxContainer/StatsRow/P2Stats/P2Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
+
+[node name="P2DamageKey" type="Label" parent="VBoxContainer/StatsRow/P2Stats/P2Grid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "Total damage"
+horizontal_alignment = 0
+
+[node name="P2Damage" type="Label" parent="VBoxContainer/StatsRow/P2Stats/P2Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
+
+[node name="P2MissesKey" type="Label" parent="VBoxContainer/StatsRow/P2Stats/P2Grid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "Total misses"
+horizontal_alignment = 0
+
+[node name="P2Misses" type="Label" parent="VBoxContainer/StatsRow/P2Stats/P2Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.84, 0.82, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
 
 [node name="PlayAgainButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2

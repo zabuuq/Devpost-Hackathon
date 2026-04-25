@@ -18,7 +18,11 @@ var players: Array = [
 		"cell_records": {},
 		"turn_stats": {
 			"probes_launched": 0,
-			"hits_scored": 0
+			"hits_scored": 0,
+			"laser_shots_fired": 0,
+			"missile_shots_fired": 0,
+			"total_damage": 0,
+			"total_misses": 0
 		},
 		"command_camera": {},
 		"target_camera": {},
@@ -30,7 +34,11 @@ var players: Array = [
 		"cell_records": {},
 		"turn_stats": {
 			"probes_launched": 0,
-			"hits_scored": 0
+			"hits_scored": 0,
+			"laser_shots_fired": 0,
+			"missile_shots_fired": 0,
+			"total_damage": 0,
+			"total_misses": 0
 		},
 		"command_camera": {},
 		"target_camera": {},
@@ -51,7 +59,11 @@ func reset() -> void:
 			"cell_records": {},
 			"turn_stats": {
 				"probes_launched": 0,
-				"hits_scored": 0
+				"hits_scored": 0,
+				"laser_shots_fired": 0,
+				"missile_shots_fired": 0,
+				"total_damage": 0,
+				"total_misses": 0
 			},
 			"command_camera": {},
 			"target_camera": {},
@@ -63,7 +75,11 @@ func reset() -> void:
 			"cell_records": {},
 			"turn_stats": {
 				"probes_launched": 0,
-				"hits_scored": 0
+				"hits_scored": 0,
+				"laser_shots_fired": 0,
+				"missile_shots_fired": 0,
+				"total_damage": 0,
+				"total_misses": 0
 			},
 			"command_camera": {},
 			"target_camera": {},

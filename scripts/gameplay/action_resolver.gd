@@ -100,6 +100,8 @@ func resolve_probe(acting_ship: ShipInstance, target_cell: Vector2i, player_idx:
 
 func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fleet: Array, player_idx: int) -> Dictionary:
 	var laser_power: int = acting_ship.laser_power_setting
+	var player_data: Dictionary = GameState.players[player_idx]
+	player_data.turn_stats.laser_shots_fired += 1
 
 	# Deduct energy
 	acting_ship.current_energy -= laser_power
@@ -108,6 +110,7 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 	# Hit check
 	var target_ship: ShipInstance = find_ship_at_cell(target_cell, opponent_fleet)
 	if target_ship == null:
+		player_data.turn_stats.total_misses += 1
 		return {
 			"type": "laser",
 			"ship_type": acting_ship.ship_type,
@@ -132,7 +135,6 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 		destroyed = true
 
 	# Blind hit handling
-	var player_data: Dictionary = GameState.players[player_idx]
 	var cell_records: Dictionary = player_data.cell_records
 	var has_active_probe: bool = false
 	if cell_records.has(target_cell):
@@ -154,6 +156,7 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 
 	# Stats
 	player_data.turn_stats.hits_scored += 1
+	player_data.turn_stats.total_damage += shields_absorbed + armor_damage
 	GameState.last_turn_hits += 1
 
 	return {
@@ -175,6 +178,9 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 # ---------------------------------------------------------------------------
 
 func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fleet: Array, player_idx: int) -> Dictionary:
+	var player_data: Dictionary = GameState.players[player_idx]
+	player_data.turn_stats.missile_shots_fired += 1
+
 	# Deduct missile
 	acting_ship.missiles_remaining -= 1
 	acting_ship.action_taken = true
@@ -182,6 +188,7 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 	# Hit check
 	var target_ship: ShipInstance = find_ship_at_cell(target_cell, opponent_fleet)
 	if target_ship == null:
+		player_data.turn_stats.total_misses += 1
 		return {
 			"type": "missile",
 			"ship_type": acting_ship.ship_type,
@@ -213,7 +220,6 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 		destroyed = true
 
 	# Blind hit handling
-	var player_data: Dictionary = GameState.players[player_idx]
 	var cell_records: Dictionary = player_data.cell_records
 	var has_active_probe: bool = false
 	if cell_records.has(target_cell):
@@ -235,6 +241,7 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 
 	# Stats
 	player_data.turn_stats.hits_scored += 1
+	player_data.turn_stats.total_damage += shield_damage + armor_damage
 	GameState.last_turn_hits += 1
 
 	return {
