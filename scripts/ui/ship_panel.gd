@@ -18,6 +18,9 @@ var _probe_btn: Button = null
 var _laser_btn: Button = null
 var _missile_btn: Button = null
 var _move_btn: Button = null
+var _top_separator: HSeparator = null
+var _actions_separator: HSeparator = null
+var _actions_label: Label = null
 
 
 func _ready() -> void:
@@ -47,7 +50,8 @@ func _build_ui() -> void:
 	_container.add_child(_stats_label)
 
 	# Separator
-	_container.add_child(_make_separator())
+	_top_separator = _make_separator()
+	_container.add_child(_top_separator)
 
 	# Shield regen slider
 	var shield_box: HBoxContainer = HBoxContainer.new()
@@ -96,14 +100,15 @@ func _build_ui() -> void:
 	_container.add_child(_energy_remaining_label)
 
 	# Separator
-	_container.add_child(_make_separator())
+	_actions_separator = _make_separator()
+	_container.add_child(_actions_separator)
 
 	# Action buttons
-	var action_label: Label = Label.new()
-	action_label.text = "Actions:"
-	action_label.add_theme_font_size_override("font_size", 12)
-	action_label.add_theme_color_override("font_color", Color(0.8, 0.85, 0.67))
-	_container.add_child(action_label)
+	_actions_label = Label.new()
+	_actions_label.text = "Actions:"
+	_actions_label.add_theme_font_size_override("font_size", 12)
+	_actions_label.add_theme_color_override("font_color", Color(0.8, 0.85, 0.67))
+	_container.add_child(_actions_label)
 
 	_probe_btn = Button.new()
 	_probe_btn.text = "Launch Probe"
@@ -142,6 +147,9 @@ func show_ship(ship: ShipInstance) -> void:
 	_laser_btn.visible = true
 	_missile_btn.visible = true
 	_move_btn.visible = true
+	_top_separator.visible = true
+	_actions_separator.visible = true
+	_actions_label.visible = true
 	_refresh_display()
 
 
@@ -167,6 +175,9 @@ func show_enemy_ship(fog: FogShipRecord) -> void:
 	_laser_btn.visible = false
 	_missile_btn.visible = false
 	_move_btn.visible = false
+	_top_separator.visible = false
+	_actions_separator.visible = false
+	_actions_label.visible = false
 
 
 func clear_ship() -> void:
@@ -181,6 +192,9 @@ func clear_ship() -> void:
 		_laser_btn.visible = true
 		_missile_btn.visible = true
 		_move_btn.visible = true
+		_top_separator.visible = true
+		_actions_separator.visible = true
+		_actions_label.visible = true
 	if _empty_label != null:
 		_empty_label.visible = true
 
