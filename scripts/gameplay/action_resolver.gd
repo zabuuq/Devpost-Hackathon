@@ -67,44 +67,21 @@ func resolve_probe(acting_ship: ShipInstance, target_cell: Vector2i, player_idx:
 			var record := CellRecord.make_probe(fog_ship, expires_in)
 			cell_records[cell] = record
 
-	# For each detected ship, write ship references on cells OUTSIDE the probe
-	# area so the ship renders fully. These cells do NOT get has_probe = true —
-	# they're ghost references that will be cleared when the ship moves away.
-	for ship in detected_ships:
-		var fog_ship: FogShipRecord = FogShipRecord.from_ship(ship)
-		var ship_cells: Array[Vector2i] = get_ship_cells(ship)
-		for cell in ship_cells:
-			if not cell_records.has(cell) or not cell_records[cell].has_probe:
-				# Cell is outside the probe area — add a ghost ship reference only
-				cell_records[cell] = CellRecord.make_ship_ghost(fog_ship)
-			elif cell_records[cell].ship == null:
-				# Cell is inside probe area but wasn't on this ship — set the ref
-				cell_records[cell].ship = fog_ship
+	# Partial reveal contract (I9-1): only cells literally inside the probe area
+	# carry intel. No ghost-extrapolation onto a ship's un-probed cells. The
+	# detected_ships list still drives the result-dict count for the battle log.
 
-	# Destroyed enemy ships: any cells overlapping the probe area get a fresh
-	# probe record (so wreckage renders), and remaining hull cells get a ghost
-	# reference so the wreckage outline spans the whole ship.
+	# Destroyed enemy ships: write probe records for wreck cells inside the area
+	# so wreckage renders. Cells outside the probe area stay un-rendered.
 	for wreck in opponent_fleet:
 		if not wreck.is_destroyed:
 			continue
 		var wreck_cells: Array[Vector2i] = get_ship_cells(wreck)
-		var overlaps_probe: bool = false
-		for cell in wreck_cells:
-			if cell.x >= x_min and cell.x <= x_max and cell.y >= y_min and cell.y <= y_max:
-				overlaps_probe = true
-				break
-		if not overlaps_probe:
-			continue
 		var wreck_fog: FogShipRecord = FogShipRecord.from_ship(wreck)
 		for cell in wreck_cells:
 			var inside: bool = cell.x >= x_min and cell.x <= x_max and cell.y >= y_min and cell.y <= y_max
 			if inside:
 				cell_records[cell] = CellRecord.make_probe(wreck_fog, expires_in)
-			else:
-				if not cell_records.has(cell) or not cell_records[cell].has_probe:
-					cell_records[cell] = CellRecord.make_ship_ghost(wreck_fog)
-				elif cell_records[cell].ship == null:
-					cell_records[cell].ship = wreck_fog
 
 	ships_detected = detected_ships.size()
 

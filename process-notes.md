@@ -769,3 +769,37 @@ Drafted four edits across pages 2 (Place Your Fleet), 5 (Spend Your Energy), 6 (
 - **Branch:** `main`, all I8 commits about to be pushed to `origin/main`.
 - **Live game:** itch.io build #1636747 processing → live shortly.
 - **Next steps for Jason:** post the devlog brief manually. Consider scoping Iteration 9 from the three new bug rows (probe rework being the headline) plus whatever else has accumulated in the backlog.
+
+## /iterate — Iteration 9 (opening)
+
+Started 2026-04-25. Devpost edit window closes 2026-04-29 (4 days out — same window noted at I7 and I8 starts).
+
+### Entry state
+- All checklist items 1–12 + I1 through I8 complete (49 iteration items shipped).
+- Working tree: clean.
+- Last commit `4326095` shipped I8-12 (redeploy + devlog + backlog cleanup).
+- Live build on itch.io: #1636747.
+- Backlog: probe-cluster items live in two places — Ideas Surfaced (`Ship visibility around active probes is buggy` umbrella, `No blind hit on partially probed ships`, `Probe activation outside grid`) and Long-term/Exploratory (`Partial probe reveal on ships`).
+
+### What Jason chose and why
+A structural rework of probe reveal. Today's contract — "any probed cell of a ship reveals the whole ship via writer extrapolation" — has produced a class of fog-state bugs around moves and damage updates inside active probe areas, plus what Jason described as gameplay awkwardness ("too many variables, made the game awkward"). New contract: partial reveal — only cells literally inside the probe area are revealed; cells outside stay unknown.
+
+### What the review pass surfaced
+1. **#3 (probe activation outside grid) is already shipped.** `gameplay.gd:294-316` explicitly accepts off-grid clicks for probe targeting and clamps the probe center inside `_execute_targeting_action`. Stale row — drops in I9-3 cleanup.
+2. **#1 umbrella (active-probe visibility bugs) collapses into the rework.** Tracing the bug class: the multi-fog-record-per-ship state created by the writer's extrapolation step is the source of the ambiguity. Removing extrapolation removes the bug class. No separate fix needed.
+3. **#2 (no blind hit on partially probed ships) flips meaning, not deletion.** Today's phrasing is "blind hits on un-probed cells of a probed ship are noise." Under partial reveal, hitting an un-probed cell of a partially revealed ship gives genuinely new information ("the destroyer extends this way"). Code-wise, the blind-hit writer is already cell-local — it gates on whether THAT cell has an active probe, not whether any cell of the ship does. So the flip is a no-op in code; it just becomes a backlog row whose original phrasing no longer applies.
+
+Net: items 1, 2, 6 collapse into a single mechanic-rework item. Item 3 is shipped already. Final iteration count: 3 items (rework + docs/screenshots + gated deploy).
+
+### Scoping decisions
+- **Bundle writer + renderer in I9-1.** Splitting them creates an intermediate state where the writer no longer extrapolates but the wreckage renderer still does — broken visuals between commits. Bundle is correct.
+- **Visual contract — option (c).** Probed cells render as ship cells (ship-type colored), facing triangle ONLY on the front cell if it's itself probed. Stats panel still opens with full data on click of any probed cell. Confirmed with Jason.
+- **Ghost markers — per-cell.** When a probe expires, only the cells that were probed AND contained ship at expire time become per-cell ghosts. Un-probed cells of the same ship leave nothing. Clicking a ghost cell does NOT open the Ship Panel (current behavior, confirmed unchanged).
+- **Wreckage — per-cell.** Same rule: only probed wreckage cells render.
+- **Screenshot runner — needs a touch in I9-2.** Shot 11's canned `make_ship_ghost` setup writes a full-ship ghost; under the new mechanic that's inaccurate. Adjust the runner setup to write per-cell ghosts on a subset of the destroyer's cells.
+
+### Build mode
+Autonomous per top-of-file preferences. Verification falls naturally after I9-1 (mechanic correctness — the heaviest item) and I9-2 (docs + screenshots). Final item I9-3 is gated like I4-5 / I7-7 / I8-12 with three explicit pauses (smoke test, butler push, devlog draft).
+
+### Observation on the iteration pattern
+Jason asked for the live backlog list, requested a numbered re-print, then steered the discussion to the underlying mechanic before scoping items. Two design questions surfaced in conversation: (1) what does a probed cell render as (answered (c) + full stats on click), (2) how do ghosts/wreckage behave under the new contract (answered: same per-cell rule). The /iterate review pass surfaced #3 as already-shipped and #1 as auto-fixed by the mechanic change — both findings reduced scope without losing intent. Same pattern as I7 and I8: when the design has been done substantively in the conversation, don't over-interview; confirm the corners and write the spec.

@@ -311,12 +311,19 @@ func _draw_target_cells() -> void:
 			collected_fogs.append(fog)
 			fog_cells_list.append(ship_cells)
 			fog_probed_list.append(any_probed)
-	# First: wreckage for destroyed fog ships (below everything else)
+	# First: wreckage for destroyed fog ships (below everything else).
+	# Per-cell filter (I9-1): only render wreckage on cells whose record still
+	# points at this fog ref, mirroring the living-ship visible_cells filter.
 	for i in range(collected_fogs.size()):
 		var fog: FogShipRecord = collected_fogs[i]
 		var any_probed: bool = fog_probed_list[i]
 		if fog.last_armor <= 0 and any_probed:
-			_draw_wreckage_cells(fog_cells_list[i])
+			var visible_wreck_cells: Array[Vector2i] = []
+			for sc: Vector2i in fog_cells_list[i]:
+				if cell_records.has(sc) and cell_records[sc].ship == fog:
+					visible_wreck_cells.append(sc)
+			if not visible_wreck_cells.is_empty():
+				_draw_wreckage_cells(visible_wreck_cells)
 	# Next: blind hits (unchanged rule — suppressed on cells with an active probe)
 	# Miss X markers drawn before blind hits so blind hits sit on top
 	var current_turn_number: int = GameState.players[GameState.current_player]["turns_played"] + 1
