@@ -50,7 +50,7 @@ Battlestations: Nebula is a turn-based, hot-seat space combat game for two playe
 - Five fixed ships per side: a Battleship, a Probe Ship, two Destroyers, and a Cruiser.
 - One of four actions per ship per turn: Probe, Shoot Laser, Launch Missile, or Move.
 - Energy allocation sliders per ship split your reactor between shield regen and laser power. Shields fill first when energy is tight.
-- Probes illuminate a 4-by-4 box (6-by-6 from a Probe Ship) of the nebula and reveal any enemy ships inside. The lights go out after two of your turns. What stays is a ghost marker.
+- Probes illuminate a 4-by-4 box (7-by-7 from a Probe Ship) of the nebula and reveal any enemy ships inside. The lights go out after two of your turns. What stays is a ghost marker.
 - Hidden-information integrity lives or dies on the handoff screen, which reports hit counts only. No ship names, no positions, no damage numbers.
 
 ## How I built it

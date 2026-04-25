@@ -40,7 +40,7 @@ This is the game. Probes are expensive. Sight is temporary. Memory is a trap.
 
 Every grid cell in this game sits on a painted deep-space nebula. Purples, blues, teals, dust and light. It is not a backdrop you ignore; it is the surface you are fighting on.
 
-Probes do not erase the nebula. They illuminate it. A fresh probe drops a cone of blue light over six-by-six cells of painted cloud, and inside that light you see enemy ships rendered cleanly over the same texture you were squinting at a second ago. When the probe fades, the light goes, and the ghost marker stays pinned to the nebula like a scar.
+Probes do not erase the nebula. They illuminate it. A fresh probe drops a cone of blue light over seven-by-seven cells of painted cloud, and inside that light you see enemy ships rendered cleanly over the same texture you were squinting at a second ago. When the probe fades, the light goes, and the ghost marker stays pinned to the nebula like a scar.
 
 The Command Grid and the Target Grid share the same nebula art. Your own fleet sits on it in full color; the enemy lives in fog until you spend energy to see them. Zoom out and you see the whole 80 by 20 battlefield as a wide, thin strip of cloud with ships scattered across it. Zoom in and you see the grid lines, the facing arrows, the probe halos, the ghost markers. The art is the information layer. You read the nebula the way a sailor reads weather.
 

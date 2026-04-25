@@ -530,7 +530,7 @@ func _shot_05c_target_grid_mixed() -> void:
 		return
 	var cell_records: Dictionary = GameState.players[0]["cell_records"]
 	cell_records.clear()
-	# Active probe: 6x6 centered on the P2 probe ship at (60, 9-12). The ship
+	# Active probe: 7x7 centered on the P2 probe ship at (60, 9-12). The ship
 	# sits inside the probe area so each of its cells gets a fog record that
 	# renders in full detail on the target grid.
 	var probe_ship_p2: ShipInstance = GameState.players[1]["fleet"][1]

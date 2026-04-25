@@ -74,7 +74,7 @@ GDScript with static typing throughout. Scene-based state machine coordinated by
 | Ship | Size | Notes |
 |------|------|-------|
 | Battleship | 5 sq | 1000 shields/armor |
-| Probe Ship | 4 sq | 6×6 probe area, 50 energy cost |
+| Probe Ship | 4 sq | 7×7 probe area, 50 energy cost |
 | Destroyer | 3 sq | ×2 per fleet |
 | Cruiser | 2 sq | 2 move actions per turn |
 

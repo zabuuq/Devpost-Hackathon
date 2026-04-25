@@ -23,7 +23,7 @@ const SHIPS: Dictionary = {
 		"laser_strength": 100,
 		"missiles": 0,
 		"probes": 24,
-		"probe_area": 6,
+		"probe_area": 7,
 		"probe_cost": 50,
 		"laser_max": 200,
 		"base_move_points": 1.0,

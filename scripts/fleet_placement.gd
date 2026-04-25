@@ -89,7 +89,7 @@ func _update_detail_panel(stype: String) -> void:
 	detail_name.text = SHIP_NAMES.get(stype, stype)
 	var special_text: String
 	match stats.get("special", ""):
-		"large_probe": special_text = "Special: 6x6 probe, 50 energy"
+		"large_probe": special_text = "Special: 7x7 probe, 50 energy"
 		"double_move": special_text = "Special: 2 move actions/turn"
 		_: special_text = "Special: —"
 	detail_stats.text = "Shields: %d\nArmor: %d\nEnergy: %d\nLaser: %d\nMissiles: %d\nProbes: %d\nSize: %d sq\n%s" % [

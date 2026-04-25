@@ -280,7 +280,7 @@ Attached to a Node2D inside each SubViewport. Handles all drawing for one grid (
   - Ghost cells outside ship bounds: omitted (only ship cells ghosted)
 
 **Probe area highlight (during probe targeting):**
-- 4×4 or 6×6 highlight centered on mouse cursor
+- 4×4 or 7×7 highlight centered on mouse cursor
 - Clamped to grid bounds at edges
 - Moves with mouse in real time
 
@@ -310,7 +310,7 @@ Implements `prd.md > 4. Combat Mechanics`, `prd.md > 5. Probe Mechanics`, `prd.m
 func resolve_probe(acting_ship: ShipInstance, target_cell: Vector2i,
                    player_idx: int) -> ProbeResult:
 ```
-1. Determine probe area (4×4 standard, 6×6 for Probe Ship), clamped to grid bounds
+1. Determine probe area (4×4 standard, 7×7 for Probe Ship), clamped to grid bounds
 2. Deduct energy: 50 (uniform across all ships)
 3. Decrement `acting_ship.probes_remaining`
 4. For each cell in probe area:
@@ -478,7 +478,7 @@ const SHIPS: Dictionary = {
     "probe_ship": {
         "squares": 4, "max_energy": 1000, "max_shields": 750, "max_armor": 750,
         "laser_strength": 100, "missiles": 0, "probes": 24,
-        "probe_area": 6, "probe_cost": 50, "laser_max": 200,
+        "probe_area": 7, "probe_cost": 50, "laser_max": 200,
         "base_move_points": 1.0, "special": "large_probe"
     },
     "destroyer": {
@@ -758,4 +758,4 @@ No external APIs. No backend. No database. No API keys required. Entirely self-c
 
 4. **Energy cap** — PRD notes "unused energy carries over between turns (no cap stated — TBD in spec)." Recommend no cap for simplicity. Ships with high energy reserves become more capable over time — interesting strategic dimension.
 
-5. **Probe area clamping at grid edges** — when cursor is near the edge, the 4×4 or 6×6 probe area clips to the grid boundary. Spec assumes clamped area (smaller effective probe near edges). This should be visually clear to the player in the highlight.
+5. **Probe area clamping at grid edges** — when cursor is near the edge, the 4×4 or 7×7 probe area clips to the grid boundary. Spec assumes clamped area (smaller effective probe near edges). This should be visually clear to the player in the highlight.
