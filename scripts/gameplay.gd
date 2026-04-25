@@ -276,7 +276,20 @@ func _try_select_enemy_ship(cell: Vector2i) -> void:
 		_clear_enemy_selection()
 		return
 	var record: CellRecord = cell_records[cell]
-	if record.has_probe and record.ship != null:
+	if record.ship == null:
+		_clear_enemy_selection()
+		return
+	# Selection is allowed if ANY cell of the referenced ship currently has an
+	# active probe — covers cells outside the probe area on a partially probed
+	# ship (ActionResolver writes ship refs there without has_probe = true).
+	var ship_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
+		record.ship.ship_type, record.ship.position, record.ship.facing)
+	var has_active_probe: bool = false
+	for c in ship_cells:
+		if cell_records.has(c) and (cell_records[c] as CellRecord).has_probe:
+			has_active_probe = true
+			break
+	if has_active_probe:
 		# Deselect own ship so clicking it again will re-select properly
 		if selected_ship != null:
 			selected_ship = null
