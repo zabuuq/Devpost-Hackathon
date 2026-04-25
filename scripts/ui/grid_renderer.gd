@@ -18,7 +18,7 @@ const COLOR_WRECKAGE: Color = Color(0.35, 0.25, 0.15, 1.0)
 const COLOR_WRECKAGE_X: Color = Color(0.55, 0.45, 0.3, 1.0)
 const COLOR_BLIND_HIT: Color = Color(1.0, 0.7, 0.4, 1.0)
 const COLOR_MISS_FULL: Color = Color(0.8, 0.4, 0.4, 0.9)
-const COLOR_MISS_FADED: Color = Color(0.8, 0.4, 0.4, 0.4)
+const COLOR_MISS_FADED: Color = Color(0.6, 0.6, 0.6, 0.4)
 const COLOR_FACING: Color = Color(1.0, 1.0, 0.3, 1.0)
 
 const SHIP_COLORS: Dictionary = {
