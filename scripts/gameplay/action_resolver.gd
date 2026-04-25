@@ -150,6 +150,7 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 			record = CellRecord.new()
 			cell_records[target_cell] = record
 		record.has_blind_hit = true
+		record.ship = null
 
 	# Refresh probe records so the attacker sees updated shields/armor
 	_refresh_probe_records_for_ship(target_ship, player_idx)
@@ -235,6 +236,7 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 			record = CellRecord.new()
 			cell_records[target_cell] = record
 		record.has_blind_hit = true
+		record.ship = null
 
 	# Refresh probe records so the attacker sees updated shields/armor
 	_refresh_probe_records_for_ship(target_ship, player_idx)

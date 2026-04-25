@@ -500,3 +500,43 @@ I6-4 passed final verification cleanly.
 Jason's verification habit is doing real work — not rubber-stamping. Nine real defects caught across two checkpoint rounds, each with precise reproduction framing (what happened, what should happen, sometimes the cause hypothesis). The agent-orchestrator pattern held up well: four subagents dispatched sequentially with the full spec + architectural context, and each returned clean commits. No subagent had to reopen an earlier file the next agent touched, which suggests the item boundaries were well-drawn.
 
 The hidden-fleet-information-discipline theme kept surfacing as a unifying constraint — every filter, every SFX gate, every format branch comes back to "what can this player legitimately know?" That framing made the fixes feel coherent rather than ad-hoc, and made the backlog-batch approach (7 items → 4 items after bundling) trivially obvious in hindsight.
+
+
+## /iterate — Iteration 7
+
+Started 2026-04-25. Devpost edit window closes 2026-04-29 (4 days out). I6 landed yesterday.
+
+### Entry state
+- All checklist items 1–12 complete.
+- I1 through I6 all complete on the checklist.
+- Working tree: clean.
+- Memory note `project_how_to_play_polish.md` confirms HTP voice polish is done (all 9 pages).
+
+### Backlog cleanup (pre-scope)
+Pruned 7 stale rows from `docs/backlog.md` before scoping I7. Three items had been done in earlier iterations but never crossed off (#14 partially-probed-ship clickability done in I5-4; #16 ship colors during placement done before; #21 wreckage z-order done before). Four bug rows had been quietly fixed: cruiser forward-cost-after-rotation (I4-2), first-turn energy regen cap (I4-3), empty-state ship panel label (I4-4), two-line title treatment (I3-4). Final remaining-row count: 57 table rows (was 64). Worth recording as a recurring pattern — backlog needs a sweep at iteration boundaries because items get fixed during related work without landing as their own backlog deletion.
+
+### What Jason chose and why
+The 6-item Battle Log / Hit Display cluster — every backlog row that touches "what shows on Target Grid or Command Grid about probes, hits, and misses." Jason picked it as a category after asking for the live backlog list and the long-term list together, then drilled into specific items (#14, #16, then #19–23) to confirm what was already done. Once the surviving items were clear, he picked the cluster wholesale.
+
+### What the review pass surfaced
+- Items 1, 2, 3, 6 all touch the Target Grid. Items 4 and 5 are the only Command Grid additions in the iteration.
+- All six bundle cleanly because they share `grid_renderer.gd` plus 1–2 small touchpoints in `action_resolver.gd` (resolve_probe scan, resolve_laser/missile blind-hit branch).
+- The data for item 4 is already in place — I6 added `battle_log` with `owner=1` opponent fire entries that include `target`, `hit`, `turn_number`. Render-only addition, no resolver work needed.
+- Item 5 only needs read-only access to the opponent's `cell_records` plus the `_collect_defender_living_cells()` helper that already exists from I6 (`gameplay.gd` line 114).
+- Item 1 fix is one line each in `resolve_laser` and `resolve_missile` — clear `record.ship = null` alongside the existing `record.has_blind_hit = true` write. The renderer already gates ghost ship rendering on `record.ship != null`, so the fix is purely a state-clear, no draw-order change.
+- Item 2 (wreckage visible in newly probed areas) currently fails because `find_ship_at_cell` skips destroyed ships at line 18. Fix is a parallel scan over destroyed ships in `resolve_probe` plus matching cell-record writes; renderer already handles `last_armor <= 0 && any_probed` wreckage drawing.
+
+### Scoping decisions
+- **Item 5 reveal trigger — presence-based, not move-triggered.** Backlog text "(not revealed preemptively)" was ambiguous; Jason chose the simpler reading: the boundary shows whenever any of the player's living ships is inside an active opponent probe area, regardless of how the ship got there. "Not preemptively" interpreted as "not shown during real-time move-action planning before the move actually happens." Re-evaluation triggers: scene load (handled by existing `refresh()` in `_ready`) and after each completed move action (new `queue_redraw()` call to add).
+- **Item 3 X-marker style — diagonal lines, no glyph asset.** Two `draw_line` calls per X. Two intensity levels (current turn full, older faded). Tracked via new `has_miss: bool` flag and `miss_turn: int` field on `CellRecord`.
+- **Item 6 historical probe marker style — thin 1px interior border, faint blue tint.** Drawn between nebula background and active probe overlay. Skipped on cells with active probe coverage (active overlay takes precedence).
+- **Item 4 fade pattern — 2 turns visible, gone on turn 3.** Backlog spec was already specific; no judgment call needed. Source-of-truth is the player's own battle log filtered for opponent fire entries by `turn_number`.
+- **CellRecord schema additions — minimal.** Only two new fields total across the iteration: `has_miss: bool` (item 3), `was_probed: bool` (item 6). No structural rewrites.
+- **Iteration size — 7 items.** Six feature items (one per backlog row, no bundling) plus one gated deploy/devlog/cleanup item. Larger than the 3–5 cap the iterate skill suggests, but consistent with I3 (7 items) and I5 (6 items) which similarly expanded scope at Jason's request. Each item maps to a single concern that benefits from its own acceptance/verify entry, and the 6 backlog items each test independently.
+- **Build mode — autonomous with verification checkpoints.** Two checkpoints: after I7-3 (end of Target Grid items) and after I7-6 (end of Command Grid items). Final item I7-7 is gated like I4-5 with three explicit pauses (smoke test, butler push, devlog draft).
+- **Backlog cleanup folded into I7-7.** Same commit as the devlog draft and the build summary appendage.
+
+### Observations
+Jason's iteration framing has stabilized into a repeatable pattern: ask for the live backlog list, drill into items he suspects are already done, prune them, then pick a category wholesale. Three iterations in a row now have started this way (I5, I6, I7). The "are these already done?" check at the start of I7 caught seven stale rows — bigger cleanup than usual because no one had swept the list since I3. Worth recording: backlog hygiene is iteration-boundary work, not in-flight work.
+
+The scoping question on item 5 was the only design call requiring real input. Jason gave a clean "what you have laid out looks great to me" once I framed the two readings explicitly — same pattern as I5 ("I have nothing to add" on the click-vs-drag threshold). When the spec is already substantively reasoned through, he doesn't need to redo the thinking; he just needs the choices laid out. Don't over-interview when the design has already been done.
