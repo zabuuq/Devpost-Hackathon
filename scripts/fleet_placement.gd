@@ -122,7 +122,7 @@ func _on_viewport_gui_input(event: InputEvent) -> void:
 			if event.ctrl_pressed:
 				_zoom_camera_at(1.1)
 			elif event.shift_pressed:
-				camera.position.x += float(CELL_SIZE) / camera.zoom.x
+				camera.position.x -= float(CELL_SIZE) / camera.zoom.x
 				_clamp_camera()
 				grid_node.queue_redraw()
 			else:
@@ -133,7 +133,7 @@ func _on_viewport_gui_input(event: InputEvent) -> void:
 			if event.ctrl_pressed:
 				_zoom_camera_at(0.9)
 			elif event.shift_pressed:
-				camera.position.x -= float(CELL_SIZE) / camera.zoom.x
+				camera.position.x += float(CELL_SIZE) / camera.zoom.x
 				_clamp_camera()
 				grid_node.queue_redraw()
 			else:

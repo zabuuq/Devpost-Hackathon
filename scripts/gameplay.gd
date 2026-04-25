@@ -235,8 +235,8 @@ func _handle_grid_input(event: InputEvent, cam: Camera2D, container: SubViewport
 				_zoom_camera_at(cam, 1.1, event.position, container, vp)
 				_save_camera_state(cam, is_command)
 			elif event.shift_pressed:
-				# Shift+wheel-up → camera moves right (x increases)
-				cam.position.x += float(CELL_SIZE) / cam.zoom.x
+				# Shift+wheel-up → camera moves left (x decreases)
+				cam.position.x -= float(CELL_SIZE) / cam.zoom.x
 				_clamp_camera(cam)
 				_save_camera_state(cam, is_command)
 			else:
@@ -249,8 +249,8 @@ func _handle_grid_input(event: InputEvent, cam: Camera2D, container: SubViewport
 				_zoom_camera_at(cam, 0.9, event.position, container, vp)
 				_save_camera_state(cam, is_command)
 			elif event.shift_pressed:
-				# Shift+wheel-down → camera moves left (x decreases)
-				cam.position.x -= float(CELL_SIZE) / cam.zoom.x
+				# Shift+wheel-down → camera moves right (x increases)
+				cam.position.x += float(CELL_SIZE) / cam.zoom.x
 				_clamp_camera(cam)
 				_save_camera_state(cam, is_command)
 			else:
