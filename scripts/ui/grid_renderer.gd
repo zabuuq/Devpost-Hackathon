@@ -150,20 +150,29 @@ func _draw_target_cells() -> void:
 		if record.has_blind_hit and not record.has_probe:
 			var full_hit: bool = record.hit_turn == 0 or record.hit_turn == current_turn_number
 			_draw_blind_hit(cell, full_hit)
-	# Finally: living fog ships + facing triangles on top
+	# Finally: living fog ships + facing triangles on top. Cells with a miss
+	# marker are subtracted from the ghost — a miss is the latest intel for
+	# that one cell and supersedes the prior ghost rendering there.
 	for i in range(collected_fogs.size()):
 		var fog: FogShipRecord = collected_fogs[i]
 		var any_probed: bool = fog_probed_list[i]
 		if fog.last_armor <= 0 and any_probed:
 			continue  # already drawn as wreckage
 		var alpha: float = 1.0 if any_probed else 0.35
+		var visible_cells: Array[Vector2i] = []
+		for sc: Vector2i in fog_cells_list[i]:
+			if cell_records.has(sc) and cell_records[sc].has_miss:
+				continue
+			visible_cells.append(sc)
 		_draw_ship_cells(
-			fog_cells_list[i],
+			visible_cells,
 			SHIP_COLORS.get(fog.ship_type, Color.WHITE),
 			alpha
 		)
 		if any_probed:
-			_draw_facing_triangle(_get_front_cell(fog.ship_type, fog.position, fog.facing), fog.facing)
+			var front_cell: Vector2i = _get_front_cell(fog.ship_type, fog.position, fog.facing)
+			if not (cell_records.has(front_cell) and cell_records[front_cell].has_miss):
+				_draw_facing_triangle(front_cell, fog.facing)
 
 # --- Ghost ship + selection overlays ---
 
