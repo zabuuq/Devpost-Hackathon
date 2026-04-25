@@ -31,6 +31,11 @@ const COLOR_INCOMING_HIT_FULL: Color = Color(1.0, 0.15, 0.15, 1.0)
 const COLOR_INCOMING_HIT_FADED: Color = Color(1.0, 0.15, 0.15, 0.5)
 const COLOR_INCOMING_NEAR_MISS_FULL: Color = Color(1.0, 0.6, 0.2, 0.9)
 const COLOR_INCOMING_NEAR_MISS_FADED: Color = Color(1.0, 0.6, 0.2, 0.45)
+# I7-6: hostile-red contour around opponent active probe areas on the Command
+# Grid. Drawn only when at least one cell of any of the viewer's living ships
+# sits inside the opponent's probe coverage — presence-based "you're being
+# watched" indicator.
+const COLOR_OPPONENT_PROBE_BOUNDARY: Color = Color(1.0, 0.3, 0.3, 0.7)
 const COLOR_FACING: Color = Color(1.0, 1.0, 0.3, 1.0)
 
 const SHIP_COLORS: Dictionary = {
@@ -108,6 +113,9 @@ func _draw_command_ships() -> void:
 	# ghost-ship overlays are still drawn after _draw_command_ships() returns,
 	# so they will sit above these markers if they coincide.
 	_draw_incoming_fire()
+	# I7-6: contour of opponent active probe areas overlapping viewer's ships.
+	# Boundary only — fill stays untouched so the player's ships remain visible.
+	_draw_opponent_probe_boundary()
 
 # I7-5: Incoming opponent fire markers on the Command Grid. Reads the current
 # player's battle_log (entries pushed in gameplay.gd _ready() with owner == 1
@@ -176,6 +184,73 @@ func _draw_incoming_near_miss_x(cell: Vector2i, full_intensity: bool) -> void:
 	var color: Color = COLOR_INCOMING_NEAR_MISS_FULL if full_intensity else COLOR_INCOMING_NEAR_MISS_FADED
 	draw_line(Vector2(x0, y0), Vector2(x1, y1), color, 2.0)
 	draw_line(Vector2(x1, y0), Vector2(x0, y1), color, 2.0)
+
+
+# I7-6: Draw a red contour around opponent active probe areas on the viewer's
+# Command Grid, but only when at least one cell of one of the viewer's living
+# ships overlaps the opponent's probe coverage. Presence-based rule — the
+# boundary appears the moment a living ship sits under an active probe and
+# disappears the moment the last ship leaves (or the probe expires on the
+# opponent's side). Reads the opponent's cell_records as a read-only data
+# source. For each cell in the opponent probe set, we draw only the four edges
+# whose neighbor in that direction is NOT also a probe cell, so contiguous
+# probe regions render as a single outer contour.
+func _draw_opponent_probe_boundary() -> void:
+	var opponent_idx: int = 1 - GameState.current_player
+	var opponent_records: Dictionary = GameState.players[opponent_idx]["cell_records"]
+	if opponent_records.is_empty():
+		return
+	# Collect every opponent cell with an active probe into a Vector2i->true set
+	# for O(1) "is this cell probed?" lookups when computing the contour.
+	var probe_cells: Dictionary = {}
+	for key: Variant in opponent_records.keys():
+		var cell: Vector2i = key
+		var record: CellRecord = opponent_records[cell]
+		if record.has_probe:
+			probe_cells[cell] = true
+	if probe_cells.is_empty():
+		return
+	# Gate: at least one cell of one of the viewer's living ships must overlap
+	# the probe set. Wreckage doesn't count — _collect_defender_living_cells in
+	# gameplay.gd already filters destroyed ships, but this draw path needs its
+	# own equivalent walk because GridRenderer doesn't see the gameplay node.
+	var fleet: Array = GameState.players[GameState.current_player]["fleet"]
+	var gate_open: bool = false
+	for ship_v: Variant in fleet:
+		var ship: ShipInstance = ship_v
+		if ship.is_destroyed:
+			continue
+		var ship_cells: Array[Vector2i] = ship.get_occupied_cells()
+		for sc: Vector2i in ship_cells:
+			if probe_cells.has(sc):
+				gate_open = true
+				break
+		if gate_open:
+			break
+	if not gate_open:
+		return
+	# Draw each probed cell's outline edges, skipping shared edges with adjacent
+	# probe cells so a multi-cell region renders as one closed contour. Off-grid
+	# neighbors are treated as not-in-set so the boundary closes along the edge
+	# of the grid.
+	for key: Variant in probe_cells.keys():
+		var cell: Vector2i = key
+		var x0: float = cell.x * CELL_SIZE
+		var y0: float = cell.y * CELL_SIZE
+		var x1: float = (cell.x + 1) * CELL_SIZE
+		var y1: float = (cell.y + 1) * CELL_SIZE
+		# Top edge: skip if neighbor above is also a probe cell
+		if not probe_cells.has(cell + Vector2i(0, -1)):
+			draw_line(Vector2(x0, y0), Vector2(x1, y0), COLOR_OPPONENT_PROBE_BOUNDARY, 2.0)
+		# Right edge
+		if not probe_cells.has(cell + Vector2i(1, 0)):
+			draw_line(Vector2(x1, y0), Vector2(x1, y1), COLOR_OPPONENT_PROBE_BOUNDARY, 2.0)
+		# Bottom edge
+		if not probe_cells.has(cell + Vector2i(0, 1)):
+			draw_line(Vector2(x1, y1), Vector2(x0, y1), COLOR_OPPONENT_PROBE_BOUNDARY, 2.0)
+		# Left edge
+		if not probe_cells.has(cell + Vector2i(-1, 0)):
+			draw_line(Vector2(x0, y1), Vector2(x0, y0), COLOR_OPPONENT_PROBE_BOUNDARY, 2.0)
 
 
 # --- Target Grid ---
