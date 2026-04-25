@@ -81,6 +81,31 @@ func resolve_probe(acting_ship: ShipInstance, target_cell: Vector2i, player_idx:
 				# Cell is inside probe area but wasn't on this ship — set the ref
 				cell_records[cell].ship = fog_ship
 
+	# Destroyed enemy ships: any cells overlapping the probe area get a fresh
+	# probe record (so wreckage renders), and remaining hull cells get a ghost
+	# reference so the wreckage outline spans the whole ship.
+	for wreck in opponent_fleet:
+		if not wreck.is_destroyed:
+			continue
+		var wreck_cells: Array[Vector2i] = get_ship_cells(wreck)
+		var overlaps_probe: bool = false
+		for cell in wreck_cells:
+			if cell.x >= x_min and cell.x <= x_max and cell.y >= y_min and cell.y <= y_max:
+				overlaps_probe = true
+				break
+		if not overlaps_probe:
+			continue
+		var wreck_fog: FogShipRecord = FogShipRecord.from_ship(wreck)
+		for cell in wreck_cells:
+			var inside: bool = cell.x >= x_min and cell.x <= x_max and cell.y >= y_min and cell.y <= y_max
+			if inside:
+				cell_records[cell] = CellRecord.make_probe(wreck_fog, expires_in)
+			else:
+				if not cell_records.has(cell) or not cell_records[cell].has_probe:
+					cell_records[cell] = CellRecord.make_ship_ghost(wreck_fog)
+				elif cell_records[cell].ship == null:
+					cell_records[cell].ship = wreck_fog
+
 	ships_detected = detected_ships.size()
 
 	# Stats
