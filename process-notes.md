@@ -356,3 +356,66 @@ Butler push result:
 - Binary on disk reports Godot 4.6.1; `project.godot` feature tag is `4.6`, so export succeeds. Version-bump to 4.6.2 remains a latent cleanup item (noted originally in I2-1's deploy record).
 
 Overall impression: tight, clean sweep. The viewport fix was the most impactful single change of the iteration — the scenes had been tuned at 1600×900 the whole time, so flipping the stretch mode on essentially unlocked the work that was already done. The three bug fixes were small-surface, low-risk edits with clear root causes; no follow-on ambiguity surfaced during the dispatches.
+
+## /iterate — Iteration 5
+
+Started 2026-04-24 (same day as I4 landed). Devpost edit window closes 2026-04-29. This iteration is a camera/controls rework pulled from the existing backlog.
+
+### What Jason chose and why
+Jason asked for the Camera / controls category as a block. The backlog listed four items: scroll+zoom rework, zoom centered on mouse, persist map view between turns, probe activation outside grid. Jason asked for the full backlog list first to orient, then picked the category. When I flagged the click-vs-drag threshold as a new-behavior detail worth confirming, he said "I have nothing to add" — accepted the backlog spec as written.
+
+### What the review pass surfaced
+- All three camera items edit the same ~30-line region in `scripts/gameplay.gd::_handle_grid_input` (lines 146-170). Scroll rework and mouse-centered zoom share the zoom math. Natural bundle.
+- Probe-activation-outside-grid is filed under Camera / controls in the backlog but is really targeting UX — the early-return on out-of-bounds cells lives in `_handle_grid_click`. Separate concern, but cheap and in the same file.
+- Left-click-drag-to-pan requires a click-vs-drag threshold so selection still works. ~4 px is the standard. Called out in I5-1's spec so the implementer doesn't ship a regression where every click pans.
+- Current camera defaults are computed in gameplay.gd lines 537-541 (fit-to-grid). Persist-map-view needs to fall back to those when no saved state exists.
+- No change to `ActionResolver.resolve_probe` needed for I5-3 — its internal clamp is already correct. Only the gameplay-side early-return needs adjusting.
+
+### Scoping decisions
+- **Bundled to 3 items, not 4.** Scroll rework + mouse-centered zoom collapsed into I5-1.
+- **Control scheme verbatim from backlog:** scroll=vertical pan, shift+scroll=horizontal, ctrl+scroll=zoom (mouse-centered), left-click-drag empty space=pan, middle-click removed.
+- **Camera persistence scope:** per-player, per-grid (command and target independent), reset on new-game-from-main-menu to avoid stale state. No spec.md update required for this iteration — flagged as follow-up doc work.
+- **Probe-outside-grid scope:** probe only. Lasers and missiles still reject out-of-grid clicks. Reticule clamp stays as-is.
+
+### Iteration size
+Expanded to 6 items after a follow-up pass. After I5-1/I5-2/I5-3 were written, Jason asked "are there any other items in the backlog that are similar?" — that surfaced three adjacent items, and he added all three. Also removed the "Click-to-ghost movement during gameplay" item from `backlog.md` (Jason's call — confirmed after I described the mechanic that it wasn't what he wanted; the item he did want was "Click-to-pick-up during placement," which was already on the list).
+
+Final item list:
+- **I5-1** — Scroll + zoom rework (scroll=vertical, shift+scroll=horizontal, ctrl+scroll=zoom mouse-centered, left-click-drag pan with 4 px threshold, middle-click removed).
+- **I5-2** — Persist camera position and zoom per player, per grid, across turns. Reset on new game.
+- **I5-3** — Allow probe clicks outside grid bounds (laser/missile still reject out-of-grid).
+- **I5-4** — Partially probed ships fully clickable. Gate changes from per-cell `has_probe` check to "any cell of this fog ship has an active probe."
+- **I5-5** — Click-to-pick-up during placement. Pick-up only fires when nothing is in hand; overlapping click with a ship in hand still silently fails.
+- **I5-6** — Stay on Target Grid after probe/laser/missile, auto-switch left panel to Battle Log. No change to Move's post-resolve flow.
+
+No gated redeploy in this iteration — Jason can decide post-build whether to butler push or batch with a future iteration.
+
+### Observations
+Jason continues to lean on the backlog as an already-scoped inventory — "give me the list" rather than freeform brainstorming. That keeps the iteration framing fast. The "I have nothing to add" moment on the control-scheme details is a validated-choice signal: the backlog spec was written with enough care that he doesn't need to redo the thinking at iterate time. Worth respecting — don't over-interview when the spec is already clear.
+
+The follow-up "are there similar items?" question paid off — four of six items now bundle into this iteration and three of them touch the same input handler in `gameplay.gd`. Jason also used the moment to prune the backlog: removed the gameplay click-to-ghost item after realizing it wasn't what he'd remembered wanting. Worth noting for future iterations — Jason will ask "what else is adjacent?" when he's picking a theme, and that's a cue to look at file-proximity and pattern-sharing, not just topical similarity.
+
+### Build summary (autonomous mode)
+
+6 items completed across 2 checkpoints. Sequence held — no checklist revisions, but CP1 surfaced three real bugs that needed a dedicated fix pass before continuing.
+
+Commits (chronological):
+- `329619e` I5-1 — Scroll/zoom rework. New state vars (`mouse_down`, `mouse_down_pos`, `dragged`, `DRAG_THRESHOLD_PX`), new `_zoom_camera_at` helper for cursor-anchored zoom (`cam.position += world_before - world_after`).
+- `952fa97` I5-2 — Per-player camera persistence. `command_camera`/`target_camera` dicts on each `GameState.players` entry; saves on every pan/zoom inside `_handle_grid_input`; restore on `_ready()` after `turn_start`. New-game reset already covered by `GameState.reset()` from main_menu.
+- `94c3f74` I5-3 — Off-grid probe clicks. `_handle_grid_click` rebuilt with an `in_bounds` early-return that's bypassed only on `targeting_action == "probe"`; lasers/missiles/selection still reject off-grid.
+- `ebbe601` CP1 fix — Three bugs found at the verification checkpoint and patched together: (1) fleet placement still had the old controls; mirrored I5-1's scheme into `fleet_placement.gd::_on_viewport_gui_input`. (2) Grid invisible on first round; the `_fit_camera` fallback in `_restore_camera_state` was overriding scene defaults badly, so the no-saved-state path was made a no-op (scene defaults stand). (3) **Camera state shared between players** — root cause was `turn_manager.turn_end()` flipping `GameState.current_player` *before* `change_scene_to_file`, so the `_exit_tree` safety-net save was writing the outgoing player's camera state into the incoming player's slot every handoff. Removed the safety net; per-input saves cover the normal pan/zoom path.
+- `a073502` Polish on the CP1 fix — Jason asked for the gameplay scene's initial zoom to match the placement scene's. Camera2D zoom in `gameplay.tscn` switched from `(0.3, 0.3)` to `(1, 1)` on both Command Grid and Target Grid, so the view scale stays continuous from placement → first turn.
+- `0b1d29d` I5-4 — Partial-probe ship selection. New gate in `_try_select_enemy_ship` scans `ShipDefinitions.get_ship_cells(record.ship.ship_type, record.ship.position, record.ship.facing)` for any cell with `has_probe = true`. Fully-faded ghosts stay un-clickable.
+- `3e927c6` I5-5 — Click-to-pick-up during placement. New `_find_placed_ship_at(cell) -> int` helper plus `_try_pick_up_ship()` branch on left-release when `selected_ship_idx == -1`. Plays `click` SFX to mirror the strip-button feel; restores `ghost_facing` from the picked-up ship's facing.
+- `1c00fe9` I5-6 — Stay-on-target-grid + auto-Battle-Log. Removed the `_switch_grid(ActiveGrid.COMMAND)` call at the end of `_execute_targeting_action`; added `_show_left_tab("battle_log")` after the ship-panel refresh. Move action's post-resolve flow untouched.
+
+Checkpoint observations:
+- **CP1 (after I5-3)** — three issues surfaced and were fixed before continuing: placement-scope mismatch on I5-1 (subagent honored my "don't touch fleet_placement" instruction; Jason wanted consistency), `_fit_camera` UX regression on fresh-game first turn, and the cross-player camera leak via `_exit_tree`. The third was the only "real" bug — the other two were scope/spec choices that didn't match what Jason wanted to see. The post-fix polish commit (`a073502`) bumped both gameplay cameras to zoom 1.0 to match placement scene. Jason: "confirmed."
+- **Final checkpoint (after I5-6)** — Jason: "looks good." No tuning needed.
+
+Subagent gotchas worth recording for future iterations:
+- The "out-of-scope" instruction on I5-1 (don't touch fleet_placement) was correct *per the spec* but wrong *per Jason's expectations* — the new control scheme is a global convention, not a gameplay-only one. Default for control-scheme reworks: assume both placement and gameplay share the scheme unless explicitly scoped otherwise.
+- `turn_manager.turn_end()` flipping `current_player` before `change_scene_to_file` is a recurring footgun for any state save in `_exit_tree` that's keyed to `current_player`. Anything saved at scene-exit time on the gameplay scene needs to either save *before* `turn_end()` runs or be keyed to a value that doesn't shift mid-handoff.
+- Static-typed casts inside dictionary loops matter — the I5-4 subagent added `as CellRecord` when reading `.has_probe` from a `Dictionary` value. Consistent with the rest of the project; worth keeping.
+
+Overall impression: cleanest control-rework the project has had. Six items shipped with one fix pass at the verification gate; both checkpoints landed without further tuning. The bundling of three input-handler items (I5-1, I5-2, I5-3 all touching `_handle_grid_input`) into the iteration meant the file got its rework in a single coherent pass instead of three drive-by edits, and the per-input save model from I5-2 turned out to be load-bearing for the CP1 cross-player fix — without it, removing the `_exit_tree` safety net would have cost the camera-persistence feature entirely. Bundling paid off.
