@@ -22,7 +22,8 @@ var players: Array = [
 		},
 		"command_camera": {},
 		"target_camera": {},
-		"battle_log": []
+		"battle_log": [],
+		"turns_played": 0
 	},
 	{
 		"fleet": [],
@@ -33,7 +34,8 @@ var players: Array = [
 		},
 		"command_camera": {},
 		"target_camera": {},
-		"battle_log": []
+		"battle_log": [],
+		"turns_played": 0
 	}
 ]
 
@@ -53,7 +55,8 @@ func reset() -> void:
 			},
 			"command_camera": {},
 			"target_camera": {},
-			"battle_log": []
+			"battle_log": [],
+			"turns_played": 0
 		},
 		{
 			"fleet": [],
@@ -64,7 +67,8 @@ func reset() -> void:
 			},
 			"command_camera": {},
 			"target_camera": {},
-			"battle_log": []
+			"battle_log": [],
+			"turns_played": 0
 		}
 	]
 

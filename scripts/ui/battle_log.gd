@@ -22,6 +22,7 @@ var _placeholder_cleared: bool = false
 
 func _ready() -> void:
 	_content = $BattleLogContent as VBoxContainer
+	vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 
 
 func _ship_name(ship_type: String) -> String:
@@ -72,26 +73,37 @@ func render_from_state() -> void:
 
 	for i in range(log.size() - 1, -1, -1):
 		_append_entry_label(log[i])
+	# Ensure only the topmost entry is emphasized after a full render.
+	for i in range(_content.get_child_count()):
+		var child: Node = _content.get_child(i)
+		if child is RichTextLabel:
+			_apply_emphasis(child as RichTextLabel, i == 0)
 
 
 func _insert_entry_at_top(entry: Dictionary) -> void:
-	var label: Label = _build_entry_label(entry)
+	var label: RichTextLabel = _build_entry_label(entry)
 	if label == null:
 		return
+	# Downgrade the previously-top child before inserting the new one.
+	if _content.get_child_count() > 0:
+		var previous_top: Node = _content.get_child(0)
+		if previous_top is RichTextLabel:
+			_apply_emphasis(previous_top as RichTextLabel, false)
 	_content.add_child(label)
 	_content.move_child(label, 0)
+	_apply_emphasis(label, true)
 	await get_tree().process_frame
 	scroll_vertical = 0
 
 
 func _append_entry_label(entry: Dictionary) -> void:
-	var label: Label = _build_entry_label(entry)
+	var label: RichTextLabel = _build_entry_label(entry)
 	if label == null:
 		return
 	_content.add_child(label)
 
 
-func _build_entry_label(entry: Dictionary) -> Label:
+func _build_entry_label(entry: Dictionary) -> RichTextLabel:
 	var action_type: String = entry.get("type", "")
 	var text: String = ""
 	var color: Color = COLOR_MISS
@@ -117,15 +129,38 @@ func _build_entry_label(entry: Dictionary) -> Label:
 		_:
 			text = str(entry)
 
-	var label: Label = Label.new()
-	label.text = text
-	label.add_theme_color_override("font_color", color)
-	label.add_theme_font_size_override("font_size", 13)
+	var label: RichTextLabel = RichTextLabel.new()
+	label.bbcode_enabled = true
+	label.fit_content = true
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.scroll_active = false
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.add_theme_color_override("default_color", color)
+	label.add_theme_font_size_override("normal_font_size", 13)
+	label.add_theme_font_size_override("bold_font_size", 13)
+	label.set_meta("plain_text", text)
+	label.set_meta("is_divider", action_type == "divider")
 	if action_type == "divider":
-		label.add_theme_font_size_override("font_size", 12)
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.add_theme_font_size_override("normal_font_size", 12)
+		label.add_theme_font_size_override("bold_font_size", 12)
+	label.text = _escape_bbcode(text)
 	return label
+
+
+func _apply_emphasis(label: RichTextLabel, emphasized: bool) -> void:
+	if label == null:
+		return
+	var plain: String = str(label.get_meta("plain_text", ""))
+	var is_divider: bool = bool(label.get_meta("is_divider", false))
+	var escaped: String = _escape_bbcode(plain)
+	if emphasized and not is_divider:
+		label.text = "[b]%s[/b]" % escaped
+	else:
+		label.text = escaped
+
+
+func _escape_bbcode(s: String) -> String:
+	return s.replace("[", "[lb]")
 
 
 func _format_divider(entry: Dictionary) -> String:
@@ -147,14 +182,33 @@ func _format_fire(result: Dictionary) -> String:
 	var ship: String = _ship_name(result.get("ship_type", ""))
 	var weapon: String = result.get("type", "laser")
 	var hit: bool = result.get("hit", false)
+	var owner: int = result.get("owner", 0)
+	var target: Vector2i = result.get("target", Vector2i.ZERO)
 
 	if not hit:
+		if owner == 1:
+			var near_ships: Array = result.get("near_miss_ships", [])
+			if near_ships.is_empty():
+				return "%s %s fired at (%d, %d). Miss." % [ship, weapon, target.x, target.y]
+			var names: Array[String] = []
+			for ship_type in near_ships:
+				names.append(_ship_name(str(ship_type)))
+			return "%s %s fired at (%d, %d). Miss. Near miss to your %s." % [ship, weapon, target.x, target.y, _join_names(names)]
 		return "%s %s fired. Miss." % [ship, weapon]
 
 	var has_probe: bool = result.get("has_probe", false)
 	var destroyed: bool = result.get("destroyed", false)
-	var target: Vector2i = result.get("target", Vector2i.ZERO)
 	var shields_depleted: bool = result.get("shields_depleted", false)
+
+	if owner == 1:
+		var defender_text: String = "%s %s fired at (%d, %d). Hit." % [ship, weapon, target.x, target.y]
+		if destroyed:
+			var destroyed_name: String = _ship_name(result.get("target_ship_type", ""))
+			defender_text += " Your %s was destroyed." % destroyed_name
+		else:
+			var hit_name: String = _ship_name(result.get("target_ship_type", ""))
+			defender_text += " Your %s was hit." % hit_name
+		return defender_text
 
 	var text: String
 	if has_probe:
@@ -180,6 +234,17 @@ func _format_fire(result: Dictionary) -> String:
 		text += " %s destroyed." % target_name
 
 	return text
+
+
+func _join_names(names: Array[String]) -> String:
+	if names.size() == 0:
+		return ""
+	if names.size() == 1:
+		return names[0]
+	if names.size() == 2:
+		return "%s and %s" % [names[0], names[1]]
+	var head: String = ", ".join(names.slice(0, names.size() - 1))
+	return "%s, and %s" % [head, names[names.size() - 1]]
 
 
 func _format_move(result: Dictionary) -> String:

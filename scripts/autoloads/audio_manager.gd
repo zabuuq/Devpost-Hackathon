@@ -72,13 +72,13 @@ func play_action_sfx(result: Dictionary) -> void:
 			play_sfx("probe")
 		"laser":
 			play_sfx("laser")
-			if result.get("destroyed", false):
+			if result.get("destroyed", false) and result.get("has_probe", false):
 				_play_sfx_delayed("explosion", 0.5)
 			elif result.get("hit", false):
 				_play_sfx_delayed("hit", 0.5)
 		"missile":
 			play_sfx("missile")
-			if result.get("destroyed", false):
+			if result.get("destroyed", false) and result.get("has_probe", false):
 				_play_sfx_delayed("explosion", 0.8)
 			elif result.get("hit", false):
 				_play_sfx_delayed("hit", 0.8)

@@ -23,6 +23,7 @@ func turn_end() -> void:
 	if check_win_condition():
 		get_tree().change_scene_to_file("res://scenes/victory.tscn")
 	else:
+		GameState.players[GameState.current_player]["turns_played"] += 1
 		GameState.current_player = 1 - GameState.current_player
 		get_tree().change_scene_to_file("res://scenes/handoff.tscn")
 

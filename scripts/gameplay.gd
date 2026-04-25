@@ -67,15 +67,17 @@ func _ready() -> void:
 	_switch_grid(ActiveGrid.COMMAND)
 	_show_left_tab("battle_log")
 
-	GameState.append_battle_log_divider(GameState.current_player, GameState.turn_number, false)
+	var own_turn_number: int = GameState.players[GameState.current_player]["turns_played"] + 1
+	var opponent_turn_number: int = GameState.players[1 - GameState.current_player]["turns_played"]
+	GameState.append_battle_log_divider(GameState.current_player, own_turn_number, false)
 	if not GameState.last_turn_results.is_empty():
-		GameState.append_battle_log_divider(GameState.current_player, GameState.turn_number, true)
+		GameState.append_battle_log_divider(GameState.current_player, opponent_turn_number, true)
 		var defender_cells: Array[Vector2i] = _collect_defender_living_cells()
 		for result in GameState.last_turn_results:
 			var entry: Dictionary = _filter_opponent_entry(result, defender_cells)
 			if entry.is_empty():
 				continue
-			entry["turn_number"] = GameState.turn_number
+			entry["turn_number"] = opponent_turn_number
 			entry["owner"] = 1
 			GameState.append_battle_log(GameState.current_player, entry)
 	GameState.last_turn_results = []
@@ -127,15 +129,28 @@ func _filter_opponent_entry(result: Dictionary, defender_cells: Array[Vector2i])
 		if not hit:
 			var target: Vector2i = entry.get("target", Vector2i.ZERO)
 			var near: bool = false
-			for cell in defender_cells:
-				var dx: int = absi(cell.x - target.x)
-				var dy: int = absi(cell.y - target.y)
-				var cheby: int = maxi(dx, dy)
-				if cheby == 1:
+			var near_types: Array[String] = []
+			var fleet: Array = GameState.players[GameState.current_player]["fleet"]
+			for ship in fleet:
+				if ship.is_destroyed:
+					continue
+				var ship_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
+					ship.ship_type, ship.position, ship.facing)
+				var ship_is_near: bool = false
+				for cell in ship_cells:
+					var dx: int = absi(cell.x - target.x)
+					var dy: int = absi(cell.y - target.y)
+					var cheby: int = maxi(dx, dy)
+					if cheby == 1:
+						ship_is_near = true
+						break
+				if ship_is_near:
 					near = true
-					break
+					if not near_types.has(ship.ship_type):
+						near_types.append(ship.ship_type)
 			if not near:
 				return {}
+			entry["near_miss_ships"] = near_types
 		entry["ship_type"] = "enemy"
 		return entry
 
@@ -157,7 +172,8 @@ func _setup_ship_panel() -> void:
 
 
 func _update_player_label() -> void:
-	player_turn_label.text = "Player %d — Turn %d" % [GameState.current_player + 1, GameState.turn_number]
+	var turn_display: int = GameState.players[GameState.current_player]["turns_played"] + 1
+	player_turn_label.text = "Player %d — Turn %d" % [GameState.current_player + 1, turn_display]
 
 
 func _switch_grid(grid: ActiveGrid) -> void:
