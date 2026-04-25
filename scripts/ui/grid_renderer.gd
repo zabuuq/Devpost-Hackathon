@@ -161,7 +161,11 @@ func _draw_target_cells() -> void:
 		var alpha: float = 1.0 if any_probed else 0.35
 		var visible_cells: Array[Vector2i] = []
 		for sc: Vector2i in fog_cells_list[i]:
-			if cell_records.has(sc) and cell_records[sc].has_miss:
+			# Cell still belongs to the ghost only if its record points at this
+			# fog ref. A miss or any other clear sets record.ship = null and
+			# permanently removes that cell from the ghost — even if a later hit
+			# clears has_miss on the same cell.
+			if not cell_records.has(sc) or cell_records[sc].ship != fog:
 				continue
 			visible_cells.append(sc)
 		_draw_ship_cells(
@@ -171,7 +175,7 @@ func _draw_target_cells() -> void:
 		)
 		if any_probed:
 			var front_cell: Vector2i = _get_front_cell(fog.ship_type, fog.position, fog.facing)
-			if not (cell_records.has(front_cell) and cell_records[front_cell].has_miss):
+			if cell_records.has(front_cell) and cell_records[front_cell].ship == fog:
 				_draw_facing_triangle(front_cell, fog.facing)
 
 # --- Ghost ship + selection overlays ---
