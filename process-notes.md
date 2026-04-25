@@ -675,3 +675,97 @@ Lesson: when a subagent completes a feature and reports clean acceptance, the sp
 - **Branch:** `main`, all I7 commits about to be pushed to `origin/main`.
 - **Live game:** itch.io build #1636456 processing → live shortly.
 - **Next steps for Jason:** post the devlog brief manually, link it back into Devpost if useful, and consider scoping Iteration 8 from the eight backlog deltas added during the I7 session (split-panel + accordion + nebula-extends-bounds are the biggest structural ones).
+
+## /iterate — Iteration 8
+
+Started 2026-04-25. Devpost edit window closes 2026-04-29 (4 days out — same window noted at I7 start, so 0 days have elapsed since I7 close from a deadline-counting perspective).
+
+### Entry state
+- All checklist items 1–12 complete, plus I1 through I7 (38 iteration items shipped).
+- Working tree: clean.
+- Last commit `db0c2dd` shipped I7-7 (redeploy + devlog + backlog cleanup).
+- Live build on itch.io: #1636456.
+- Backlog (`docs/backlog.md`) currently has ~22 surviving "Ideas Surfaced During Development" rows after the I7 cleanup, plus the long-term/exploratory section.
+
+### What Jason chose and why
+A 10-item bundle of small wins drawn from the live "Ideas Surfaced During Development" backlog table. Jason asked to see the list, then picked a dense slice across categories: input direction tweaks, label rename, slider default, keyboard escape, randomize button, instant win, two probe-rule data tweaks, auto-shield-regen, enemy-panel cleanup. Skipped during selection: #8 no-blind-hit-on-partially-probed, #11 direct vs partial hits (both have unresolved design questions), #14 audio (already shipped in I1 — likely a stale row).
+
+### What the review pass surfaced
+Three observations shared with Jason before scoping:
+1. **#7 ghost-ship facing indicator was mostly already there** — `grid_renderer.gd:357-360` calls `_draw_facing_triangle` on the ghost path but gates it on `any_probed`. Work would have been a 5-line ungate. Jason chose to remove this item from the iteration AND from the backlog (deleted the row).
+2. **#4 escape was half-done** — `gameplay.gd:597` already maps Escape to move-cancel during move preview. Real work is wiring it into the probe/laser/missile targeting handler.
+3. **#9 + #10 have docs ripple** — both rule changes touch `prd.md`, `spec.md`, `fleet_placement.gd:92` strip-detail string, and the How to Play "Probes Are Flashlights" page. Each item is ~3-4 touchpoints, not one.
+
+Final iteration count: 10 feature items + 1 gated deploy = 11 items (matches I7's size).
+
+### Scoping decisions
+- **#5 Randomize button** — placement: top of left ship-list panel, ABOVE the strip buttons, separated by an `HSeparator` so it visually reads as a non-ship action. Behavior: full clear + re-randomize on every click (option b — wipes manual placements). Repeated clicks cleanly re-randomize.
+- **#12 Auto-shield-regen** — fires at damaged player's `turn_start` (after +50 regen). Formula: `min(max_shields - current_shields, 250, current_energy)`. Override behavior: option (c) — only auto-set if the player has never manually moved that ship's shield regen slider. Once they touch it, the auto-set never fires for that ship again, even if they move it back to 0. Implementation: per-ship `shield_regen_manually_set: bool` flag on `ShipInstance`, flipped true in `ship_panel.gd::_on_shield_slider_changed` (NOT in programmatic slider writes). Locked in without explicit confirmation per auto-mode operating rules; flagged for Jason's review.
+- **#13 Enemy panel cleanup** — straightforward from code inspection; no design call needed. Cache the two `HSeparator` nodes (`ship_panel.gd:50` and `:99`) plus the "Actions:" label (`:102`) during `_build_ui`, hide them in `show_enemy_ship`, restore in `show_ship` and `clear_ship`. Result: enemy panel shows only name + shields/armor.
+
+### Backlog deltas
+Removed 1 row mid-scoping: "Ghost ship facing indicator" (Jason said "second thoughts" and asked to drop both from iteration and backlog). I8-11 will remove the 10 corresponding rows on close.
+
+### Build mode
+Autonomous per the top-of-file preferences. Verification checkpoints land naturally after I8-3 (small fixes), I8-6 (controls + randomize + instant win), and I8-10 (rule changes + UI polish). Final item I8-12 is gated like I4-5/I7-7 with three explicit pauses (smoke test, butler push, devlog draft).
+
+### Late add — I8-11 tutorial + screenshot refresh
+Jason flagged that the iteration's visible changes (Randomize button, 7×7 Probe Ship area, "Energy after use:" label, Probe Ship slider default, stripped enemy panel) need a How to Play page rewrite plus a screenshot regeneration before deploy. Originally requested as "before I8-10," but the dependency runs the other way: shot 10 (`10_active_probe_enemy_panel.png`) shows the enemy ship panel that I8-10's cleanup visibly changes, so the screenshot pass needs to run AFTER I8-10 to capture the cleanup in one go. Inserted as **I8-11** instead, deploy shifts to **I8-12**. Iteration is now 12 items.
+
+I8-11 covers: tutorial copy edits to Fleet Placement (Randomize), Probes Are Flashlights (7-by-7 + uniform 50-energy), Energy & Shields (auto-regen mention), and any other page that references the old "Energy after sliders" label. Screenshot pass spot-checks shots 03, 04, 06, 07, 08, 08a, 10, 11. Voice workflow per memory: agent drafts, Jason runs through Grammarly, agent applies polished text verbatim.
+
+### Observation on the iteration pattern
+Same pattern as I7: Jason asked for the live backlog list, drilled into items he wanted to verify weren't already done, made one mid-scoping cut (the ghost-facing item) based on the review pass surfacing it as nearly trivial, then locked the scope. The auto-mode reminder during the final design call (#13) let me skip the third interview question entirely — the code structure made the answer obvious. Three interview questions across the conversation (one per non-trivial item: #5, #12, then auto-resolved #13). Continues the pattern noted in I7: when the design has been done substantively in the backlog text, don't over-interview.
+
+## /build — Iteration 8 (shipped)
+
+Shipped 2026-04-25 in the same session that opened it. Auto mode plus the three checkpoint structure (after I8-3, I8-6, I8-10) meant the iteration didn't pause for verification gaps — Jason verified at each checkpoint, course-corrected once, flagged unrelated bugs to the backlog, and confirmed.
+
+### Commits landed during the iteration
+
+In order:
+- `313c317` Complete step I8-1: Reverse shift+scroll horizontal pan direction
+- `3ef504e` Complete step I8-2: Rename "Energy after sliders:" to "Energy after use:"
+- `80ec6ff` Complete step I8-3: Probe Ship laser slider defaults to 100
+- `f088930` Course correct I8-3: default all ships' laser slider to 0 (Jason called the change at Checkpoint A)
+- `6623cbc` Complete step I8-4: Escape cancels probe/laser/missile targeting
+- `e59ac67` Complete step I8-5: Randomize fleet placement button
+- `9f0c724` Complete step I8-6: Instant win on last kill
+- `4ab5868` Complete step I8-7: Uniform probe cost (50 energy for all ships)
+- `8d516a5` Complete step I8-8: Increase Probe Ship probe area to 7×7
+- `2d3d382` Complete step I8-9: Auto-set shield regen slider on first damage
+- `40d50dd` Complete step I8-10: Clean up enemy ship panel display
+- `c60ee81` Complete step I8-11: How to Play Randomize callout + screenshot refresh
+
+### Course correction at Checkpoint A (worth noting)
+
+I8-3 as written said the Probe Ship's laser slider should default to 100 and other ships should "stay at 0." The pre-existing default was actually `stats["laser_strength"]` (250 for Battleship/Destroyer/Cruiser, 100 for Probe Ship — set during the original item-9 fix). The first I8-3 commit followed the spec literally: 100 for Probe Ship, 0 for everyone else, which silently dropped the other ships from 250 to 0. Jason saw the implication at Checkpoint A and called for ALL ships to default to 0 (including Probe Ship). Course correction landed in `f088930`.
+
+Lesson: the two-step confirm at Checkpoint A worked exactly as intended — the orchestrator surfaced the unintended behavior change in the checkpoint summary instead of burying it, and Jason redirected before the iteration shipped on a wrong default. Keep checkpoint summaries explicit about side effects, especially when the spec assumed a state that turned out to be wrong.
+
+### Backlog deltas added during the iteration (3 new rows, post-I8 candidates)
+
+Jason flagged three Target Grid / probe-related observations mid-iteration, decided not to fix them inline, and asked for them on the backlog for the next iteration (where he also plans to rework probes more broadly). Added at the bottom of the "Ideas Surfaced During Development" table:
+
+- Bug: destroyed ships render above other ships on Target Grid (the Command Grid two-pass z-order from I3-2 needs to be mirrored on the Target Grid render path)
+- Hit/miss markers: unify Command Grid coloring with Target Grid (I7-3 vs I7-5 used different palettes; pick one and apply to both)
+- Ship visibility around active probes is buggy (umbrella row for the probe-rework iteration; ships entering/leaving/moving inside an active probe area still produce wrong fog state in some cases)
+
+The middle two are small. The third is structural and lines up with Jason's stated intent to rework probe mechanics next iteration, so the row exists so the smaller fixes don't ship piecemeal.
+
+### Tutorial copy decisions
+
+Drafted four edits across pages 2 (Place Your Fleet), 5 (Spend Your Energy), 6 (Probes Are Flashlights). Jason accepted only the page 2 Randomize sentence, declined the page 5 auto-shield-regen mention and the page 5 "Energy after sliders" → "Energy after use" relabel, and declined the page 6 uniform 50-energy callout. Page 5 still references the old "Energy after the sliders" label as a result — flagged but left in per Jason's call. The reader still parses it correctly even with the stale label name, and Jason owns the call.
+
+### Devpost / Devlog deliverables landed
+
+- **Build #1636747** pushed to itch.io via butler. 91.17% patch savings; 6.12 MiB patch over 6.78 MiB fresh data. Replaces previous live build #1636456.
+- **Devlog brief** at `docs/claude-cowork/devlog-i8.md` — title "Less menu math, more space confetti", ~310 words, four bold lede phrases, Gallows-Deadpan voice. Jason posts it manually from itch.io's Devlog editor.
+- **Backlog cleanup:** removed 10 rows from `docs/backlog.md` corresponding to the ten I8 features (shift+scroll flip, "Energy after use" rename, Probe Ship laser default, Escape cancels targeting, Randomize button, instant win, auto shield regen, enemy panel cleanup, uniform probe cost, 7×7 Probe Ship area).
+
+### Outstanding state at I8-12 close
+
+- **Build:** complete. All checklist items checked.
+- **Branch:** `main`, all I8 commits about to be pushed to `origin/main`.
+- **Live game:** itch.io build #1636747 processing → live shortly.
+- **Next steps for Jason:** post the devlog brief manually. Consider scoping Iteration 9 from the three new bug rows (probe rework being the headline) plus whatever else has accumulated in the backlog.
