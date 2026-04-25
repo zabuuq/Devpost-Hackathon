@@ -520,33 +520,39 @@ func _shot_05b_command_ships() -> void:
 
 
 # Page-3 triptych, image 3 / Page-6 hero: target grid demonstrating the
-# I9-1 partial-reveal contract. A 7x7 active probe centered at (72, 8) catches
-# 3 of the P2 Battleship's 5 cells (the top three) plus all 2 of the P2 Cruiser's
-# cells. The Battleship's bottom 2 cells fall outside the probe area and stay
-# un-rendered (nebula visible) so the partial reveal reads at a glance: half a
-# Battleship inside the box, full Cruiser inside the box, and the rest of the
-# Battleship still hidden in the dust.
+# I9-1 partial-reveal contract. A 7x7 active probe centered at (72, 16) clips
+# only the bow cell of the P2 Battleship (70, 13) plus both cells of the P2
+# Cruiser (relocated for this shot to (74, 15) facing east). The Battleship
+# is facing south, so cell (70, 13) is its front — the facing triangle reads
+# as a clear "this is the nose, the rest of the ship is back that way." The
+# other 4 Battleship cells fall outside the probe area and stay un-rendered.
 func _shot_05c_target_grid_mixed() -> void:
 	var gp: Node = get_tree().current_scene
 	if gp == null:
 		push_error("[screenshot_runner] shot 05c: current_scene is null")
 		return
+	# Move the P2 Cruiser into the lower-right corner so it lands inside the
+	# probe area alongside the Battleship's bow. The runner resets state after
+	# this shot, so the relocation doesn't leak to downstream shots.
+	var cruiser_p2: ShipInstance = GameState.players[1]["fleet"][4]
+	cruiser_p2.position = Vector2i(74, 15)
+	cruiser_p2.facing = 1  # east
 	var cell_records: Dictionary = GameState.players[0]["cell_records"]
 	cell_records.clear()
-	# Battleship (P2) at (70, 9), facing=2 → cells (70, 9..13).
-	# Cruiser (P2) at (75, 9), facing=2 → cells (75, 9..10).
+	# Battleship (P2) at default (70, 9), facing=2 (south) → cells (70, 9..13).
+	# Front cell is (70, 13) — that's the only Battleship cell the probe will catch.
 	var battleship_p2: ShipInstance = GameState.players[1]["fleet"][0]
 	var battleship_fog: FogShipRecord = FogShipRecord.from_ship(battleship_p2)
 	var battleship_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
 		battleship_p2.ship_type, battleship_p2.position, battleship_p2.facing)
-	var cruiser_p2: ShipInstance = GameState.players[1]["fleet"][4]
 	var cruiser_fog: FogShipRecord = FogShipRecord.from_ship(cruiser_p2)
 	var cruiser_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
 		cruiser_p2.ship_type, cruiser_p2.position, cruiser_p2.facing)
-	# 7x7 probe centered at (72, 8) → x=69..75, y=5..11. Battleship cells
-	# (70,9)/(70,10)/(70,11) land inside; (70,12)/(70,13) stay nebula. Cruiser
-	# cells (75,9)/(75,10) both land inside.
-	var probe_center := Vector2i(72, 8)
+	# 7x7 probe centered at (72, 16) → x=69..75, y=13..19. Battleship cells
+	# inside: only (70, 13) — the bow. Cruiser cells inside: both (74, 15)
+	# and (75, 15). Battleship's rear cells (70, 9..12) are above the probe
+	# and stay nebula.
+	var probe_center := Vector2i(72, 16)
 	var half: int = 3
 	for y in range(probe_center.y - half, probe_center.y - half + 7):
 		for x in range(probe_center.x - half, probe_center.x - half + 7):
@@ -559,7 +565,10 @@ func _shot_05c_target_grid_mixed() -> void:
 			elif cruiser_cells.has(cell):
 				fog = cruiser_fog
 			cell_records[cell] = CellRecord.make_probe(fog, 2)
-	# Switch to target grid and frame the probe area + un-probed Battleship tail.
+	# Switch to target grid. cam_center_col=72 puts the probe at window center
+	# horizontally; cam y stays at grid center so all 20 rows fit in the
+	# viewport. The crop is shifted DOWN to capture the lower portion of the
+	# grid where the probe (rows 13..19) sits.
 	gp.call("_switch_grid", 1)  # ActiveGrid.TARGET
 	_gameplay_fill_view(
 		gp,
@@ -571,11 +580,12 @@ func _shot_05c_target_grid_mixed() -> void:
 		"MainLayout/GridArea/TargetViewport/SubViewport/GridNode")
 	if target_renderer != null:
 		target_renderer.queue_redraw()
-	# Crop framed on the probe + un-probed Battleship tail. Cam center_col=72
-	# puts the probe at window center horizontally; the 800x340 crop at (394,
-	# 304) keeps the probe area centered while showing 1-2 cells of nebula
-	# above the probe and the un-probed Battleship cells (rows 12-13) below.
-	await _capture_cropped("05c_target_grid_mixed.png", Rect2i(394, 304, 800, 340))
+	# Crop covers the probe area + a row of nebula above (where the un-probed
+	# Battleship tail sits, invisible by design). At cam_center=(72, 10) and
+	# zoom ~1.33, world rows 13..19 map to roughly window y=600..896; the
+	# 800x340 crop at (394, 556) captures that range with a small nebula
+	# margin above the probe.
+	await _capture_cropped("05c_target_grid_mixed.png", Rect2i(394, 556, 800, 340))
 	# Restore clean state so downstream shots (06+) see the original fleet
 	# layout + empty fog. 05b/05c both mutated live state; a scene reload is
 	# the simplest way to hand shot 06 the same conditions it would have had
