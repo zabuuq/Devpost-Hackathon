@@ -424,15 +424,14 @@ func _update_opponent_probes_after_move(ship: ShipInstance, old_cells: Array[Vec
 	var opponent_idx: int = 1 - player_idx
 	var cell_records: Dictionary = GameState.players[opponent_idx]["cell_records"]
 
-	# Clear ship from old cells
+	# Clear ship from old cells that have active probe coverage. Ghost-only
+	# cells keep their reference — ghosts are persistent intel and should not
+	# vanish just because the enemy ship moved.
 	for cell in old_cells:
 		if cell_records.has(cell):
 			var record: CellRecord = cell_records[cell]
-			if record.ship != null:
+			if record.ship != null and record.has_probe:
 				record.ship = null
-				# If cell was only a ghost reference (not an actual probe), remove it entirely
-				if not record.has_probe and not record.has_blind_hit and not record.has_miss:
-					cell_records.erase(cell)
 
 	# Add ship to new cells that have active probes
 	var fog: FogShipRecord = FogShipRecord.from_ship(ship)
