@@ -412,7 +412,7 @@ func _refresh_probe_records_for_ship(ship: ShipInstance, attacker_idx: int) -> v
 	for cell in ship_cells:
 		if cell_records.has(cell):
 			var record: CellRecord = cell_records[cell]
-			if record.ship != null:
+			if record.has_probe:
 				record.ship = fog
 
 

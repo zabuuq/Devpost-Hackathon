@@ -84,7 +84,7 @@ func _refresh_opponent_probes_after_regen() -> void:
 		for cell in ship_cells:
 			if opponent_records.has(cell):
 				var record: CellRecord = opponent_records[cell]
-				if record.ship != null:
+				if record.has_probe:
 					record.ship = fog
 
 func recalculate_sliders(ship: ShipInstance) -> void:
