@@ -15,6 +15,12 @@ var probes_remaining: int = 0
 var shield_regen_setting: int = 0        # 0–250, increments of 50
 var laser_power_setting: int = 0         # 0–500 (or 0–200 for probe_ship), increments of 50
 
+# True once the player has manually moved this ship's shield regen slider.
+# While false, turn_start auto-fills the slider to the optimal repair value
+# whenever the ship has shield damage. Once flipped true, the ship's slider
+# is left alone forever (the player owns it). Per-ship; not reset on damage.
+var shield_regen_manually_set: bool = false
+
 # Turn state (reset each turn_start)
 var action_taken: bool = false
 var move_actions_taken: int = 0          # Cruiser gets 2; others get 1

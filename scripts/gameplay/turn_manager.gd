@@ -12,6 +12,20 @@ func turn_start() -> void:
 			ship.action_taken = false
 			ship.move_actions_taken = 0
 			recalculate_sliders(ship)
+			# I8-9: Auto-set shield regen for damaged ships whose owner has never
+			# touched the slider for this specific ship. Once the player moves
+			# the slider (any change, even back to 0), shield_regen_manually_set
+			# flips true and this branch is skipped forever for that ship.
+			# Writes ship.shield_regen_setting directly; the ship_panel slider
+			# will sync on its next _refresh_display via set_value_no_signal.
+			# Laser is left alone — the existing combined-energy clamp in
+			# _refresh_display enforces shields-priority if total > energy.
+			if not ship.shield_regen_manually_set:
+				var max_shields: int = ShipDefinitions.SHIPS[ship.ship_type]["max_shields"]
+				if ship.current_shields < max_shields:
+					var deficit: int = max_shields - ship.current_shields
+					var optimal: int = mini(mini(deficit, 250), ship.current_energy)
+					ship.shield_regen_setting = optimal
 
 func turn_end() -> void:
 	var player: Dictionary = GameState.players[GameState.current_player]

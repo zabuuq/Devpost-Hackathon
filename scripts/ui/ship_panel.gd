@@ -247,6 +247,10 @@ func _update_slider_labels() -> void:
 func _on_shield_slider_changed(value: float) -> void:
 	if _ship == null:
 		return
+	# I8-9: Any user-driven change locks out the auto-set forever for this ship.
+	# This is safe because the only programmatic writes to _shield_slider use
+	# set_value_no_signal (see _refresh_display) and so never re-enter here.
+	_ship.shield_regen_manually_set = true
 	var shield_val: int = int(value)
 	var laser_val: int = int(_laser_slider.value)
 	# Cap combined to current energy — shields have priority
