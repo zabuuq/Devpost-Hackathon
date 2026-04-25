@@ -484,6 +484,15 @@ func _execute_targeting_action(cell: Vector2i) -> void:
 	# Surface the freshly-logged action.
 	_show_left_tab("battle_log")
 
+	# I8-6: Instant win on last kill. If this action destroyed the opponent's
+	# final living ship, jump straight to victory — skip end-of-turn shield
+	# regen and skip the handoff. Stats are already in players[*].turn_stats
+	# (resolvers update them mid-call), and last_turn_hits has already been
+	# incremented for this hit. The shooter (current_player) is the winner;
+	# victory.gd reads winner from GameState.current_player.
+	if result.get("match_over", false):
+		get_tree().change_scene_to_file("res://scenes/victory.tscn")
+
 
 # ---------------------------------------------------------------------------
 # Move Preview

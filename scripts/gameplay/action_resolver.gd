@@ -165,10 +165,14 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 	var shields_depleted: bool = pre_shields > 0 and target_ship.current_shields == 0
 
 	var destroyed: bool = false
+	var match_over: bool = false
 	if target_ship.current_armor <= 0:
 		target_ship.current_armor = 0
 		target_ship.is_destroyed = true
 		destroyed = true
+		# I8-6: instant win — if the killing blow finishes off the opponent's
+		# last living ship, signal gameplay.gd to skip end-of-turn and load victory.
+		match_over = opponent_fleet.all(func(s: ShipInstance) -> bool: return s.is_destroyed)
 
 	# Blind hit handling
 	var cell_records: Dictionary = player_data.cell_records
@@ -211,7 +215,8 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 		"armor_damage": armor_damage,
 		"shields_depleted": shields_depleted,
 		"destroyed": destroyed,
-		"target_ship_type": target_ship.ship_type
+		"target_ship_type": target_ship.ship_type,
+		"match_over": match_over
 	}
 
 
@@ -267,10 +272,14 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 	var shields_depleted: bool = pre_shields > 0 and target_ship.current_shields == 0
 
 	var destroyed: bool = false
+	var match_over: bool = false
 	if target_ship.current_armor <= 0:
 		target_ship.current_armor = 0
 		target_ship.is_destroyed = true
 		destroyed = true
+		# I8-6: instant win — if the killing blow finishes off the opponent's
+		# last living ship, signal gameplay.gd to skip end-of-turn and load victory.
+		match_over = opponent_fleet.all(func(s: ShipInstance) -> bool: return s.is_destroyed)
 
 	# Blind hit handling
 	var cell_records: Dictionary = player_data.cell_records
@@ -313,7 +322,8 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 		"armor_damage": armor_damage,
 		"shields_depleted": shields_depleted,
 		"destroyed": destroyed,
-		"target_ship_type": target_ship.ship_type
+		"target_ship_type": target_ship.ship_type,
+		"match_over": match_over
 	}
 
 
