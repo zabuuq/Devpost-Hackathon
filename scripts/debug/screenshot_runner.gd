@@ -547,14 +547,20 @@ func _shot_05c_target_grid_mixed() -> void:
 			var fog: FogShipRecord = probe_fog if probe_ship_cells.has(cell) else null
 			cell_records[cell] = CellRecord.make_probe(fog, 2)
 	# Ghost marker: represent the P2 destroyer at (55, 9) as last-seen intel.
-	# make_ship_ghost produces a CellRecord with has_probe=false + a ship fog
-	# record — the classic "we saw this here once" appearance.
+	# Under the I9-1 partial-reveal contract, ghosts are per-cell — only cells
+	# of a destroyer that fell inside a prior probe area linger as ghosts. We
+	# imagine a 3-wide probe region at rows y=8..10 covering the destroyer's
+	# stern and middle squares (55,9) and (55,10) but NOT its bow (55,11).
+	# That produces a 2-cell partial ghost — accurate to the new mechanic and
+	# visually distinct from the full-ship view inside the active probe.
 	var destroyer_p2: ShipInstance = GameState.players[1]["fleet"][2]
 	var ghost_fog: FogShipRecord = FogShipRecord.from_ship(destroyer_p2)
 	var ghost_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
 		destroyer_p2.ship_type, destroyer_p2.position, destroyer_p2.facing)
+	var imagined_probe_y_max: int = 10
 	for cell in ghost_cells:
-		cell_records[cell] = CellRecord.make_ship_ghost(ghost_fog)
+		if cell.y <= imagined_probe_y_max:
+			cell_records[cell] = CellRecord.make_ship_ghost(ghost_fog)
 	# Blind hit: a single cell between the two ships, outside the probe area.
 	cell_records[Vector2i(68, 10)] = CellRecord.make_blind_hit()
 	# Switch to target grid and frame all three features.

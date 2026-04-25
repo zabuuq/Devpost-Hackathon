@@ -274,10 +274,11 @@ Attached to a Node2D inside each SubViewport. Handles all drawing for one grid (
 **Target Grid rendering (enemy fog-of-war):**
 - Reads `GameState.players[current_player].cell_records`
 - For each `CellRecord`:
-  - `has_probe == true`, `ship != null`: render ship clearly (full color, correct type sprite)
-  - `has_probe == false`, `ship != null` (ghost): render ship blurred/semi-transparent
+  - `has_probe == true`, `ship != null`: render that single cell of the ship clearly (full color, correct type sprite)
+  - `has_probe == false`, `ship != null` (ghost): render that single cell blurred/semi-transparent
   - `has_blind_hit == true`: render hit graphic (no ship shape)
-  - Ghost cells outside ship bounds: omitted (only ship cells ghosted)
+- Per-cell contract (I9-1): the renderer never extrapolates a fog ship's footprint beyond the cells whose `record.ship == fog`. Living-ship and wreckage passes both apply the same `visible_cells` filter — collect cells from `ShipDefinitions.get_ship_cells(...)` where `cell_records[sc].ship == fog`, draw only those. Cells of the same ship outside the probe area carry no record and stay un-rendered (nebula visible).
+- Facing triangle is drawn only when the ship's front cell record points at the fog ref (i.e., the front cell is itself probed and tied to this ship).
 
 **Probe area highlight (during probe targeting):**
 - 4×4 or 7×7 highlight centered on mouse cursor
@@ -313,10 +314,12 @@ func resolve_probe(acting_ship: ShipInstance, target_cell: Vector2i,
 1. Determine probe area (4×4 standard, 7×7 for Probe Ship), clamped to grid bounds
 2. Deduct energy: 50 (uniform across all ships)
 3. Decrement `acting_ship.probes_remaining`
-4. For each cell in probe area:
-   - If enemy ship occupies cell: create/update `FogShipRecord` and set on all cells that ship occupies
-   - If cell has existing `CellRecord` with ghost or blind hit: clear it, write fresh probe data
+4. For each cell in the clamped probe area:
+   - If enemy ship occupies cell: create a `FogShipRecord` and write `CellRecord.make_probe(fog, expires_in)` on that cell only
+   - If cell is empty: write `CellRecord.make_probe(null, expires_in)`
+   - Existing ghost / blind hit / miss state on these cells is overwritten by the fresh probe record
    - Set `expires_in`: standard probe = 2, Probe Ship probe = 3
+5. **Partial reveal contract (I9-1):** cells of detected ships that fall OUTSIDE the probe area are not touched. The writer does not extrapolate a fog ship's footprint to its un-probed cells — those stay un-rendered until a future probe overlaps them or a blind hit lands on them. This applies to living ships and wreckage alike. The `detected_ships` accumulator still feeds the `ships_detected` count returned to the battle log.
 5. Return `ProbeResult` (ship count detected) for battle log
 
 **Battle log format:** `"[Ship type] probe deployed at ([x], [y]). [N] ships detected."`
@@ -531,7 +534,7 @@ var is_destroyed: bool
 ### FogShipRecord
 `scripts/gameplay/fog_ship_record.gd`
 
-Attacker's partial view of an enemy ship. Created when a probe detects a ship. Referenced from all cells that ship occupies in the fog-of-war map.
+Attacker's partial view of an enemy ship. Created when a probe detects a ship. Referenced from `CellRecord.ship` on the cells that have been probed AND contained that ship at probe time.
 
 ```gdscript
 class_name FogShipRecord
@@ -542,6 +545,8 @@ var facing: int
 var last_shields: int           # visible only when has_probe == true (PRD 4.3)
 var last_armor: int             # visible only when has_probe == true
 ```
+
+`position` and `facing` describe the WHOLE ship for stat-panel and click-to-select purposes — they're how the Ship Panel and `_try_select_enemy_ship` recover the full ship. They do NOT describe the rendered footprint. Rendering is per-cell-gated by `cell_records`: only cells whose `CellRecord.ship == fog` draw any geometry for that ship. A partially probed ship may have a `FogShipRecord` whose `position` and `facing` describe the whole 5-cell battleship while the renderer only draws the 2 cells inside the probe area.
 
 ### CellRecord
 `scripts/gameplay/cell_record.gd`

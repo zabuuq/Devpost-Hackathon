@@ -561,7 +561,7 @@ Items 1, 2, 6 from the I9 candidate list (probe cluster) collapse into I9-1. Ite
   - Empty probed cells (probe area cells with no ship) and historical-overlay borders post-expire are unchanged.
   Verify: Two-player game. Place P1's battleship at (10,10) facing east (cells (10,10)–(14,10)). End P1 turn. P2 places probe ship near (40,5). P2 launches a 7×7 Probe Ship probe centered at (8,10) — covers x=5..11, y=7..13, intersects the battleship at (10,10) and (11,10) only. End P2 turn (handoff → P1 → handoff → P2). On P2's Target Grid: confirm ONLY (10,10) and (11,10) render as battleship cells. No facing triangle (front cell (14,10) is un-probed). Click (10,10) — Ship Panel shows Battleship full stats. Fire a laser at (12,10): confirm a blind-hit marker appears at (12,10), no probed-hit indicator. Fire at (10,10): confirm a probed hit (battle log shows shields/armor numbers). End P2 turn. Skip turns until probe expires. Confirm (10,10) and (11,10) render as faded per-cell ghosts; click them — Ship Panel does not open. Set up a wreck that partially overlaps a probe (kill a destroyer, then probe over part of it): confirm only probed wreck cells render.
 
-- [ ] **I9-2. Docs + How to Play tutorial + screenshot regeneration**
+- [x] **I9-2. Docs + How to Play tutorial + screenshot regeneration**
   Spec ref: Consequence of I9-1. Touches `docs/prd.md`, `docs/spec.md`, `scripts/main_menu.gd::HOW_TO_PLAY_PAGES`, `scripts/debug/screenshot_runner.gd`, `assets/screenshots/`, `docs/claude-cowork/screenshot-brief.md`.
   What to build: Three passes — doc updates, tutorial copy, screenshot regeneration.
   **Doc pass:**

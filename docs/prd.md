@@ -146,7 +146,7 @@ Each player commands an identical fleet of 5 ships.
 - From the attacker's perspective: wreckage squares register as hits. The attacker does not know the ship is destroyed unless an active probe covers that area.
 
 ### 4.3 Probe Visibility
-- **Active probe over an enemy ship:** Attacker can see the ship's current shield HP and armor HP. Energy and missile count remain hidden.
+- **Active probe over an enemy ship:** Only the cells of the ship inside the probe area are revealed on the Target Grid. Cells of the same ship outside the probe area stay unknown. Clicking any probed cell of the ship opens the Ship Panel with full stats — current shield HP and armor HP. Energy and missile count remain hidden.
 - **No active probe:** Attacker only knows they scored a hit. No stats visible.
 
 ---
@@ -160,7 +160,7 @@ Each player commands an identical fleet of 5 ships.
 | Probe Ship | 7×7 | 50 |
 
 ### 5.2 Probe Reveal
-When a probe lands, any enemy ship squares within the probe area are revealed: ship type, which squares are occupied, and facing direction are visible.
+When a probe lands, only the enemy ship cells inside the probe area are revealed. Cells of the same ship outside the probe area stay unknown — they render as nebula on the Target Grid until a future probe overlaps them or a blind hit lands on them. The facing-direction triangle is drawn only when the ship's front cell is itself inside the probe area; otherwise no facing indicator appears even though some of the ship is visible. Clicking any revealed cell opens the Ship Panel with full stats (ship type, current shields, current armor); clicking a faded ghost cell after the probe expires does not open the panel.
 
 ### 5.3 Probe Fade
 Probe intel degrades over the probing player's subsequent turns:
