@@ -79,7 +79,8 @@ Note: the grid renderer and the fleet placement scene each carry their own ghost
 | `#66e0d1` (α `e6`) | `Color(0.4, 0.88, 0.82, 0.9)` | Probe illumination border (new primary teal) | `scripts/ui/grid_renderer.gd:16` (`COLOR_PROBE_BORDER`) |
 | `#594026` | `Color(0.35, 0.25, 0.15, 1.0)` | Wreckage hull (kept, charred brown reads as inert) | `scripts/ui/grid_renderer.gd:17` (`COLOR_WRECKAGE`) |
 | `#8c734d` | `Color(0.55, 0.45, 0.3, 1.0)` | Wreckage X marker (kept) | `scripts/ui/grid_renderer.gd:18` (`COLOR_WRECKAGE_X`) |
-| `#ffb266` | `Color(1.0, 0.7, 0.4, 1.0)` | Blind hit marker (warm orange pulled from the nebula's warm-star highlights, softer than the old saturated orange) | `scripts/ui/grid_renderer.gd:19` (`COLOR_BLIND_HIT`) |
+| `#cc6666` (α `e6`) | `Color(0.8, 0.4, 0.4, 0.9)` | Blind hit + miss marker, current turn (desaturated red — same palette for both, glyph differentiates: hit = filled circle, miss = X) | `scripts/ui/grid_renderer.gd:19` (`COLOR_HIT_FULL`), `scripts/ui/grid_renderer.gd:21` (`COLOR_MISS_FULL`) |
+| `#999999` (α `66`) | `Color(0.6, 0.6, 0.6, 0.4)` | Blind hit + miss marker, faded after their landing turn (gray reads as "stale intel") | `scripts/ui/grid_renderer.gd:20` (`COLOR_HIT_FADED`), `scripts/ui/grid_renderer.gd:22` (`COLOR_MISS_FADED`) |
 
 ## Text and labels, by role
 

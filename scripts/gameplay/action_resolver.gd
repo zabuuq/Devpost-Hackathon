@@ -142,6 +142,9 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 			var existing: CellRecord = cell_records_miss[target_cell]
 			existing.has_miss = true
 			existing.miss_turn = miss_turn_number
+			existing.has_blind_hit = false
+			existing.hit_turn = 0
+			existing.ship = null
 		else:
 			cell_records_miss[target_cell] = CellRecord.make_miss(miss_turn_number)
 		return {
@@ -175,6 +178,7 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 		if record.has_probe:
 			has_active_probe = true
 
+	var hit_turn_number: int = player_data["turns_played"] + 1
 	if not has_active_probe:
 		var record: CellRecord
 		if cell_records.has(target_cell):
@@ -183,8 +187,8 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 			record = CellRecord.new()
 			cell_records[target_cell] = record
 		record.has_blind_hit = true
+		record.hit_turn = hit_turn_number
 		record.has_miss = false
-		record.ship = null
 	else:
 		var record: CellRecord = cell_records[target_cell]
 		record.has_miss = false
@@ -233,6 +237,9 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 			var existing: CellRecord = cell_records_miss[target_cell]
 			existing.has_miss = true
 			existing.miss_turn = miss_turn_number
+			existing.has_blind_hit = false
+			existing.hit_turn = 0
+			existing.ship = null
 		else:
 			cell_records_miss[target_cell] = CellRecord.make_miss(miss_turn_number)
 		return {
@@ -273,6 +280,7 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 		if record.has_probe:
 			has_active_probe = true
 
+	var hit_turn_number: int = player_data["turns_played"] + 1
 	if not has_active_probe:
 		var record: CellRecord
 		if cell_records.has(target_cell):
@@ -281,8 +289,8 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 			record = CellRecord.new()
 			cell_records[target_cell] = record
 		record.has_blind_hit = true
+		record.hit_turn = hit_turn_number
 		record.has_miss = false
-		record.ship = null
 	else:
 		var record: CellRecord = cell_records[target_cell]
 		record.has_miss = false

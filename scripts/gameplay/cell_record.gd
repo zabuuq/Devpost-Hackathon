@@ -5,6 +5,7 @@ var expires_in: int = 0                  # countdown: decrements at YOUR turn st
                                          # standard probe: set to 2; Probe Ship: set to 3
                                          # when reaches 0: ship → ghost, empty → delete record
 var has_blind_hit: bool = false
+var hit_turn: int = 0                    # in-progress turn number when blind hit was recorded
 var has_miss: bool = false
 var miss_turn: int = 0                   # in-progress turn number when miss was recorded
 var ship: FogShipRecord = null           # null if no ship detected in this cell
@@ -22,9 +23,10 @@ static func make_ship_ghost(fog_ship: FogShipRecord) -> CellRecord:
 	record.ship = fog_ship
 	return record
 
-static func make_blind_hit() -> CellRecord:
+static func make_blind_hit(turn: int = 0) -> CellRecord:
 	var record := CellRecord.new()
 	record.has_blind_hit = true
+	record.hit_turn = turn
 	return record
 
 static func make_miss(turn: int) -> CellRecord:
