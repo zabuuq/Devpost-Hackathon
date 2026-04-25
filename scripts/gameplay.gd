@@ -625,8 +625,9 @@ func _save_camera_state(cam: Camera2D, is_command: bool) -> void:
 
 func _restore_camera_state(cam: Camera2D, _vp: SubViewport, is_command: bool) -> void:
 	# When there's no saved state for this player, leave the scene's camera
-	# defaults (zoom 0.3, position (1280, 320)) untouched. Per-input saves
-	# capture every pan/zoom, so the saved-state branch covers everything else.
+	# defaults (zoom 1.0, position (1280, 320), matching fleet_placement.tscn)
+	# untouched. Per-input saves capture every pan/zoom, so the saved-state
+	# branch covers everything else.
 	var key: String = "command_camera" if is_command else "target_camera"
 	var saved: Dictionary = GameState.players[GameState.current_player][key]
 	if saved.is_empty():
