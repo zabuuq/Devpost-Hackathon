@@ -343,3 +343,46 @@ func _on_done_pressed() -> void:
 	GameState.players[GameState.current_player]["fleet"] = fleet
 	GameState.last_turn_hits = 0
 	get_tree().change_scene_to_file("res://scenes/handoff.tscn")
+
+func _on_randomize_pressed() -> void:
+	AudioManager.play_sfx("click")
+	# Snapshot prior board state so we can restore on the (defensive) failure path
+	# where a ship can't be placed within the retry cap.
+	var prior_placed: Dictionary = placed_ships.duplicate()
+	var prior_modulates: Array[Color] = []
+	for btn in ship_buttons:
+		prior_modulates.append(btn.modulate)
+	# Full board reset.
+	placed_ships.clear()
+	for btn in ship_buttons:
+		btn.modulate = Color.WHITE
+	selected_ship_idx = -1
+	ghost_position = Vector2i(-1, -1)
+	ghost_valid = false
+	done_button.disabled = true
+	const MAX_ATTEMPTS: int = 200
+	for i in range(ShipDefinitions.FLEET.size()):
+		var stype: String = ShipDefinitions.FLEET[i]
+		var placed: bool = false
+		for _attempt in range(MAX_ATTEMPTS):
+			var origin := Vector2i(randi_range(0, GRID_COLS - 1), randi_range(0, GRID_ROWS - 1))
+			var facing: int = randi_range(0, 3)
+			if _is_placement_valid(stype, origin, facing):
+				var instance := ShipInstance.create(stype)
+				instance.position = origin
+				instance.facing = facing
+				placed_ships[i] = instance
+				ship_buttons[i].modulate = Color(0.4, 1.0, 0.4)
+				placed = true
+				break
+		if not placed:
+			# Defensive rollback — should never trigger on an 80x20 grid.
+			push_warning("Randomize: failed to place %s after %d attempts; restoring prior board." % [stype, MAX_ATTEMPTS])
+			placed_ships = prior_placed
+			for j in range(ship_buttons.size()):
+				ship_buttons[j].modulate = prior_modulates[j]
+			done_button.disabled = placed_ships.size() < ShipDefinitions.FLEET.size()
+			grid_node.queue_redraw()
+			return
+	done_button.disabled = placed_ships.size() < ShipDefinitions.FLEET.size()
+	grid_node.queue_redraw()

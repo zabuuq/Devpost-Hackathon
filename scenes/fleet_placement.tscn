@@ -46,6 +46,12 @@ horizontal_alignment = 1
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.6, 0.92, 0.87, 1.0)
 
+[node name="RandomizeButton" type="Button" parent="HSplitContainer/LeftPanel"]
+custom_minimum_size = Vector2(160, 36)
+text = "Randomize"
+
+[node name="RandomizeSeparator" type="HSeparator" parent="HSplitContainer/LeftPanel"]
+
 [node name="ScrollContainer" type="ScrollContainer" parent="HSplitContainer/LeftPanel"]
 size_flags_vertical = 3
 
@@ -101,5 +107,6 @@ theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.7, 0.81, 0.8, 1.0)
 autowrap_mode = 2
 
+[connection signal="pressed" from="HSplitContainer/LeftPanel/RandomizeButton" to="." method="_on_randomize_pressed"]
 [connection signal="pressed" from="HSplitContainer/LeftPanel/DoneButton" to="." method="_on_done_pressed"]
 [connection signal="gui_input" from="HSplitContainer/GridViewport" to="." method="_on_viewport_gui_input"]
