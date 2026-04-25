@@ -562,6 +562,15 @@ func _update_move_preview() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Escape during targeting cancels the queued probe/laser/missile action.
+	# Mirrors the cancel path used by _on_command_grid_pressed (gameplay.gd:204).
+	if interaction_state == InteractionState.TARGETING:
+		if event is InputEventKey and event.pressed and not event.echo \
+				and event.keycode == KEY_ESCAPE:
+			_cancel_targeting()
+			get_viewport().set_input_as_handled()
+		return
+
 	if interaction_state != InteractionState.MOVE_PREVIEW:
 		return
 
