@@ -105,7 +105,7 @@ func _build_entry_label(entry: Dictionary) -> Label:
 			color = COLOR_PROBE
 		"laser", "missile":
 			text = _format_fire(entry)
-			if entry.get("destroyed", false):
+			if entry.get("destroyed", false) and entry.get("has_probe", false):
 				color = COLOR_DESTROY
 			elif entry.get("hit", false):
 				color = COLOR_HIT
@@ -154,21 +154,28 @@ func _format_fire(result: Dictionary) -> String:
 	var has_probe: bool = result.get("has_probe", false)
 	var destroyed: bool = result.get("destroyed", false)
 	var target: Vector2i = result.get("target", Vector2i.ZERO)
+	var shields_depleted: bool = result.get("shields_depleted", false)
 
 	var text: String
 	if has_probe:
 		var shield_dmg: int = result.get("shield_damage", 0)
 		var armor_dmg: int = result.get("armor_damage", 0)
 		if shield_dmg > 0 and armor_dmg > 0:
-			text = "%s %s fired at (%d, %d). Hit — %d shield damage, %d armor damage." % [ship, weapon, target.x, target.y, shield_dmg, armor_dmg]
+			if shields_depleted:
+				text = "%s %s fired at (%d, %d). Hit — %d shield damage. Shields down! %d armor damage." % [ship, weapon, target.x, target.y, shield_dmg, armor_dmg]
+			else:
+				text = "%s %s fired at (%d, %d). Hit — %d shield damage, %d armor damage." % [ship, weapon, target.x, target.y, shield_dmg, armor_dmg]
 		elif shield_dmg > 0:
-			text = "%s %s fired at (%d, %d). Hit — %d shield damage." % [ship, weapon, target.x, target.y, shield_dmg]
+			if shields_depleted:
+				text = "%s %s fired at (%d, %d). Hit — %d shield damage. Shields down!" % [ship, weapon, target.x, target.y, shield_dmg]
+			else:
+				text = "%s %s fired at (%d, %d). Hit — %d shield damage." % [ship, weapon, target.x, target.y, shield_dmg]
 		else:
 			text = "%s %s fired at (%d, %d). Hit — %d armor damage." % [ship, weapon, target.x, target.y, armor_dmg]
 	else:
 		text = "%s %s fired. Hit." % [ship, weapon]
 
-	if destroyed:
+	if destroyed and has_probe:
 		var target_name: String = _ship_name(result.get("target_ship_type", ""))
 		text += " %s destroyed." % target_name
 

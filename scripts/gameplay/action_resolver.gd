@@ -116,12 +116,14 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 		}
 
 	# Damage calculation
+	var pre_shields: int = target_ship.current_shields
 	var shields_absorbed: int = mini(target_ship.current_shields, laser_power)
 	var overflow: int = laser_power - shields_absorbed
 	var armor_damage: int = roundi(overflow * 0.75)
 
 	target_ship.current_shields -= shields_absorbed
 	target_ship.current_armor -= armor_damage
+	var shields_depleted: bool = pre_shields > 0 and target_ship.current_shields == 0
 
 	var destroyed: bool = false
 	if target_ship.current_armor <= 0:
@@ -162,6 +164,7 @@ func resolve_laser(acting_ship: ShipInstance, target_cell: Vector2i, opponent_fl
 		"has_probe": has_active_probe,
 		"shield_damage": shields_absorbed,
 		"armor_damage": armor_damage,
+		"shields_depleted": shields_depleted,
 		"destroyed": destroyed,
 		"target_ship_type": target_ship.ship_type
 	}
@@ -187,6 +190,7 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 		}
 
 	# Damage calculation — missiles bypass shields partially
+	var pre_shields: int = target_ship.current_shields
 	var shield_damage: int = 0
 	var armor_damage: int = 0
 
@@ -200,6 +204,7 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 
 	target_ship.current_shields -= shield_damage
 	target_ship.current_armor -= armor_damage
+	var shields_depleted: bool = pre_shields > 0 and target_ship.current_shields == 0
 
 	var destroyed: bool = false
 	if target_ship.current_armor <= 0:
@@ -240,6 +245,7 @@ func resolve_missile(acting_ship: ShipInstance, target_cell: Vector2i, opponent_
 		"has_probe": has_active_probe,
 		"shield_damage": shield_damage,
 		"armor_damage": armor_damage,
+		"shields_depleted": shields_depleted,
 		"destroyed": destroyed,
 		"target_ship_type": target_ship.ship_type
 	}
