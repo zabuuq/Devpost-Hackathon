@@ -311,7 +311,7 @@ func resolve_probe(acting_ship: ShipInstance, target_cell: Vector2i,
                    player_idx: int) -> ProbeResult:
 ```
 1. Determine probe area (4×4 standard, 6×6 for Probe Ship), clamped to grid bounds
-2. Deduct energy: standard = 100, Probe Ship = 50
+2. Deduct energy: 50 (uniform across all ships)
 3. Decrement `acting_ship.probes_remaining`
 4. For each cell in probe area:
    - If enemy ship occupies cell: create/update `FogShipRecord` and set on all cells that ship occupies
@@ -472,7 +472,7 @@ const SHIPS: Dictionary = {
     "battleship": {
         "squares": 5, "max_energy": 1000, "max_shields": 1000, "max_armor": 1000,
         "laser_strength": 250, "missiles": 24, "probes": 10,
-        "probe_area": 4, "probe_cost": 100, "laser_max": 500,
+        "probe_area": 4, "probe_cost": 50, "laser_max": 500,
         "base_move_points": 1.0, "special": ""
     },
     "probe_ship": {
@@ -484,13 +484,13 @@ const SHIPS: Dictionary = {
     "destroyer": {
         "squares": 3, "max_energy": 750, "max_shields": 750, "max_armor": 750,
         "laser_strength": 250, "missiles": 12, "probes": 12,
-        "probe_area": 4, "probe_cost": 100, "laser_max": 500,
+        "probe_area": 4, "probe_cost": 50, "laser_max": 500,
         "base_move_points": 1.0, "special": ""
     },
     "cruiser": {
         "squares": 2, "max_energy": 500, "max_shields": 500, "max_armor": 500,
         "laser_strength": 250, "missiles": 10, "probes": 10,
-        "probe_area": 4, "probe_cost": 100, "laser_max": 500,
+        "probe_area": 4, "probe_cost": 50, "laser_max": 500,
         "base_move_points": 2.0, "special": "double_move"
     }
 }

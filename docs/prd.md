@@ -124,7 +124,7 @@ Each player commands an identical fleet of 5 ships.
 | Ship | Squares | Energy | Shields | Armor | Laser Str. | Missiles | Probes | Special |
 |---|---|---|---|---|---|---|---|---|
 | Battleship | 5 | 1000 | 1000 | 1000 | 250 | 24 | 10 | — |
-| Probe Ship | 4 | 1000 | 750 | 750 | 100 | 0 | 24 | 6×6 probe area; 50 energy probe cost |
+| Probe Ship | 4 | 1000 | 750 | 750 | 100 | 0 | 24 | 6×6 probe area |
 | Destroyer | 3 | 750 | 750 | 750 | 250 | 12 | 12 | — |
 | Destroyer | 3 | 750 | 750 | 750 | 250 | 12 | 12 | — |
 | Cruiser | 2 | 500 | 500 | 500 | 250 | 10 | 10 | 2 move actions per turn |
@@ -156,7 +156,7 @@ Each player commands an identical fleet of 5 ships.
 ### 5.1 Probe Areas
 | Ship | Probe Area | Energy Cost |
 |---|---|---|
-| All ships (except Probe Ship) | 4×4 | 100 |
+| All ships (except Probe Ship) | 4×4 | 50 |
 | Probe Ship | 6×6 | 50 |
 
 ### 5.2 Probe Reveal
@@ -188,7 +188,7 @@ Probe intel degrades over the probing player's subsequent turns:
 ### 6.2 Energy Costs
 | Action | Cost |
 |---|---|
-| Probe (standard) | 100 |
+| Probe (standard) | 50 |
 | Probe (Probe Ship) | 50 |
 | Move (any type) | 50 |
 | Laser shot | Equal to laser power setting (0–500, or 0–200 for Probe Ship) |

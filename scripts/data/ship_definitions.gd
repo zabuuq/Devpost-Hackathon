@@ -10,7 +10,7 @@ const SHIPS: Dictionary = {
 		"missiles": 24,
 		"probes": 10,
 		"probe_area": 4,
-		"probe_cost": 100,
+		"probe_cost": 50,
 		"laser_max": 500,
 		"base_move_points": 1.0,
 		"special": ""
@@ -38,7 +38,7 @@ const SHIPS: Dictionary = {
 		"missiles": 12,
 		"probes": 12,
 		"probe_area": 4,
-		"probe_cost": 100,
+		"probe_cost": 50,
 		"laser_max": 500,
 		"base_move_points": 1.0,
 		"special": ""
@@ -52,7 +52,7 @@ const SHIPS: Dictionary = {
 		"missiles": 10,
 		"probes": 10,
 		"probe_area": 4,
-		"probe_cost": 100,
+		"probe_cost": 50,
 		"laser_max": 500,
 		"base_move_points": 2.0,
 		"special": ""
