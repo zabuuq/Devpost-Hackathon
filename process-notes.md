@@ -419,3 +419,84 @@ Subagent gotchas worth recording for future iterations:
 - Static-typed casts inside dictionary loops matter — the I5-4 subagent added `as CellRecord` when reading `.has_probe` from a `Dictionary` value. Consistent with the rest of the project; worth keeping.
 
 Overall impression: cleanest control-rework the project has had. Six items shipped with one fix pass at the verification gate; both checkpoints landed without further tuning. The bundling of three input-handler items (I5-1, I5-2, I5-3 all touching `_handle_grid_input`) into the iteration meant the file got its rework in a single coherent pass instead of three drive-by edits, and the per-input save model from I5-2 turned out to be load-bearing for the CP1 cross-player fix — without it, removing the `_exit_tree` safety net would have cost the camera-persistence feature entirely. Bundling paid off.
+
+## /iterate — Iteration 6
+
+Started 2026-04-24. Devpost edit window closes 2026-04-29 (5 days out). I5 landed earlier the same day; this is a second iterate pass kicked off immediately after.
+
+### Entry state
+- All original checklist items (1-12) complete.
+- I1 through I5 all complete on the checklist.
+- Working tree has two uncommitted items from the I5 session: modified `docs/backlog.md` (the click-to-ghost prune) and new file `docs/claude-cowork/devlog-i3-nebula.md` (the I3 devlog brief).
+- In-flight outside the checklist: How to Play overlay voice polish, pages 6-9 still in the older matter-of-fact register. Pages 1-5 polished and committed. Page 6 "Strip Shields. Break Armor." is the next resume point per the project memory note.
+
+### Review pass (pre-scope)
+Three threads are obvious candidates:
+- **HTP polish resume** — pages 6-9 of the How to Play overlay, continuing the Gallows-Deadpan rewrite. Already has validated infrastructure (bold rendering, multi-image schema) and a draft/rewrite/wire-verbatim workflow pattern. Natural continuation of the in-flight work.
+- **Backlog UX items** — several live items touch the gameplay loop cheaply: auto-set shield regen slider, clean up enemy ship panel display, hide empty opponent probes in battle log, blind hit clears ghost on that cell, battle log persist across turns, randomize fleet placement button. Most are local edits, not systemic.
+- **Backlog visibility items** — Command Grid: show incoming hits / show opponent active probes. Adds hostile-intel visualization to the Command Grid, which today only shows the player's own fleet. More ambitious than the UX items; could be its own iteration.
+
+### What Jason chose and why
+Jason asked for the full live backlog list first, then picked the 7 battle-log items as a block. Extended victory statistics was a late add once I flagged it as living on a different surface — Jason said "add it," so all 7 items stay in scope.
+
+Of note: the How to Play pages 6-9 polish thread that the in-flight memory note flagged is already done. Memory updated 2026-04-24 to reflect that the full 9-page overlay is complete.
+
+### Scoping decisions
+- **Persistence model** — per-player log stored in `GameState.players[n].battle_log`, capped at 200 entries (cap includes turn dividers), newest-first ordering (top of the side panel = latest action), turn-number dividers between entry blocks. Confirmed twice — Jason explicitly clarified that newest-first means "top of the list" and that this is the side-panel battle log, not the handoff hit count.
+- **Near-miss filter** — applies only to the **defender's** view of opponent fire. Shooter still sees "[MyShip] fired. Miss." on their own log regardless. Proximity check is 8-way Chebyshev adjacency to any cell of any of the defender's living ships. Jason re-clarified this mid-conversation to make sure the directionality was right.
+- **Opponent subject** — "Enemy" (option 1). Applies to all opponent-action entries that survive the other filters. For opponent probes that found zero ships, the entry is dropped entirely rather than logged as "Enemy" — that's the hide-empty-probes item, which takes precedence over the subject-rewrite.
+- **"Shields down!" format** — inline append, with armor overflow shown after the marker when present: "... Hit — 125 shield damage. Shields down! 94 armor damage." When shields are depleted exactly (no overflow), the armor phrase is omitted.
+- **Extended victory stats** — 6 rows per player, two-column layout: Probes launched, Laser shots, Missile shots, Total hits, Total damage, Total misses. Dropped per-weapon damage breakdowns and the total-shots-as-sum row as redundant with individual weapon counts.
+- **Blind-destroy coloring** — surfaced during spec-writing: when a blind hit destroys an enemy ship, the destroy-red color also has to fall back to hit-red, not just the text suffix. Called out in I6-3 acceptance so the color signal doesn't leak information either.
+
+### Iteration size
+4 items after bundling:
+- **I6-1** — Persistent per-player battle log (GameState schema, cap, dividers, newest-first render). Structural foundation; has to land first.
+- **I6-2** — Opponent-side filters (Enemy subject, empty-probe suppression, near-miss gate). Render-time filters on the replay path.
+- **I6-3** — Shooter-side polish (hide destruction on blind hits, Shields down! with overflow). Render-time tweaks on own-fire entries.
+- **I6-4** — Extended victory statistics (four new `turn_stats` counters, victory-screen layout bump to 6 rows). Independent surface, can slot anywhere.
+
+Dependency order: I6-1 → I6-2 → I6-3. I6-4 is independent. Build mode stays **autonomous with verification checkpoints every 3 items** per the top of the checklist — checkpoint after I6-3 (end of the battle-log chain) is a natural fit.
+
+### Observations
+The backlog list-first approach surfaced a useful pattern: Jason reads backlog groupings as tactical units ("the 7 battle log items") rather than as individual tickets. The tight thematic coupling (all six battle-log items share `_format_fire` / `_format_probe` surface area) and the render-time-filter nature of five of them made scoping quick — only persistence needed real architectural discussion, and the existing `last_turn_results` path gave us a clean staircase from "one turn back" to "full history with filtering."
+
+Mid-conversation re-clarifications (near-miss directionality, side-panel vs handoff) were the right kind of signal: Jason checks his mental model against the agent's and corrects when they diverge, rather than waiting to see wrong output.
+
+
+## /build — Iteration 6 (autonomous)
+
+**Mode:** Autonomous with verification checkpoints every 3 items, per checklist Build Preferences header.
+
+**Items completed (4/4):**
+- I6-1: Persistent per-player battle log with cap, turn dividers, newest-first ordering
+- I6-2: Opponent-side filters — "Enemy" subject, empty-probe suppression, near-miss gate
+- I6-3: Shooter-side polish — hide destruction on blind hits, "Shields down!" with overflow
+- I6-4: Extended victory statistics — 6 rows per player (Probes, Laser shots, Missile shots, Total hits, Total damage, Total misses)
+
+**Checklist revised mid-build:** No. Spec held up through all four items.
+
+**Checkpoint observations from Jason:**
+
+First checkpoint (after I6-3) yielded six issues — a strong bug yield for a three-item batch:
+- Defender 's log should name their own hit ship; destruction suffix for defender ships was gated on `has_probe` and incorrectly hidden from the defender.
+- Defender near-miss entries should name the nearby defender ship(s) with coords.
+- Destroy SFX (explosion) leaked blind-kill info — audio_manager needed the same `has_probe` gate the text already had.
+- Turn divider stuck on "Turn 1" — `GameState.turn_number` was never incremented anywhere. Added per-player `turns_played` counter in `turn_end()` and rewired header label + dividers.
+- Bold the most-recent (top) entry; unbold when it scrolls down. Switched per-entry `Label` → `RichTextLabel` with BBCode to get true bold.
+- Hide the battle log scrollbar while preserving scroll behavior. `SCROLL_MODE_SHOW_NEVER` on the `ScrollContainer`.
+
+Two follow-up issues after the first fix round:
+- Divider should be pushed at turn END, not turn START — with newest-first rendering, the divider needs to be LAST in the push order to cap the turn from above. Moved "Your turn" push into `turn_manager.turn_end()`; moved "Enemy turn" push to after the replay loop in gameplay `_ready()`.
+- Near-miss with two ships of the same type showed singular "Destroyer" instead of "Destroyers". Stopped deduping ship types in `_filter_opponent_entry`; formatter now counts per-type and pluralizes when count > 1.
+
+One further edge case:
+- Enemy turn divider only fired when `last_turn_results` was non-empty — so opponent-did-nothing vs opponent-did-only-filtered-stuff rendered differently. Changed to fire whenever opponent.turns_played > 0, with a "Nothing to report." entry inserted below the divider when no entries survive filtering.
+
+I6-4 passed final verification cleanly.
+
+**Overall impressions:**
+
+Jason's verification habit is doing real work — not rubber-stamping. Nine real defects caught across two checkpoint rounds, each with precise reproduction framing (what happened, what should happen, sometimes the cause hypothesis). The agent-orchestrator pattern held up well: four subagents dispatched sequentially with the full spec + architectural context, and each returned clean commits. No subagent had to reopen an earlier file the next agent touched, which suggests the item boundaries were well-drawn.
+
+The hidden-fleet-information-discipline theme kept surfacing as a unifying constraint — every filter, every SFX gate, every format branch comes back to "what can this player legitimately know?" That framing made the fixes feel coherent rather than ad-hoc, and made the backlog-batch approach (7 items → 4 items after bundling) trivially obvious in hindsight.
