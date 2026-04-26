@@ -836,3 +836,39 @@ Lesson: the partial-reveal screenshot is a sharper teacher than any paragraph. T
 - **Branch:** `main`, all I9 commits about to be pushed to `origin/main`.
 - **Live game:** itch.io build #1636903 processing → live shortly.
 - **Next steps for Jason:** post the devlog brief manually. Devpost edit window closes 2026-04-29 (4 days out).
+
+## /iterate — Iteration 10 (opening)
+
+Started 2026-04-25, same session as I9. Devpost edit window closes 2026-04-29 (4 days out).
+
+### Entry state
+- All checklist items 1–12 + I1 through I9 complete (52 iteration items shipped).
+- Working tree: clean. Last commit `991039d` shipped I9-3.
+- Live build on itch.io: #1636903 (partial-reveal probe).
+- Backlog after I9 cleanup: 22 rows in "Ideas Surfaced During Development" + 5 long-term/exploratory rows.
+
+### What Jason chose and why
+Bundled three backlog items into one iteration: #4 (ambient music drop-in), #6 (always-visible split left panel), #7 (Ship Panel as accordion ship list). #6 + #7 stack — the split layout creates the room for the accordion, and the accordion is the natural replacement for the single-ship dense view that currently fills the Ship Panel side. #4 is a drop-in alongside.
+
+### What the review pass surfaced
+1. **Half the "Ideas Surfaced" rows had already shipped.** The backlog had drifted — 13 rows still listed I5/I6 work that landed in those iterations (battle log polish, scroll/zoom rework, persist map view, click-to-pick-up, stay on Target Grid, extended victory stats, plus the I3-2 wreckage z-order fix). Pruned in this scoping pass before picking the iteration. New surface area: 9 open rows in "Ideas Surfaced."
+2. **Audio is 6/7 done, not 0/7.** SFX (click, probe, laser, missile, hit, explosion) all exist in `assets/audio/sfx/`. Only `assets/audio/music/ambient_space.ogg` is missing. Reframed the backlog row to scope just the music file.
+3. **Tabbed left panel is structurally simple to collapse.** `gameplay.tscn:65-89` has a TabButtons strip + two sibling panels (BattleLogPanel + ShipPanelContainer). `_show_left_tab` toggles visibility. Removing tabs and stacking with `size_flags_stretch_ratio` 2 / 1 is straightforward. Touchpoints: scene file, `gameplay.gd::_show_left_tab` (line 68 + 4 sites in `screenshot_runner.gd`), and the dense single-ship `ship_panel.gd` rebuild for the accordion.
+
+### Scoping decisions
+- **#4 collapsed-row content: option (a) — name only.** Jason picked. Option (c) — armor/shield bar — added to backlog as a future polish row. Locks the visual budget tight enough that 5 rows + Battle Log fit in the left panel without a scrollbar.
+- **Default expanded state: all collapsed on scene load and on each turn start.** No assumed "first ship" focus — player picks. Reasonable assumption locked in autonomously, course-correct in /build if the empty initial state reads wrong.
+- **Destroyed ships: stay in the list, dim the row, can't expand.** Players already see wreckage on the Command Grid; keeping the row maintains spatial consistency. Destroyed-row click does nothing. Auto-locked.
+- **Selection coupling (per backlog #7 text):** clicking a row name expands it AND selects the ship on the Command Grid AND switches the active grid to Command Grid if currently on Target Grid. Clicking a friendly ship on the Command Grid expands its row in the panel. One expanded at a time.
+- **Enemy ship view (Target Grid clicks):** clicking an enemy ship on Target Grid replaces the accordion with the existing stripped enemy panel (per I8-10). Returning to Command Grid (or clicking a friendly ship) restores the accordion. Preserves today's behavior — no regression.
+- **Split ratio: 2/3 ship panel, 1/3 battle log via `size_flags_stretch_ratio`. No draggable splitter.** Per backlog text. Simpler to ship; can revisit if needed.
+- **Music sourcing: Jason picks the track.** Suggested sources: incompetech.com (Kevin MacLeod), freesound.org, pixabay.com/music. The build step copies the chosen file to `assets/audio/music/ambient_space.ogg`.
+- **Bundle #6 + #7 in one item.** Splitting them creates an awkward intermediate state where the split layout exists but the Ship Panel is still a single-ship dense view that dominates 2/3 of the panel. Bundle keeps the iteration coherent and matches the I9 pattern.
+
+### Build mode
+Autonomous per top-of-file preferences. Verification falls naturally after I10-1 (the heaviest item — visual UX rework). I10-2 is a file drop-in. I10-3 is gated like I4-5 / I7-7 / I8-12 / I9-3 with three explicit pauses (smoke test, butler push, devlog draft).
+
+### Backlog deltas during scoping
+- Removed 13 already-shipped rows from "Ideas Surfaced": Click-to-pick-up (I5-5), Stay on Target Grid (I5-6), Hide empty opponent probes (I6-2), Hide enemy ship type (I6-2), Persist battle log across turns (I6-1), Extended victory statistics (I6-4), Hide opponent misses unless near miss (I6-2), Rework scroll + zoom (I5-1), Zoom centered on mouse (I5-1), Persist map view between turns (I5-2), Hide ship destruction on blind hits (I6-3), Show shield breakdown on probed hits (I6-3), Bug: destroyed ships z-order on Target Grid (I3-2 already covered both grids).
+- Reframed the audio row to scope just the missing `ambient_space.ogg`.
+- Added a new row: "Accordion row visual: armor/shield bar in collapsed state" (option (c) deferred per Jason's call).

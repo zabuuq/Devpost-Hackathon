@@ -20,8 +20,6 @@ enum InteractionState { IDLE, SHIP_SELECTED, MOVE_PREVIEW, TARGETING }
 @onready var target_renderer: GridRenderer = $MainLayout/GridArea/TargetViewport/SubViewport/GridNode
 @onready var command_tab_btn: Button = $TopBar/CommandGridBtn
 @onready var target_tab_btn: Button = $TopBar/TargetGridBtn
-@onready var battle_log_tab_btn: Button = $MainLayout/LeftPanel/TabButtons/BattleLogBtn
-@onready var ship_panel_tab_btn: Button = $MainLayout/LeftPanel/TabButtons/ShipPanelBtn
 @onready var battle_log_panel: ScrollContainer = $MainLayout/LeftPanel/BattleLogPanel  # has battle_log.gd script
 @onready var ship_panel_container: VBoxContainer = $MainLayout/LeftPanel/ShipPanelContainer
 @onready var player_turn_label: Label = $TopBar/PlayerTurnLabel
@@ -65,7 +63,6 @@ func _ready() -> void:
 	GameState.phase = GameState.Phase.GAMEPLAY
 	_update_player_label()
 	_switch_grid(ActiveGrid.COMMAND)
-	_show_left_tab("battle_log")
 
 	var opponent_turn_number: int = GameState.players[1 - GameState.current_player]["turns_played"]
 	if opponent_turn_number > 0:
@@ -165,9 +162,10 @@ func _filter_opponent_entry(result: Dictionary, defender_cells: Array[Vector2i])
 
 
 func _setup_ship_panel() -> void:
-	# The ShipPanelContainer already has a placeholder label child.
-	# We attach the ship_panel script to it and let it build UI.
-	# First, find or create the ship panel control inside the container.
+	# I10-1: ship_panel is now an always-visible accordion of the current
+	# player's fleet. ship_panel.gd's _ready calls refresh_for_turn() to
+	# build the rows from GameState — so by the time _setup_ship_panel
+	# returns, the accordion is already populated and collapsed.
 	var panel_script: Script = preload("res://scripts/ui/ship_panel.gd")
 	ship_panel = Control.new()
 	ship_panel.set_script(panel_script)
@@ -175,6 +173,8 @@ func _setup_ship_panel() -> void:
 	ship_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	ship_panel_container.add_child(ship_panel)
 	ship_panel.action_requested.connect(_on_ship_action_requested)
+	ship_panel.ship_selected.connect(_on_panel_ship_selected)
+	ship_panel.ship_deselected.connect(_on_panel_ship_deselected)
 
 
 func _update_player_label() -> void:
@@ -191,18 +191,13 @@ func _switch_grid(grid: ActiveGrid) -> void:
 	active_camera = command_camera if grid == ActiveGrid.COMMAND else target_camera
 
 
-func _show_left_tab(tab: String) -> void:
-	battle_log_panel.visible = (tab == "battle_log")
-	ship_panel_container.visible = (tab == "ship_panel")
-	battle_log_tab_btn.modulate = Color.WHITE if tab == "battle_log" else Color(0.6, 0.6, 0.6)
-	ship_panel_tab_btn.modulate = Color.WHITE if tab == "ship_panel" else Color(0.6, 0.6, 0.6)
-
-
 func _on_command_grid_pressed() -> void:
 	AudioManager.play_sfx("click")
 	if interaction_state == InteractionState.TARGETING:
 		_cancel_targeting()
 	_switch_grid(ActiveGrid.COMMAND)
+	if ship_panel != null:
+		ship_panel.hide_enemy_panel()
 
 
 func _on_target_grid_pressed() -> void:
@@ -210,12 +205,37 @@ func _on_target_grid_pressed() -> void:
 	_switch_grid(ActiveGrid.TARGET)
 
 
-func _on_battle_log_tab_pressed() -> void:
-	_show_left_tab("battle_log")
+func _on_panel_ship_selected(ship: ShipInstance) -> void:
+	# Header click in the accordion. Mirror the selection on the Command Grid
+	# and force-switch to it so the player can see what they just expanded.
+	# Move-preview locks the active ship: revert the accordion so it matches
+	# the moving ship rather than letting the user yank selection mid-preview.
+	if interaction_state == InteractionState.MOVE_PREVIEW:
+		if selected_ship != null:
+			ship_panel.expand_row_for_ship(selected_ship)
+		return
+	if interaction_state == InteractionState.TARGETING:
+		_cancel_targeting()
+	selected_ship = ship
+	interaction_state = InteractionState.SHIP_SELECTED
+	command_renderer.set_selected_ship(ship)
+	target_renderer.clear_selected_enemy()
+	if active_grid != ActiveGrid.COMMAND:
+		_switch_grid(ActiveGrid.COMMAND)
 
 
-func _on_ship_panel_tab_pressed() -> void:
-	_show_left_tab("ship_panel")
+func _on_panel_ship_deselected() -> void:
+	# Header re-click collapses the row — clear the Command Grid selection
+	# but stay on the current grid (deselecting shouldn't yank the view).
+	# Don't drop the selection mid-move-preview; the submit/cancel buttons
+	# need a live selected_ship reference.
+	if interaction_state == InteractionState.MOVE_PREVIEW:
+		if selected_ship != null:
+			ship_panel.expand_row_for_ship(selected_ship)
+		return
+	selected_ship = null
+	interaction_state = InteractionState.IDLE
+	command_renderer.clear_selected_ship()
 
 
 func _on_command_viewport_gui_input(event: InputEvent) -> void:
@@ -368,16 +388,18 @@ func _try_select_enemy_ship(cell: Vector2i) -> void:
 			selected_ship = null
 			interaction_state = InteractionState.IDLE
 			command_renderer.clear_selected_ship()
+			ship_panel.collapse_all()
 		# Set enemy selection highlight on target grid
 		target_renderer.set_selected_enemy(record.ship)
 		ship_panel.show_enemy_ship(record.ship)
-		_show_left_tab("ship_panel")
 	else:
 		_clear_enemy_selection()
 
 
 func _clear_enemy_selection() -> void:
 	target_renderer.clear_selected_enemy()
+	if ship_panel != null:
+		ship_panel.hide_enemy_panel()
 
 
 func _select_ship(ship: ShipInstance) -> void:
@@ -386,8 +408,7 @@ func _select_ship(ship: ShipInstance) -> void:
 	command_renderer.set_selected_ship(ship)
 	# Clear any enemy selection when selecting own ship (Bug 3)
 	target_renderer.clear_selected_enemy()
-	ship_panel.show_ship(ship)
-	_show_left_tab("ship_panel")
+	ship_panel.expand_row_for_ship(ship)
 
 
 func _deselect_ship() -> void:
@@ -395,7 +416,8 @@ func _deselect_ship() -> void:
 	interaction_state = InteractionState.IDLE
 	command_renderer.clear_selected_ship()
 	target_renderer.clear_selected_enemy()
-	ship_panel.clear_ship()
+	ship_panel.collapse_all()
+	ship_panel.hide_enemy_panel()
 
 
 # ---------------------------------------------------------------------------
@@ -477,12 +499,10 @@ func _execute_targeting_action(cell: Vector2i) -> void:
 	command_renderer.refresh()
 	target_renderer.refresh()
 
-	# Refresh ship panel (kept populated for if/when the user clicks the Ship Panel tab)
+	# Refresh whichever accordion row is currently expanded so the post-action
+	# stat readouts (energy, missiles, etc.) reflect the resolver's writes.
 	if selected_ship != null:
-		ship_panel.show_ship(selected_ship)
-
-	# Surface the freshly-logged action.
-	_show_left_tab("battle_log")
+		ship_panel.refresh_expanded()
 
 	# I8-6: Instant win on last kill. If this action destroyed the opponent's
 	# final living ship, jump straight to victory — skip end-of-turn shield
@@ -667,7 +687,7 @@ func _on_move_confirmed() -> void:
 	command_renderer.refresh()
 	target_renderer.refresh()
 	if selected_ship != null:
-		ship_panel.show_ship(selected_ship)
+		ship_panel.refresh_expanded()
 
 
 # ---------------------------------------------------------------------------

@@ -629,9 +629,10 @@ func _shot_07_probe_revealed() -> void:
 	# auto-switches back to the command grid, so we flip to target grid after.
 	gp.call("_execute_targeting_action", Vector2i(70, 11))
 	gp.call("_switch_grid", 1)  # ActiveGrid.TARGET
-	# Brief wants the battle log visible here, showing the probe entry.
-	# _select_ship() in shot 06 auto-switched to the ship panel tab; flip back.
-	gp.call("_show_left_tab", "battle_log")
+	# I10-1: Battle Log is always visible alongside the accordion now, so no
+	# tab swap is needed here. The accordion still has the probe ship's row
+	# expanded from shot 06; that's fine — the brief frames the target grid +
+	# illuminated probe area as the subject, with the left panel as backdrop.
 	var target_renderer: Node2D = gp.get_node("MainLayout/GridArea/TargetViewport/SubViewport/GridNode")
 	target_renderer.queue_redraw()
 	var command_renderer: Node2D = gp.get_node("MainLayout/GridArea/CommandViewport/SubViewport/GridNode")
@@ -652,11 +653,9 @@ func _shot_08_ship_panel_sliders() -> void:
 	battleship.laser_power_setting = 250
 	battleship.shield_regen_setting = 100
 	gp.call("_select_ship", battleship)
-	gp.call("_show_left_tab", "ship_panel")
-	# Re-run show_ship so the slider widgets reflect the settings we just set.
-	var ship_panel: Variant = gp.get("ship_panel")
-	if ship_panel != null:
-		ship_panel.call("show_ship", battleship)
+	# I10-1: _select_ship now expands the battleship's accordion row, which
+	# refreshes the slider widgets from the live settings we just set above.
+	# No second call needed.
 	await _capture("08_ship_panel_sliders.png")
 
 
@@ -670,12 +669,15 @@ func _shot_08a_ship_panel_tight() -> void:
 	var gp: Node = get_tree().current_scene
 	if gp == null:
 		return
-	gp.call("_show_left_tab", "ship_panel")
+	# I10-1: explicitly expand the battleship row in case shot 08's expansion
+	# was collapsed. The accordion + Battle Log are both always visible now;
+	# the crop slices a vertical band that captures the expanded ship row at
+	# the top and (if it fits) the battle log header below.
 	var ship_panel: Variant = gp.get("ship_panel")
 	if ship_panel != null:
 		var battleship: ShipInstance = _p1_ship("battleship")
 		if battleship != null:
-			ship_panel.call("show_ship", battleship)
+			ship_panel.call("expand_row_for_ship", battleship)
 	await _capture_cropped("08a_ship_panel_tight.png", Rect2i(0, 40, 200, 540))
 
 
@@ -814,8 +816,18 @@ func _shot_12_battle_log_detail() -> void:
 			"move_points_used": 1.0,
 			"energy_used": 50
 		})
-	gp.call("_show_left_tab", "battle_log")
-	await _capture_cropped("12_battle_log_detail.png", Rect2i(0, 40, 200, 540))
+	# I10-1: Battle Log is always visible (no tab swap). Restore the accordion
+	# (shot 10 left the enemy panel up) and collapse all rows. The 1600x900
+	# window splits the LeftPanel as ship-panel-area y=48..616 and battle-log
+	# y=616..900 (2:1 stretch ratio); the original (0, 40, 200, 540) crop
+	# missed the log entirely, so slide the crop down to (0, 360, 200, 540)
+	# — bottom of the (mostly empty) ship-panel area + the full battle log
+	# region with the entries we just added.
+	var ship_panel: Variant = gp.get("ship_panel")
+	if ship_panel != null:
+		ship_panel.call("hide_enemy_panel")
+		ship_panel.call("collapse_all")
+	await _capture_cropped("12_battle_log_detail.png", Rect2i(0, 360, 200, 540))
 
 
 func _shot_14_destroyed_ships() -> void:

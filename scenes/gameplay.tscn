@@ -60,18 +60,13 @@ offset_top = 48.0
 [node name="LeftPanel" type="VBoxContainer" parent="MainLayout"]
 custom_minimum_size = Vector2(200, 0)
 
-[node name="TabButtons" type="HBoxContainer" parent="MainLayout/LeftPanel"]
-
-[node name="BattleLogBtn" type="Button" parent="MainLayout/LeftPanel/TabButtons"]
-size_flags_horizontal = 3
-text = "Battle Log"
-
-[node name="ShipPanelBtn" type="Button" parent="MainLayout/LeftPanel/TabButtons"]
-size_flags_horizontal = 3
-text = "Ship Panel"
+[node name="ShipPanelContainer" type="VBoxContainer" parent="MainLayout/LeftPanel"]
+size_flags_vertical = 3
+size_flags_stretch_ratio = 2.0
 
 [node name="BattleLogPanel" type="ScrollContainer" parent="MainLayout/LeftPanel"]
 size_flags_vertical = 3
+size_flags_stretch_ratio = 1.0
 script = ExtResource("5_blog")
 
 [node name="BattleLogContent" type="VBoxContainer" parent="MainLayout/LeftPanel/BattleLogPanel"]
@@ -79,16 +74,6 @@ size_flags_horizontal = 3
 
 [node name="BattleLogEmpty" type="Label" parent="MainLayout/LeftPanel/BattleLogPanel/BattleLogContent"]
 text = "No events yet."
-theme_override_font_sizes/font_size = 12
-theme_override_colors/font_color = Color(0.5, 0.58, 0.62, 1.0)
-
-[node name="ShipPanelContainer" type="VBoxContainer" parent="MainLayout/LeftPanel"]
-size_flags_vertical = 3
-visible = false
-
-[node name="ShipPanelEmpty" type="Label" parent="MainLayout/LeftPanel/ShipPanelContainer"]
-text = "Click a ship on the\nCommand Grid to select it."
-autowrap_mode = 2
 theme_override_font_sizes/font_size = 12
 theme_override_colors/font_color = Color(0.5, 0.58, 0.62, 1.0)
 
@@ -190,7 +175,5 @@ dialog_text = "Are you sure you want to move this ship?"
 [connection signal="pressed" from="TopBar/CommandGridBtn" to="." method="_on_command_grid_pressed"]
 [connection signal="pressed" from="TopBar/TargetGridBtn" to="." method="_on_target_grid_pressed"]
 [connection signal="pressed" from="TopBar/EndTurnButton" to="." method="_on_end_turn_pressed"]
-[connection signal="pressed" from="MainLayout/LeftPanel/TabButtons/BattleLogBtn" to="." method="_on_battle_log_tab_pressed"]
-[connection signal="pressed" from="MainLayout/LeftPanel/TabButtons/ShipPanelBtn" to="." method="_on_ship_panel_tab_pressed"]
 [connection signal="gui_input" from="MainLayout/GridArea/CommandViewport" to="." method="_on_command_viewport_gui_input"]
 [connection signal="gui_input" from="MainLayout/GridArea/TargetViewport" to="." method="_on_target_viewport_gui_input"]
