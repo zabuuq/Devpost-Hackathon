@@ -872,3 +872,53 @@ Autonomous per top-of-file preferences. Verification falls naturally after I10-1
 - Removed 13 already-shipped rows from "Ideas Surfaced": Click-to-pick-up (I5-5), Stay on Target Grid (I5-6), Hide empty opponent probes (I6-2), Hide enemy ship type (I6-2), Persist battle log across turns (I6-1), Extended victory statistics (I6-4), Hide opponent misses unless near miss (I6-2), Rework scroll + zoom (I5-1), Zoom centered on mouse (I5-1), Persist map view between turns (I5-2), Hide ship destruction on blind hits (I6-3), Show shield breakdown on probed hits (I6-3), Bug: destroyed ships z-order on Target Grid (I3-2 already covered both grids).
 - Reframed the audio row to scope just the missing `ambient_space.ogg`.
 - Added a new row: "Accordion row visual: armor/shield bar in collapsed state" (option (c) deferred per Jason's call).
+
+## /build — Iteration 10 (paused after I10-1, resume on new machine)
+
+Started 2026-04-26. I10-1 shipped + two mid-iteration polish commits. Pausing before I10-2 because Jason needs to source the ambient music file himself; resume by running `/build` on the new machine after `git pull` (commits below are pushed to `origin/main` — see "Push state" below).
+
+### Read this first when resuming
+
+I10-1 is fully checked. Next item is **I10-2 (ambient music drop-in)** — a Jason-blocked file drop. Before doing anything else, confirm `assets/audio/music/ambient_space.ogg` exists (Jason should have dropped it before re-running `/build`). If the file is there: verify it imports cleanly in Godot (no `.import` error) and that toggling Music on the Main Menu starts/stops it. Then mark I10-2 done and proceed to I10-3 (gated three-pause redeploy — smoke test, butler push, devlog draft).
+
+If the file is missing: stop and ask Jason to drop it before continuing.
+
+### Commits landed during the session
+
+In order:
+- `559549d` Complete step I10-1: Always-visible split left panel + accordion ship list
+- `58750cc` Refine I10-1: divider under expanded row + Battle Log header (Jason's polish ask after I10-1 — bottom of expanded accordion row sat flush against the next collapsed header; Battle Log section had no visual marker)
+- `48a48c8` Refine I10-1: pan Command Grid to selected ship from side menu (Jason's polish ask — clicking an accordion header now centers the Command Grid camera on the ship's middle cell, since side-menu selection often needs scrolling)
+
+### What landed in I10-1 + the polish
+
+- **`scenes/gameplay.tscn`** — TabButtons strip deleted. LeftPanel is now a permanent VBox: ShipPanelContainer (stretch ratio 2) + HSeparator + "Battle Log" Label (teal) + BattleLogPanel (stretch ratio 1). The two scene-level tab `pressed` signal connections at the old line 193-194 are gone.
+- **`scripts/ui/ship_panel.gd`** — full rewrite as a 5-row accordion. New API surface: `expand_row_for_ship(ship)` (headless, doesn't emit), `collapse_all()`, `show_enemy_ship(fog)` (hides accordion, shows stripped enemy panel), `hide_enemy_panel()`, `refresh_for_turn()` (rebuilds rows for the current player's fleet), `refresh_expanded()` (re-renders the open row's stats after a state change). Header click emits `ship_selected(ship)` / `ship_deselected()`. Destroyed ships dim, append `" (destroyed)"`, and clicks are no-ops. Each row's detail panel ends with a separator (the polish commit).
+- **`scripts/gameplay.gd`** — `_show_left_tab` and 5 call sites removed. `_select_ship` now calls `expand_row_for_ship`; `_deselect_ship` calls `collapse_all` + `hide_enemy_panel`; `_try_select_enemy_ship` collapses the accordion before calling `show_enemy_ship`. New handlers `_on_panel_ship_selected` / `_on_panel_ship_deselected` mirror Command Grid selection from header clicks (auto-switching to Command Grid if needed). Both handlers are guarded against MOVE_PREVIEW state — clicks during a preview revert the accordion rather than yanking the move's selection. Post-action paths use `refresh_expanded()` so the open row's stats stay live. New helper `_center_command_camera_on_ship(ship)` (the polish commit) is called from `_on_panel_ship_selected` only — Command Grid clicks already see the ship.
+- **`scripts/debug/screenshot_runner.gd`** — `_show_left_tab` calls deleted (lines 634, 817 in old file). `show_ship` calls swapped for `expand_row_for_ship`. Shot 12 crop slid from `(0, 40, 200, 540)` to `(0, 360, 200, 540)` so the always-visible battle log lands inside the frame. Shot 12 also calls `hide_enemy_panel()` + `collapse_all()` before capture (shot 10/11 leaves the enemy panel up).
+
+### Environment gotcha
+
+`godot --headless --path . -- --screenshot` HANGS at "starting" on this Windows install (godot 4.6.1, NVIDIA driver). Use `godot --path . -- --screenshot` (no `--headless`) per CLAUDE.md. Shows a window briefly but completes in ~30s and exits clean. All 18 shots regenerated for the I10-1 commit; spot-checked 05, 07, 08, 08a, 10, 12.
+
+### Push state
+
+Three commits sitting on local `main` ahead of `origin/main` at pause time. **Push them before clearing the session** so the new machine sees them on `git pull`:
+
+```
+git push origin main
+```
+
+(I'll prompt Jason to do this if he hasn't already.)
+
+### Outstanding state at pause time
+
+- **Checklist:** I10-1 checked. I10-2 + I10-3 unchecked.
+- **Working tree:** Clean (after the process-notes pause commit this section is part of).
+- **Branch:** `main`. Local ahead of `origin/main` by 3 (or 4 with this notes commit) — push before clearing.
+- **Build mode:** Autonomous, verification at checkpoints every 3 items per checklist header. Do not switch modes.
+- **Tasks:** session-local; will be empty on resume. Not load-bearing — the checklist is the source of truth.
+
+### Backlog deltas during this session
+
+None. The three I10 backlog rows (Always-visible split, Accordion ship list, Audio file) get pruned in I10-3, not in I10-1.
