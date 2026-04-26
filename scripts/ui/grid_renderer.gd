@@ -26,7 +26,7 @@ const COLOR_WRECKAGE_X: Color = Color(0.55, 0.45, 0.3, 1.0)
 # events ("fresh"), gray for one-turn-old persistent markers. Per-site fade
 # rules are unchanged; only the color constants collapse.
 const COLOR_MARKER_FRESH: Color = Color(1.0, 0.15, 0.15, 1.0)
-const COLOR_MARKER_PERSISTENT: Color = Color(0.6, 0.6, 0.6, 0.4)
+const COLOR_MARKER_PERSISTENT: Color = Color(0.6, 0.6, 0.6, 1.0)
 # I7-6: hostile-red contour around opponent active probe areas on the Command
 # Grid. Drawn only when at least one cell of any of the viewer's living ships
 # sits inside the opponent's probe coverage — presence-based "you're being
