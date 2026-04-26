@@ -18,7 +18,7 @@ const COLOR_PROBE_BORDER: Color = Color(0.4, 0.88, 0.82, 0.9)
 # I7-4: faint "you've looked here" border drawn on cells that were once inside
 # an active probe area but no longer have active coverage. Sits below the active
 # probe fill so live coverage always reads on top.
-const COLOR_HISTORICAL_PROBE: Color = Color(0.5, 0.7, 0.9, 0.25)
+const COLOR_HISTORICAL_PROBE: Color = Color(0.6, 0.6, 0.6, 1.0)
 const COLOR_WRECKAGE: Color = Color(0.35, 0.25, 0.15, 1.0)
 const COLOR_WRECKAGE_X: Color = Color(0.55, 0.45, 0.3, 1.0)
 # I11-1: Unified marker palette across both grids. Hits, misses, and near
