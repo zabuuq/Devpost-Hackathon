@@ -201,6 +201,11 @@ func _build_detail_panel(detail: VBoxContainer, row: Dictionary) -> void:
 	detail.add_child(move_btn)
 	row["move_btn"] = move_btn
 
+	# Bottom rule so the expanded detail visibly closes off before the next
+	# row's collapsed header — without this the Move Ship button sits flush
+	# against the next ship name and reads like one block.
+	detail.add_child(_make_separator())
+
 
 # ---------------------------------------------------------------------------
 # Public API

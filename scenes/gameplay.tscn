@@ -64,6 +64,14 @@ custom_minimum_size = Vector2(200, 0)
 size_flags_vertical = 3
 size_flags_stretch_ratio = 2.0
 
+[node name="BattleLogDivider" type="HSeparator" parent="MainLayout/LeftPanel"]
+theme_override_constants/separation = 4
+
+[node name="BattleLogHeader" type="Label" parent="MainLayout/LeftPanel"]
+text = "Battle Log"
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.36, 0.88, 0.82, 1.0)
+
 [node name="BattleLogPanel" type="ScrollContainer" parent="MainLayout/LeftPanel"]
 size_flags_vertical = 3
 size_flags_stretch_ratio = 1.0
