@@ -20,17 +20,12 @@ const COLOR_PROBE_BORDER: Color = Color(0.4, 0.88, 0.82, 0.9)
 const COLOR_HISTORICAL_PROBE: Color = Color(0.5, 0.7, 0.9, 0.25)
 const COLOR_WRECKAGE: Color = Color(0.35, 0.25, 0.15, 1.0)
 const COLOR_WRECKAGE_X: Color = Color(0.55, 0.45, 0.3, 1.0)
-const COLOR_HIT_FULL: Color = Color(0.8, 0.4, 0.4, 0.9)
-const COLOR_HIT_FADED: Color = Color(0.6, 0.6, 0.6, 0.4)
-const COLOR_MISS_FULL: Color = Color(0.8, 0.4, 0.4, 0.9)
-const COLOR_MISS_FADED: Color = Color(0.6, 0.6, 0.6, 0.4)
-# I7-5: incoming opponent fire markers on Command Grid. Hits = solid red dot.
-# Near misses = orange X. Latest opponent turn draws full alpha; the turn before
-# that draws at half alpha; older entries are skipped ("gone on the third").
-const COLOR_INCOMING_HIT_FULL: Color = Color(1.0, 0.15, 0.15, 1.0)
-const COLOR_INCOMING_HIT_FADED: Color = Color(1.0, 0.15, 0.15, 0.5)
-const COLOR_INCOMING_NEAR_MISS_FULL: Color = Color(1.0, 0.6, 0.2, 0.9)
-const COLOR_INCOMING_NEAR_MISS_FADED: Color = Color(1.0, 0.6, 0.2, 0.45)
+# I11-1: Unified marker palette across both grids. Hits, misses, and near
+# misses all use the same two colors — bright red for the current turn's
+# events ("fresh"), gray for one-turn-old persistent markers. Per-site fade
+# rules are unchanged; only the color constants collapse.
+const COLOR_MARKER_FRESH: Color = Color(1.0, 0.15, 0.15, 1.0)
+const COLOR_MARKER_PERSISTENT: Color = Color(0.6, 0.6, 0.6, 0.4)
 # I7-6: hostile-red contour around opponent active probe areas on the Command
 # Grid. Drawn only when at least one cell of any of the viewer's living ships
 # sits inside the opponent's probe coverage — presence-based "you're being
@@ -165,7 +160,7 @@ func _draw_incoming_fire() -> void:
 func _draw_incoming_hit_dot(cell: Vector2i, full_intensity: bool) -> void:
 	var cx: float = cell.x * CELL_SIZE + CELL_SIZE * 0.5
 	var cy: float = cell.y * CELL_SIZE + CELL_SIZE * 0.5
-	var color: Color = COLOR_INCOMING_HIT_FULL if full_intensity else COLOR_INCOMING_HIT_FADED
+	var color: Color = COLOR_MARKER_FRESH if full_intensity else COLOR_MARKER_PERSISTENT
 	draw_circle(Vector2(cx, cy), CELL_SIZE * 0.30, color)
 
 
@@ -176,7 +171,7 @@ func _draw_incoming_near_miss_x(cell: Vector2i, full_intensity: bool) -> void:
 	var y0: float = cell.y * CELL_SIZE + margin
 	var x1: float = (cell.x + 1) * CELL_SIZE - margin
 	var y1: float = (cell.y + 1) * CELL_SIZE - margin
-	var color: Color = COLOR_INCOMING_NEAR_MISS_FULL if full_intensity else COLOR_INCOMING_NEAR_MISS_FADED
+	var color: Color = COLOR_MARKER_FRESH if full_intensity else COLOR_MARKER_PERSISTENT
 	draw_line(Vector2(x0, y0), Vector2(x1, y1), color, 2.0)
 	draw_line(Vector2(x1, y0), Vector2(x0, y1), color, 2.0)
 
@@ -480,7 +475,7 @@ func _draw_facing_triangle(cell: Vector2i, facing: int) -> void:
 func _draw_blind_hit(cell: Vector2i, full_intensity: bool) -> void:
 	var cx: float = cell.x * CELL_SIZE + CELL_SIZE * 0.5
 	var cy: float = cell.y * CELL_SIZE + CELL_SIZE * 0.5
-	var color: Color = COLOR_HIT_FULL if full_intensity else COLOR_HIT_FADED
+	var color: Color = COLOR_MARKER_FRESH if full_intensity else COLOR_MARKER_PERSISTENT
 	draw_circle(Vector2(cx, cy), CELL_SIZE * 0.28, color)
 
 func _draw_miss_x(cell: Vector2i, full_intensity: bool) -> void:
@@ -489,7 +484,7 @@ func _draw_miss_x(cell: Vector2i, full_intensity: bool) -> void:
 	var y0: float = cell.y * CELL_SIZE + margin
 	var x1: float = (cell.x + 1) * CELL_SIZE - margin
 	var y1: float = (cell.y + 1) * CELL_SIZE - margin
-	var color: Color = COLOR_MISS_FULL if full_intensity else COLOR_MISS_FADED
+	var color: Color = COLOR_MARKER_FRESH if full_intensity else COLOR_MARKER_PERSISTENT
 	draw_line(Vector2(x0, y0), Vector2(x1, y1), color, 2.0)
 	draw_line(Vector2(x1, y0), Vector2(x0, y1), color, 2.0)
 
