@@ -803,3 +803,36 @@ Autonomous per top-of-file preferences. Verification falls naturally after I9-1 
 
 ### Observation on the iteration pattern
 Jason asked for the live backlog list, requested a numbered re-print, then steered the discussion to the underlying mechanic before scoping items. Two design questions surfaced in conversation: (1) what does a probed cell render as (answered (c) + full stats on click), (2) how do ghosts/wreckage behave under the new contract (answered: same per-cell rule). The /iterate review pass surfaced #3 as already-shipped and #1 as auto-fixed by the mechanic change — both findings reduced scope without losing intent. Same pattern as I7 and I8: when the design has been done substantively in the conversation, don't over-interview; confirm the corners and write the spec.
+
+## /build — Iteration 9 (shipped)
+
+Shipped 2026-04-25 in the same session that opened it. Three checklist items, two checkpoints (after I9-1, after I9-2 course correction), one gated three-pause redeploy.
+
+### Commits landed during the iteration
+
+In order:
+- `35e6013` Complete step I9-1: Partial probe reveal — writer + renderer
+- `f29bf59` Complete step I9-2: Docs + How to Play tutorial + screenshot regeneration
+- `64fb9c7` Course correct I9-2: let the screenshot show partial reveal, drop the tutorial rewrite
+- `f87baf7` Refine I9-2 partial-reveal screenshot
+
+### Course correction at I9-2 checkpoint
+
+The first I9-2 commit included a tutorial rewrite of "Probes Are Flashlights" (Gallows Deadpan voice, partial-reveal-aware) plus a partial-reveal note in the screenshot brief. Jason called it back at checkpoint: the mechanic is self-evident in play, and a screenshot beats a paragraph. Reverted the tutorial copy and brief edits verbatim. Spec docs (PRD §4.3, §5.2; spec ActionResolver / FogShipRecord / GridRenderer) stayed in — those are spec-of-record, not user copy.
+
+The screenshot itself went through two iterations. First version: a 7×7 probe at (72, 8) catching 3 of 5 battleship cells plus the full cruiser. Jason wanted it tighter — single battleship cell, with that cell being the front so the facing triangle reads. Final version: probe relocated to (72, 16) catching only the battleship's bow at (70, 13), cruiser relocated to (74, 15) facing east so both its cells land in the same probe area. Crop shifted down to (394, 556).
+
+Lesson: the partial-reveal screenshot is a sharper teacher than any paragraph. The "what you didn't probe is still in the dark" idea reads instantly when the picture shows one ship cell with a triangle and a void where the rest of the hull should be. Don't write what a picture can show.
+
+### Devpost / Devlog deliverables landed
+
+- **Build #1636903** pushed to itch.io via butler. 99.20% patch savings; 566 KiB patch over 618 KiB fresh data. Replaces previous live build #1636747.
+- **Devlog brief** at `docs/claude-cowork/devlog-i9.md` — title "What you didn't probe is still in the dark", ~240 words, three bold lede phrases, Gallows-Deadpan voice. Jason posts it manually from itch.io's Devlog editor.
+- **Backlog cleanup:** removed 4 rows from `docs/backlog.md` — Probe activation outside grid (already shipped), No blind hit on partially probed ships (semantics flipped), Ship visibility around active probes is buggy (umbrella collapsed), Partial probe reveal on ships (long-term row, now shipped).
+
+### Outstanding state at I9-3 close
+
+- **Build:** complete. All checklist items checked.
+- **Branch:** `main`, all I9 commits about to be pushed to `origin/main`.
+- **Live game:** itch.io build #1636903 processing → live shortly.
+- **Next steps for Jason:** post the devlog brief manually. Devpost edit window closes 2026-04-29 (4 days out).
