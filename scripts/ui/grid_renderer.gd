@@ -10,9 +10,6 @@ const GRID_ROWS: int = 20
 const NEBULA_PAD: int = 1280
 
 const NEBULA_TEXTURE: Texture2D = preload("res://assets/backgrounds/nebula.jpg")
-# Source is 5333x3555; grid is 4:1. Horizontal band 5333x1333 centered vertically
-# but shifted up (y=900) to keep the bright bottom-right orange star out of frame.
-const NEBULA_SRC_RECT: Rect2 = Rect2(0, 900, 5333, 1333)
 
 const COLOR_BG: Color = Color(0.08, 0.06, 0.16, 1.0)
 const COLOR_GRID_LINE: Color = Color(0.12, 0.15, 0.25, 0.8)
@@ -80,14 +77,9 @@ func _draw() -> void:
 	_draw_probe_highlight()
 
 func _draw_background() -> void:
-	# I11-3: Extend the nebula draw rect NEBULA_PAD pixels on every side so the
-	# camera can zoom out / pan to the grid edge without exposing the SubViewport
-	# clear color. New dest is 5120x3200 (vs. the playable 2560x640). Source is
-	# the full 5333x3555 texture — its 3:2 aspect maps cleanly onto the larger
-	# dest with near-native scale (~0.96x horizontal, ~0.90x vertical) and avoids
-	# the extreme horizontal stretch the old 4:1 NEBULA_SRC_RECT crop would cause
-	# on a 1.6:1 dest. Grid lines, ships, and overlays still draw only over the
-	# original 0..GRID_COLS*CELL_SIZE x 0..GRID_ROWS*CELL_SIZE region.
+	# Extend the nebula NEBULA_PAD pixels past the grid on every side so the
+	# camera can zoom out / pan without exposing the SubViewport clear color.
+	# Grid lines, ships, and overlays still draw only over the playable cells.
 	var dest := Rect2(
 		-NEBULA_PAD, -NEBULA_PAD,
 		GRID_COLS * CELL_SIZE + 2 * NEBULA_PAD,
