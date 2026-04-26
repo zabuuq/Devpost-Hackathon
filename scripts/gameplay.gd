@@ -97,6 +97,9 @@ func _ready() -> void:
 
 	# Set up ship panel
 	_setup_ship_panel()
+	# I11-2: prime collapsed-row mini bars and reset gray-when-acted state for
+	# the new turn (action_taken flags were cleared by turn_start above).
+	ship_panel.refresh_all_headers()
 
 	# Hide move UI initially
 	move_info_label.visible = false
@@ -519,6 +522,10 @@ func _execute_targeting_action(cell: Vector2i) -> void:
 	# stat readouts (energy, missiles, etc.) reflect the resolver's writes.
 	if selected_ship != null:
 		ship_panel.refresh_expanded()
+	# I11-2: also refresh every collapsed header so the just-acted ship grays
+	# out (action_taken cue) and any shield/armor bar changes are visible even
+	# if the player collapses or scrolls past the active row.
+	ship_panel.refresh_all_headers()
 
 	# I8-6: Instant win on last kill. If this action destroyed the opponent's
 	# final living ship, jump straight to victory — skip end-of-turn shield
@@ -704,6 +711,9 @@ func _on_move_confirmed() -> void:
 	target_renderer.refresh()
 	if selected_ship != null:
 		ship_panel.refresh_expanded()
+	# I11-2: collapsed-row headers need to recolor + update bars after a move
+	# (action_taken flips, ship may have taken damage from collisions, etc.).
+	ship_panel.refresh_all_headers()
 
 
 # ---------------------------------------------------------------------------

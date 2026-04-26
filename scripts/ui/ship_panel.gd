@@ -18,7 +18,9 @@ var _enemy_stats_label: Label = null
 
 # Per-row state. Each entry: {
 #   ship: ShipInstance,
-#   root: Control, header: Button, detail: VBoxContainer,
+#   root: Control, header_box: HBoxContainer, header: Button,
+#   header_shield_bar: ProgressBar, header_armor_bar: ProgressBar,
+#   detail: VBoxContainer,
 #   shield_slider: HSlider, shield_value_label: Label,
 #   laser_slider: HSlider, laser_value_label: Label,
 #   energy_remaining_label: Label,
@@ -84,16 +86,59 @@ func _build_row(ship: ShipInstance) -> Dictionary:
 	_accordion.add_child(root)
 	row["root"] = root
 
+	# I11-2: header is now an HBox of [Button | shield/armor mini bars] so the
+	# collapsed row carries an at-a-glance health readout. modulate is applied
+	# to the HBox in _refresh_header so the gray-when-acted cue cascades to
+	# both the button text and the bars.
+	var header_box := HBoxContainer.new()
+	header_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	root.add_child(header_box)
+	row["header_box"] = header_box
+
 	var header := Button.new()
 	header.text = _row_header_text(ship)
 	header.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_theme_font_size_override("font_size", 13)
-	if ship.is_destroyed:
-		header.modulate = Color(0.5, 0.5, 0.5)
 	header.pressed.connect(func() -> void: _on_header_pressed(ship))
-	root.add_child(header)
+	header_box.add_child(header)
 	row["header"] = header
+
+	var bars_box := VBoxContainer.new()
+	bars_box.size_flags_horizontal = Control.SIZE_SHRINK_END
+	bars_box.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	bars_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bars_box.custom_minimum_size = Vector2(60, 0)
+	bars_box.add_theme_constant_override("separation", 2)
+	header_box.add_child(bars_box)
+
+	var shield_bar := ProgressBar.new()
+	shield_bar.show_percentage = false
+	shield_bar.min_value = 0
+	shield_bar.custom_minimum_size = Vector2(60, 6)
+	shield_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var shield_fill := StyleBoxFlat.new()
+	shield_fill.bg_color = Color(0.3, 0.7, 0.85, 1.0)  # teal/cyan
+	var shield_bg := StyleBoxFlat.new()
+	shield_bg.bg_color = Color(0.1, 0.15, 0.2, 1.0)
+	shield_bar.add_theme_stylebox_override("fill", shield_fill)
+	shield_bar.add_theme_stylebox_override("background", shield_bg)
+	bars_box.add_child(shield_bar)
+	row["header_shield_bar"] = shield_bar
+
+	var armor_bar := ProgressBar.new()
+	armor_bar.show_percentage = false
+	armor_bar.min_value = 0
+	armor_bar.custom_minimum_size = Vector2(60, 6)
+	armor_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var armor_fill := StyleBoxFlat.new()
+	armor_fill.bg_color = Color(0.7, 0.25, 0.25, 1.0)  # dim red
+	var armor_bg := StyleBoxFlat.new()
+	armor_bg.bg_color = Color(0.1, 0.15, 0.2, 1.0)
+	armor_bar.add_theme_stylebox_override("fill", armor_fill)
+	armor_bar.add_theme_stylebox_override("background", armor_bg)
+	bars_box.add_child(armor_bar)
+	row["header_armor_bar"] = armor_bar
 
 	var detail := VBoxContainer.new()
 	detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -102,6 +147,7 @@ func _build_row(ship: ShipInstance) -> Dictionary:
 	row["detail"] = detail
 
 	_build_detail_panel(detail, row)
+	_refresh_header(row)
 	return row
 
 
@@ -293,11 +339,43 @@ func _expand_row_internal(target_row: Dictionary) -> void:
 func _refresh_header(row: Dictionary) -> void:
 	var ship: ShipInstance = row["ship"]
 	var header: Button = row["header"]
+	var header_box: HBoxContainer = row["header_box"]
+	var shield_bar: ProgressBar = row["header_shield_bar"]
+	var armor_bar: ProgressBar = row["header_armor_bar"]
+	var stats: Dictionary = ShipDefinitions.SHIPS[ship.ship_type]
+
 	header.text = _row_header_text(ship)
+
+	# I11-2: three-state modulate. Apply to the HBox so the gray cue cascades
+	# down to the bars too — a destroyed or already-acted ship reads as a
+	# single dimmed unit.
 	if ship.is_destroyed:
-		header.modulate = Color(0.5, 0.5, 0.5)
+		header_box.modulate = Color(0.5, 0.5, 0.5)
+	elif ship.action_taken:
+		header_box.modulate = Color(0.6, 0.6, 0.6)
 	else:
-		header.modulate = Color.WHITE
+		header_box.modulate = Color.WHITE
+
+	# Mini bars: hidden on destroyed rows, otherwise live-tracking the ship's
+	# current shields / armor against its type's max.
+	if ship.is_destroyed:
+		shield_bar.visible = false
+		armor_bar.visible = false
+	else:
+		shield_bar.visible = true
+		armor_bar.visible = true
+		shield_bar.max_value = stats["max_shields"]
+		shield_bar.value = ship.current_shields
+		armor_bar.max_value = stats["max_armor"]
+		armor_bar.value = ship.current_armor
+
+
+# Refresh every row's header — used by gameplay.gd at turn start and after
+# every action so collapsed rows still recolor (action_taken flip) and the
+# mini bars stay current as ships take damage.
+func refresh_all_headers() -> void:
+	for row in _rows:
+		_refresh_header(row)
 
 
 func _row_header_text(ship: ShipInstance) -> String:
