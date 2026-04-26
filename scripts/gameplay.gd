@@ -222,6 +222,22 @@ func _on_panel_ship_selected(ship: ShipInstance) -> void:
 	target_renderer.clear_selected_enemy()
 	if active_grid != ActiveGrid.COMMAND:
 		_switch_grid(ActiveGrid.COMMAND)
+	# Side-menu selection means the player likely can't see the ship — pan
+	# the Command Grid camera so it lands in view. Click-on-grid selection
+	# (_select_ship) skips this since the ship is already on screen.
+	_center_command_camera_on_ship(ship)
+
+
+func _center_command_camera_on_ship(ship: ShipInstance) -> void:
+	var cells: Array[Vector2i] = ship.get_occupied_cells()
+	if cells.is_empty():
+		return
+	var center_cell: Vector2i = cells[cells.size() / 2]
+	command_camera.position = Vector2(
+		float(center_cell.x) * float(CELL_SIZE) + float(CELL_SIZE) / 2.0,
+		float(center_cell.y) * float(CELL_SIZE) + float(CELL_SIZE) / 2.0)
+	_clamp_camera(command_camera)
+	_save_camera_state(command_camera, true)
 
 
 func _on_panel_ship_deselected() -> void:
