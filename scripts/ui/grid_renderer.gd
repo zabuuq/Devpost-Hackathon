@@ -4,6 +4,10 @@ class_name GridRenderer
 const CELL_SIZE: int = 32
 const GRID_COLS: int = 80
 const GRID_ROWS: int = 20
+# I11-3: Pad the nebula draw rect on every side so a zoomed-out / panned camera
+# never sees the SubViewport's flat clear color past the 80x20 playable grid.
+# 1280px == one grid-width of slack, comfortably more than any zoom-out frame.
+const NEBULA_PAD: int = 1280
 
 const NEBULA_TEXTURE: Texture2D = preload("res://assets/backgrounds/nebula.jpg")
 # Source is 5333x3555; grid is 4:1. Horizontal band 5333x1333 centered vertically
@@ -76,8 +80,21 @@ func _draw() -> void:
 	_draw_probe_highlight()
 
 func _draw_background() -> void:
-	var dest := Rect2(0.0, 0.0, GRID_COLS * CELL_SIZE, GRID_ROWS * CELL_SIZE)
-	draw_texture_rect_region(NEBULA_TEXTURE, dest, NEBULA_SRC_RECT)
+	# I11-3: Extend the nebula draw rect NEBULA_PAD pixels on every side so the
+	# camera can zoom out / pan to the grid edge without exposing the SubViewport
+	# clear color. New dest is 5120x3200 (vs. the playable 2560x640). Source is
+	# the full 5333x3555 texture — its 3:2 aspect maps cleanly onto the larger
+	# dest with near-native scale (~0.96x horizontal, ~0.90x vertical) and avoids
+	# the extreme horizontal stretch the old 4:1 NEBULA_SRC_RECT crop would cause
+	# on a 1.6:1 dest. Grid lines, ships, and overlays still draw only over the
+	# original 0..GRID_COLS*CELL_SIZE x 0..GRID_ROWS*CELL_SIZE region.
+	var dest := Rect2(
+		-NEBULA_PAD, -NEBULA_PAD,
+		GRID_COLS * CELL_SIZE + 2 * NEBULA_PAD,
+		GRID_ROWS * CELL_SIZE + 2 * NEBULA_PAD
+	)
+	var src := Rect2(0, 0, NEBULA_TEXTURE.get_width(), NEBULA_TEXTURE.get_height())
+	draw_texture_rect_region(NEBULA_TEXTURE, dest, src)
 
 func _draw_grid_lines() -> void:
 	var grid_w: float = GRID_COLS * CELL_SIZE
