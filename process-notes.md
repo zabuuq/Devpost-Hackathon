@@ -922,4 +922,22 @@ git push origin main
 ### Backlog deltas during this session
 
 - I10-2 cancellation: the `Audio: source and add ambient music file` row was reframed in `docs/backlog.md` as `Audio: ambient music`, capturing that the AudioManager music API and the GameState flag were both removed (so picking it back up is a multi-file restoration, not a file drop).
-- The Always-visible split + Accordion ship list rows still get pruned in I10-3, not earlier.
+- I10-3 final cleanup: pruned `Always-visible split left panel: ship panel + battle log` and `Ship Panel as accordion ship list` from the Ideas Surfaced table. The reframed `Audio: ambient music` row stays.
+
+### I10 build summary
+
+Iteration scope: kill the tab strip on the gameplay screen left panel and replace the single-ship Ship Panel with a 5-row accordion. Music drop-in was scoped in but cancelled mid-iteration — see I10-2 cancellation note above. Final commit sequence:
+
+- `559549d` Complete step I10-1: Always-visible split left panel + accordion ship list
+- `58750cc` Refine I10-1: divider under expanded row + Battle Log header
+- `48a48c8` Refine I10-1: pan Command Grid to selected ship from side menu
+- `9401961` Document I10 pause state for resume on new machine
+- `48a8de1` Cancel I10-2: rip out music wiring, defer ambient music to backlog
+- (this commit) Complete step I10-3: Redeploy + devlog draft + backlog cleanup
+- Build pushed: `#1639077` (previous live: `#1636903`). Patch 6.08 MiB, 91.24% savings, butler re-used 91.16% of old data.
+- Devlog draft at `docs/claude-cowork/devlog-i10.md` — Gallows-Deadpan voice, three bold ledes ("The tab strip nobody loved", "Ship Panel is now your fleet, not just one hull", "Music waits for another day"). Jason said "ship it" so the draft went in verbatim.
+- Backlog rows pruned in this iteration: 2 (down from the 3 originally planned because the audio row stays in reframed form).
+- No screenshot regen required — the existing 18-shot set captures the new accordion via `expand_row_for_ship` calls that the runner already uses (was updated in the I10-1 commit).
+- Smoke test (Gate 1) passed in the local browser at `http://localhost:8000/index.html`. Butler push (Gate 2) ran clean. Devlog draft (Gate 3) approved by "ship it".
+
+Next iteration entry point: read `docs/checklist.md` for I11 scoping, or take a `/scope` pass on `docs/backlog.md` to pick the next bundle.
