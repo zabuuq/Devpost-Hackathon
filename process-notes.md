@@ -877,11 +877,11 @@ Autonomous per top-of-file preferences. Verification falls naturally after I10-1
 
 Started 2026-04-26. I10-1 shipped + two mid-iteration polish commits. Pausing before I10-2 because Jason needs to source the ambient music file himself; resume by running `/build` on the new machine after `git pull` (commits below are pushed to `origin/main` — see "Push state" below).
 
+> **2026-04-26 follow-up — I10-2 cancelled.** After resuming on the new machine, Jason decided not to ship music this round. Music wiring (toggle button, `AudioManager.play_music`/`stop_music`/`set_music_enabled`, `_music_player`, `MUSIC_PATH`, `GameState.music_enabled`) was ripped out the same day. The audio row went back to `docs/backlog.md` as `Audio: ambient music` with full restoration steps. Checklist I10-2 marked `[~] CANCELLED 2026-04-26`. The next live item is **I10-3** (the gated three-pause redeploy). Cancellation commit follows the polish commits.
+
 ### Read this first when resuming
 
-I10-1 is fully checked. Next item is **I10-2 (ambient music drop-in)** — a Jason-blocked file drop. Before doing anything else, confirm `assets/audio/music/ambient_space.ogg` exists (Jason should have dropped it before re-running `/build`). If the file is there: verify it imports cleanly in Godot (no `.import` error) and that toggling Music on the Main Menu starts/stops it. Then mark I10-2 done and proceed to I10-3 (gated three-pause redeploy — smoke test, butler push, devlog draft).
-
-If the file is missing: stop and ask Jason to drop it before continuing.
+I10-1 is fully checked. I10-2 has been **cancelled** (see follow-up note above). Skip it and proceed directly to **I10-3 (gated three-pause redeploy — smoke test, butler push, devlog draft)**. Note that the smoke test and devlog no longer mention music; the backlog cleanup in I10-3 now removes only two rows (the audio row stays, reframed).
 
 ### Commits landed during the session
 
@@ -913,12 +913,13 @@ git push origin main
 
 ### Outstanding state at pause time
 
-- **Checklist:** I10-1 checked. I10-2 + I10-3 unchecked.
-- **Working tree:** Clean (after the process-notes pause commit this section is part of).
-- **Branch:** `main`. Local ahead of `origin/main` by 3 (or 4 with this notes commit) — push before clearing.
+- **Checklist:** I10-1 checked. I10-2 cancelled (see follow-up note at top of section). I10-3 unchecked.
+- **Working tree:** Clean (after the process-notes pause commit this section is part of, plus the I10-2 cancellation commit landed 2026-04-26).
+- **Branch:** `main`. After cancellation commit, push before clearing.
 - **Build mode:** Autonomous, verification at checkpoints every 3 items per checklist header. Do not switch modes.
 - **Tasks:** session-local; will be empty on resume. Not load-bearing — the checklist is the source of truth.
 
 ### Backlog deltas during this session
 
-None. The three I10 backlog rows (Always-visible split, Accordion ship list, Audio file) get pruned in I10-3, not in I10-1.
+- I10-2 cancellation: the `Audio: source and add ambient music file` row was reframed in `docs/backlog.md` as `Audio: ambient music`, capturing that the AudioManager music API and the GameState flag were both removed (so picking it back up is a multi-file restoration, not a file drop).
+- The Always-visible split + Accordion ship list rows still get pruned in I10-3, not earlier.

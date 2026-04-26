@@ -22,7 +22,6 @@ The entry point when the browser loads.
 - Start Game button
 - How to Play button — opens an in-screen reference with text and images walking through gameplay steps and UI overview
 - Sound toggle (on/off)
-- Music toggle (on/off)
 
 No separate options screen — toggles live directly on the menu.
 
@@ -257,14 +256,13 @@ The Cruiser may take **2 move actions per turn** (costs 100 energy total if both
 
 | Sound | Type |
 |---|---|
-| Ambient space atmosphere | Music (toggleable) |
 | Laser fire | SFX |
 | Missile launch | SFX |
 | Probe deploy | SFX |
 | Explosion (ship destroyed) | SFX |
 | Hit (non-destroy) | SFX |
 
-Sound and music controlled independently via Main Menu toggles.
+SFX controlled via the Main Menu SFX toggle. Ambient music was deferred during I10 — see `backlog.md > Audio: ambient music` for the restoration steps.
 
 ---
 

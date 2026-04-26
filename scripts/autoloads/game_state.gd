@@ -8,7 +8,6 @@ var turn_number: int = 0
 var last_turn_hits: int = 0
 var last_turn_results: Array = []  # action results from opponent's turn, replayed into battle log
 var sfx_enabled: bool = true
-var music_enabled: bool = true
 
 const BATTLE_LOG_CAP: int = 200
 

@@ -24,7 +24,7 @@
   butler push ./export/web <username>/<game-slug>:html5
   ```
 - **One-time manual step on itch.io:** Edit game → Kind of project: HTML → mark channel as "Playable in browser."
-- **Audio unlock:** Browsers block audio autoplay. Call `AudioServer.unlock()` on first input in `splash.tscn`. After that, all music and SFX fire normally.
+- **Audio unlock:** Browsers block audio autoplay. Call `AudioServer.unlock()` on first input in `splash.tscn`. After that, SFX fire normally. (Music is currently deferred — see `backlog.md > Audio: ambient music`.)
 
 ---
 
@@ -36,7 +36,7 @@
 │                                                             │
 │  Autoloads (singletons, always loaded)                      │
 │  ├── GameState          ← all runtime game data             │
-│  └── AudioManager       ← SFX + music control              │
+│  └── AudioManager       ← SFX control                      │
 │                                                             │
 │  Active Scene (swapped by Main.tscn)                        │
 │  ├── splash.tscn        → main_menu.tscn                    │
@@ -103,12 +103,10 @@ var players: Array = [
 
 Singleton. Wraps Godot's `AudioStreamPlayer` nodes. Exposes:
 - `play_sfx(name: String)` — plays named SFX one-shot
-- `play_music(name: String)` — starts looping music track
-- `stop_music()`
+- `play_action_sfx(result: Dictionary)` — convenience wrapper that picks the right SFX (and queues a delayed impact SFX) for an action result
 - `set_sfx_enabled(enabled: bool)`
-- `set_music_enabled(enabled: bool)`
 
-Music and SFX enabled states persisted in `GameState` (read from main menu toggles).
+SFX-enabled state persisted in `GameState` (read from main menu toggle). Music API is deferred — see `backlog.md > Audio: ambient music`.
 
 ---
 
@@ -122,7 +120,6 @@ Implements `prd.md > 2.1 Main Menu` (entry point).
 - Game name centered on screen
 - "Press any key to load game" prompt
 - On any `_input` event: call `AudioServer.unlock()` → transition to `main_menu.tscn`
-- No music on splash — first music starts on main menu
 
 ### Main Menu
 `scenes/main_menu.tscn` | `scripts/main_menu.gd`
@@ -131,8 +128,6 @@ Implements `prd.md > 2.1 Main Menu`.
 - Start Game button → loads `fleet_placement.tscn`, sets `GameState.current_player = 0`
 - How to Play button → opens in-screen overlay with gameplay reference (text + images)
 - Sound toggle (on/off) → `AudioManager.set_sfx_enabled()`
-- Music toggle (on/off) → `AudioManager.set_music_enabled()`
-- Ambient music starts here (first scene after audio unlock)
 - All buttons play click SFX
 
 ### Fleet Placement
@@ -636,7 +631,6 @@ Implements `prd.md > 10. Audio`.
 
 | Sound | Type | File |
 |---|---|---|
-| Ambient space atmosphere | Music (looping) | `audio/music/ambient_space.ogg` |
 | Laser fire | SFX | `audio/sfx/laser.ogg` |
 | Missile launch | SFX | `audio/sfx/missile.ogg` |
 | Probe deploy | SFX | `audio/sfx/probe.ogg` |
@@ -644,9 +638,9 @@ Implements `prd.md > 10. Audio`.
 | Hit (non-destroy) | SFX | `audio/sfx/hit.ogg` |
 | UI button click | SFX | `audio/sfx/click.ogg` |
 
-**Audio unlock:** `AudioServer.unlock()` called on first input in `splash.tscn`. Ambient music starts on `main_menu.tscn`. All SFX available immediately after splash.
+**Audio unlock:** `AudioServer.unlock()` called on first input in `splash.tscn`. All SFX available immediately after splash.
 
-Music and SFX controlled independently via toggles on main menu. States stored in `GameState`, read by `AudioManager`.
+SFX controlled via the SFX toggle on main menu. State stored in `GameState`, read by `AudioManager`. Music is currently deferred — see `backlog.md > Audio: ambient music`.
 
 ---
 
@@ -675,7 +669,7 @@ battlestations-nebula/                   ← project root
 ├── scripts/
 │   ├── autoloads/
 │   │   ├── game_state.gd                ← singleton; all runtime state
-│   │   └── audio_manager.gd             ← singleton; SFX + music
+│   │   └── audio_manager.gd             ← singleton; SFX (music deferred)
 │   ├── data/
 │   │   └── ship_definitions.gd          ← static ship stats + FLEET constant
 │   ├── gameplay/
@@ -701,8 +695,6 @@ battlestations-nebula/                   ← project root
 │   │   ├── backgrounds/                 ← nebula texture
 │   │   └── ui/                          ← buttons, icons, panel frames, reticule
 │   └── audio/
-│       ├── music/
-│       │   └── ambient_space.ogg
 │       └── sfx/
 │           ├── laser.ogg
 │           ├── missile.ogg

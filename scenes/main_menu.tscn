@@ -82,10 +82,6 @@ text = "How to Play"
 custom_minimum_size = Vector2(300, 50)
 text = "SFX: ON"
 
-[node name="MusicToggle" type="Button" parent="MenuContainer"]
-custom_minimum_size = Vector2(300, 50)
-text = "Music: ON"
-
 [node name="HowToPlayOverlay" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -184,7 +180,6 @@ text = "Close"
 [connection signal="pressed" from="MenuContainer/StartGame" to="." method="_on_start_pressed"]
 [connection signal="pressed" from="MenuContainer/HowToPlay" to="." method="_on_how_to_play_pressed"]
 [connection signal="pressed" from="MenuContainer/SFXToggle" to="." method="_on_sfx_toggle_pressed"]
-[connection signal="pressed" from="MenuContainer/MusicToggle" to="." method="_on_music_toggle_pressed"]
 [connection signal="pressed" from="HowToPlayOverlay/Panel/NavRow/PreviousButton" to="." method="_on_previous_page_pressed"]
 [connection signal="pressed" from="HowToPlayOverlay/Panel/NavRow/NextButton" to="." method="_on_next_page_pressed"]
 [connection signal="pressed" from="HowToPlayOverlay/Panel/NavRow/CloseButton" to="." method="_on_close_overlay_pressed"]
