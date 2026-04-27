@@ -804,7 +804,7 @@ Five items: I12-1 imports assets + builds the project-wide Theme resource. I12-2
   - A verification observation block exists in `process-notes.md` with screen-by-screen notes.
   Verify: Run the project end-to-end. Confirm the title font on the main menu has changed to Kenney Future Narrow and Buttons render with the grey Kenney art instead of Godot's default. Confirm the hot-seat handoff screen and victory screen also pick up the theme. Confirm the gameplay grids (Target / Command), probe overlays, hit/miss markers, and ship sprites in the SubViewport are visually unchanged.
 
-- [ ] **I12-3. Override cleanup in lighter UI scripts (main_menu, handoff, victory, splash, fleet_placement) + apply HeaderButton variation**
+- [x] **I12-3. Override cleanup in lighter UI scripts (main_menu, handoff, victory, splash, fleet_placement) + apply HeaderButton variation**
   Spec ref: Cleanup pass following I12-2; applies the `HeaderButton` theme variation defined in I12-1 to primary CTAs.
   What to build: Touch only these scripts:
   - **`scripts/main_menu.gd`** — currently builds the menu UI in code with various `add_theme_*_override` calls. Identify any `font_size` / generic `font_color` / panel-style overrides that the global theme now handles, and delete them. KEEP overrides that carry semantic meaning (e.g., the SFX-on / SFX-off toggle highlight, any "title" font sized larger than the default 13pt — those should stay larger). Apply the `HeaderButton` type variation to the Start Game button and How to Play button via `start_button.set_type_variation("HeaderButton")` after instantiation.
