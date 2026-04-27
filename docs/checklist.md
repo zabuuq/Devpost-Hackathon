@@ -897,7 +897,7 @@ Five items: I12-1 imports assets + builds the project-wide Theme resource. I12-2
   - When zooming in or out on any grid, the nebula stays static (does not zoom with the grid).
   Verify: Launch the game. **Fleet placement** — confirm the new nebula appears behind the placement grid and stays static when you zoom in or out. The LeftPanel chrome doesn't have nebula behind it (only the grid area). **Gameplay** — confirm the nebula appears behind both Command Grid and Target Grid (switching between them keeps the same static nebula visible) and stays static at any zoom level. Zoom all the way in and all the way out — the grid moves, the nebula doesn't.
 
-- [ ] **I13-3. Fleet placement layout rework — remove right panel, fold details into left panel**
+- [x] **I13-3. Fleet placement layout rework — remove right panel, fold details into left panel**
   Spec ref: `prd.md > 2.2 Fleet Placement — Player 1` (current spec describes a left ship list, center grid, right ship-detail panel — this item collapses left + right into a single left panel and gives the freed width to the grid).
   What to build:
   - **`scenes/fleet_placement.tscn`** — delete the `RightPanel` VBoxContainer node (`HSplitContainer/RightPanel` and all its children: `DetailLabel`, `DetailPanel`, `ShipName`, `ShipStats`).

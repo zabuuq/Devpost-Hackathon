@@ -12,7 +12,7 @@ const GRID_ROWS: int = 30
 # Background ColorRect, which the static nebula overlays.
 
 const COLOR_BG: Color = Color(0.08, 0.06, 0.16, 1.0)
-const COLOR_GRID_LINE: Color = Color(0.12, 0.15, 0.25, 0.8)
+const COLOR_GRID_LINE: Color = Color(0.7, 0.78, 0.85, 0.6)
 const COLOR_PROBE_FILL: Color = Color(0.0, 0.0, 0.0, 0.45)
 const COLOR_PROBE_BORDER: Color = Color(0.4, 0.88, 0.82, 0.9)
 # I7-4: faint "you've looked here" border drawn on cells that were once inside

@@ -38,7 +38,7 @@ The spine of the visual identity. Warm-purple nebula-edge navy, teal accents pul
 | `#5ce0d1` | `Color(0.36, 0.88, 0.82, 1.0)` | Primary teal / title accent (pulled from the nebula's cloud core, used everywhere a color acts as a "link" or an active/selected heading) | `scenes/main_menu.tscn:55`, `scenes/main_menu.tscn:62`, `scenes/main_menu.tscn:120`, `scenes/fleet_placement.tscn:31`, `scenes/gameplay.tscn:38`, `scripts/ui/ship_panel.gd:34` |
 | `#3366ff` | `Color(0.2, 0.4, 1.0, 1.0)` | Battleship ship tint (also primary CTA on itch.io, legacy from old palette) | `scripts/ui/grid_renderer.gd:23` (`SHIP_COLORS.battleship`) |
 | `#66e0d1` | `Color(0.4, 0.88, 0.82, 0.9)` | Probe halo ring (rebuilt around the new primary teal) | `scripts/ui/grid_renderer.gd:16` (`COLOR_PROBE_BORDER`) |
-| `#1f2640` (α `cc`) | `Color(0.12, 0.15, 0.25, 0.8)` | Grid line (deeper, cooler indigo so nebula doesn't drown it) | `scripts/ui/grid_renderer.gd:14` (`COLOR_GRID_LINE`) |
+| `#b3c7d9` (α `99`) | `Color(0.7, 0.78, 0.85, 0.6)` | Grid line (soft blue-tinted near-white, retuned in I13-2 polish so it reads against the brighter Midjourney nebula) | `scripts/ui/grid_renderer.gd:15` (`COLOR_GRID_LINE`) |
 | `#99b8cc` | `Color(0.6, 0.72, 0.8, 1.0)` | Default body text (soft blue-teal, readable on the dimmed nebula and on `#141028`) | `scenes/main_menu.tscn:68`, `scenes/main_menu.tscn:174` |
 | `#ffffff` | `Color(1, 1, 1, 1)` | Pure white (button text, default label text on splash) | convention |
 
@@ -73,8 +73,9 @@ Note: the grid renderer and the fleet placement scene each carry their own ghost
 
 | Hex | `Color()` | Role | Source |
 |---|---|---|---|
-| `#1f2640` (α `cc`) | `Color(0.12, 0.15, 0.25, 0.8)` | Grid line (gameplay + target grids) | `scripts/ui/grid_renderer.gd:14` |
-| `#263352` (α `99`) | `Color(0.15, 0.2, 0.32, 0.6)` | Grid line (fleet placement scene, slightly lighter to compensate for the lower alpha) | `scripts/fleet_placement.gd:192` |
+| `#b3c7d9` (α `99`) | `Color(0.7, 0.78, 0.85, 0.6)` | Grid line (gameplay + target grids; soft blue-tinted near-white, retuned in I13-2 polish for the brighter Midjourney nebula) | `scripts/ui/grid_renderer.gd:15` |
+| `#b3c7d9` (α `99`) | `Color(0.7, 0.78, 0.85, 0.6)` | Grid line (fleet placement scene, matched to gameplay in I13-2 polish) | `scripts/fleet_placement.gd:268` |
+| `#737373` | `Color(0.45, 0.45, 0.45, 1.0)` | Nebula TextureRect modulate (gameplay + fleet placement; dims the static MJ nebula 45% so grid + ship layers read on top) | `scenes/gameplay.tscn` `MainLayout/GridArea/NebulaBackground`, `scenes/fleet_placement.tscn` `HSplitContainer/GridArea/NebulaBackground` |
 | `#000000` (α `73`) | `Color(0.0, 0.0, 0.0, 0.45)` | Probe illumination fill (landed in I3-1 cont., dims the nebula inside probed cells so fog-reveal reads as "lit" against the unprobed cloud) | `scripts/ui/grid_renderer.gd:15` (`COLOR_PROBE_FILL`) |
 | `#66e0d1` (α `e6`) | `Color(0.4, 0.88, 0.82, 0.9)` | Probe illumination border (new primary teal) | `scripts/ui/grid_renderer.gd:16` (`COLOR_PROBE_BORDER`) |
 | `#594026` | `Color(0.35, 0.25, 0.15, 1.0)` | Wreckage hull (kept, charred brown reads as inert) | `scripts/ui/grid_renderer.gd:17` (`COLOR_WRECKAGE`) |
@@ -90,7 +91,7 @@ All text renders either on the dimmed nebula (static scenes, 0.45 black overlay)
 
 | Hex | `Color()` | Role | Source |
 |---|---|---|---|
-| `#5ce0d1` | `Color(0.36, 0.88, 0.82, 1.0)` | Primary teal (game title, section titles, active tabs, ship names) | `scenes/main_menu.tscn:55`, `scenes/main_menu.tscn:62`, `scenes/main_menu.tscn:120`, `scenes/fleet_placement.tscn:31`, `scenes/gameplay.tscn:38`, `scripts/ui/ship_panel.gd:34` |
+| `#5ce0d1` | `Color(0.36, 0.88, 0.82, 1.0)` | Primary teal (game title, section titles, active tabs, ship names) | `scenes/splash.tscn` (TitleLine1, TitleLine2), `scenes/main_menu.tscn:55`, `scenes/main_menu.tscn:62`, `scenes/main_menu.tscn:120`, `scenes/fleet_placement.tscn:31`, `scenes/gameplay.tscn:38`, `scripts/ui/ship_panel.gd:34` |
 | `#99ebde` | `Color(0.6, 0.92, 0.87, 1.0)` | Sub-heading (fleet placement panel labels, lighter variant of primary teal) | `scenes/fleet_placement.tscn:47`, `scenes/fleet_placement.tscn:87` |
 | `#66e6d9` | `Color(0.4, 0.9, 0.85, 1.0)` | Victory screen accent (winner title, stat labels, a brighter teal for celebratory weight) | `scenes/victory.tscn:60`, `scenes/victory.tscn:67`, `scenes/victory.tscn:74`, `scenes/victory.tscn:90`, `scenes/victory.tscn:115` |
 

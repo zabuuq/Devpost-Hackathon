@@ -265,7 +265,7 @@ func _is_placement_valid(stype: String, origin: Vector2i, facing: int) -> bool:
 func _draw_grid() -> void:
 	# I13-2: No nebula draw here. It's a static TextureRect in screen space
 	# behind the SubViewport (which is transparent). Grid lines + ships only.
-	var line_color := Color(0.15, 0.2, 0.32, 0.6)
+	var line_color := Color(0.7, 0.78, 0.85, 0.6)
 	for col in range(GRID_COLS + 1):
 		var x: float = col * CELL_SIZE
 		grid_node.draw_line(Vector2(x, 0), Vector2(x, GRID_ROWS * CELL_SIZE), line_color, 1.0)
