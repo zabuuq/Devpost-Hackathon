@@ -821,7 +821,7 @@ Five items: I12-1 imports assets + builds the project-wide Theme resource. I12-2
   - No regressions in scene-flow logic.
   Verify: Run the game; walk splash → menu → placement → handoff → gameplay → victory. Confirm primary CTAs are blue (HeaderButton), secondary chrome is grey (default), titles are larger than body text, and per-ship tinted buttons in placement keep their colors.
 
-- [ ] **I12-4. Override cleanup + re-skin in `ship_panel.gd`, `battle_log.gd`, `gameplay.gd` (hover tooltip + ship-info panel)**
+- [x] **I12-4. Override cleanup + re-skin in `ship_panel.gd`, `battle_log.gd`, `gameplay.gd` (hover tooltip + ship-info panel)**
   Spec ref: Heavier-weight cleanup pass for the gameplay-screen UI scripts, where the most existing `add_theme_*_override` calls live.
   What to build: Three scripts, three different cleanup strategies.
   1. **`scripts/ui/ship_panel.gd`** — the densest script (~487 lines, most theme overrides).
