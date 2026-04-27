@@ -564,7 +564,7 @@ func _shot_05c_target_grid_mixed() -> void:
 				fog = battleship_fog
 			elif cruiser_cells.has(cell):
 				fog = cruiser_fog
-			cell_records[cell] = CellRecord.make_probe(fog, 2)
+			cell_records[cell] = CellRecord.make_probe(fog, 2, 1)
 	# Switch to target grid. cam_center_col=72 puts the probe at window center
 	# horizontally; cam y stays at grid center so all 20 rows fit in the
 	# viewport. The crop is shifted DOWN to capture the lower portion of the
@@ -749,7 +749,7 @@ func _shot_10_active_probe_enemy_panel() -> void:
 			var cell_fog: FogShipRecord = null
 			if bs_cells.has(cell):
 				cell_fog = fog
-			cell_records[cell] = CellRecord.make_probe(cell_fog, 2)
+			cell_records[cell] = CellRecord.make_probe(cell_fog, 2, 1)
 	await _change_scene("res://scenes/gameplay.tscn")
 	var gp: Node = get_tree().current_scene
 	if gp == null:

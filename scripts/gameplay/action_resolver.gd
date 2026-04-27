@@ -41,6 +41,7 @@ func resolve_probe(acting_ship: ShipInstance, target_cell: Vector2i, player_idx:
 	var player_data: Dictionary = GameState.players[player_idx]
 	var cell_records: Dictionary = player_data.cell_records
 	var opponent_fleet: Array = GameState.players[1 - player_idx].fleet
+	var turn_number: int = player_data["turns_played"] + 1
 
 	# Build probe area, clamped to grid bounds
 	var half: int = probe_size / 2
@@ -63,8 +64,10 @@ func resolve_probe(acting_ship: ShipInstance, target_cell: Vector2i, player_idx:
 				if not detected_ships.has(enemy_ship):
 					detected_ships.append(enemy_ship)
 
-			# Create or overwrite the cell record (clears ghost / blind hit data)
-			var record := CellRecord.make_probe(fog_ship, expires_in)
+			# Create or overwrite the cell record (clears ghost / blind hit data).
+			# Always a fresh CellRecord, so last_probe_turn is reset to the new
+			# turn number rather than carrying stale data from a prior probe.
+			var record := CellRecord.make_probe(fog_ship, expires_in, turn_number)
 			cell_records[cell] = record
 
 	# Partial reveal contract (I9-1): only cells literally inside the probe area
@@ -81,7 +84,7 @@ func resolve_probe(acting_ship: ShipInstance, target_cell: Vector2i, player_idx:
 		for cell in wreck_cells:
 			var inside: bool = cell.x >= x_min and cell.x <= x_max and cell.y >= y_min and cell.y <= y_max
 			if inside:
-				cell_records[cell] = CellRecord.make_probe(wreck_fog, expires_in)
+				cell_records[cell] = CellRecord.make_probe(wreck_fog, expires_in, turn_number)
 
 	ships_detected = detected_ships.size()
 

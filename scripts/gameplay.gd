@@ -58,6 +58,12 @@ var move_preview_new_facing: int = 0
 var targeting_action: String = ""
 var targeting_ship: ShipInstance = null
 
+# Target Grid hover tooltip (I11-4): shows event history on Target Grid cells
+# that have been probed/hit/missed. Created at runtime in _ready() and parented
+# to the gameplay root so it renders above the SubViewport in screen space.
+var hover_tooltip: PanelContainer = null
+var hover_tooltip_label: Label = null
+
 
 func _ready() -> void:
 	GameState.phase = GameState.Phase.GAMEPLAY
@@ -109,6 +115,14 @@ func _ready() -> void:
 	move_submit_btn.pressed.connect(_on_move_submit_pressed)
 	move_cancel_btn.pressed.connect(_on_move_cancel_pressed)
 	confirm_dialog.confirmed.connect(_on_move_confirmed)
+
+	# I11-4: Target Grid hover tooltip widget. Built at runtime so it lives in
+	# screen space above the SubViewportContainer (top_level + high z_index)
+	# rather than being clipped to a particular grid container.
+	_setup_hover_tooltip()
+	# Hide the tooltip when the mouse leaves the Target Grid container so a
+	# stale tooltip doesn't linger over the left panel or top bar.
+	target_viewport.mouse_exited.connect(_hide_hover_tooltip)
 
 
 func _collect_defender_living_cells() -> Array[Vector2i]:
@@ -192,6 +206,9 @@ func _switch_grid(grid: ActiveGrid) -> void:
 	command_tab_btn.modulate = Color.WHITE if grid == ActiveGrid.COMMAND else Color(0.6, 0.6, 0.6)
 	target_tab_btn.modulate = Color.WHITE if grid == ActiveGrid.TARGET else Color(0.6, 0.6, 0.6)
 	active_camera = command_camera if grid == ActiveGrid.COMMAND else target_camera
+	# I11-4: hide the Target Grid hover tooltip whenever we leave Target Grid.
+	if grid != ActiveGrid.TARGET:
+		_hide_hover_tooltip()
 
 
 func _on_command_grid_pressed() -> void:
@@ -802,3 +819,124 @@ func _on_end_turn_pressed() -> void:
 	AudioManager.play_sfx("click")
 	_deselect_ship()
 	turn_manager.turn_end()
+
+
+# ---------------------------------------------------------------------------
+# Target Grid hover tooltip (I11-4)
+# ---------------------------------------------------------------------------
+
+func _setup_hover_tooltip() -> void:
+	# Build a small, dark PanelContainer + Label and parent it to the gameplay
+	# scene root. top_level positions in screen space; mouse_filter = IGNORE
+	# keeps clicks falling through to the SubViewportContainer below.
+	hover_tooltip = PanelContainer.new()
+	hover_tooltip.top_level = true
+	hover_tooltip.visible = false
+	hover_tooltip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hover_tooltip.z_index = 100
+	hover_tooltip.z_as_relative = false
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.08, 0.12, 0.92)
+	style.corner_radius_top_left = 2
+	style.corner_radius_top_right = 2
+	style.corner_radius_bottom_left = 2
+	style.corner_radius_bottom_right = 2
+	style.content_margin_left = 6
+	style.content_margin_right = 6
+	style.content_margin_top = 4
+	style.content_margin_bottom = 4
+	hover_tooltip.add_theme_stylebox_override("panel", style)
+
+	hover_tooltip_label = Label.new()
+	hover_tooltip_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hover_tooltip_label.add_theme_color_override("font_color", Color(0.85, 0.9, 0.95))
+	hover_tooltip_label.add_theme_font_size_override("font_size", 11)
+	hover_tooltip.add_child(hover_tooltip_label)
+
+	add_child(hover_tooltip)
+
+
+func _hide_hover_tooltip() -> void:
+	if hover_tooltip != null:
+		hover_tooltip.visible = false
+
+
+func _process(_delta: float) -> void:
+	_update_hover_tooltip()
+
+
+func _update_hover_tooltip() -> void:
+	if hover_tooltip == null:
+		return
+
+	# Only on Target Grid. Command Grid hover gets nothing.
+	if active_grid != ActiveGrid.TARGET:
+		_hide_hover_tooltip()
+		return
+
+	# Mouse position relative to the SubViewportContainer.
+	var mouse_global: Vector2 = get_global_mouse_position()
+	var container_pos: Vector2 = mouse_global - target_viewport.global_position
+	var container_size: Vector2 = target_viewport.size
+
+	# Quick reject: mouse outside the container.
+	if container_pos.x < 0.0 or container_pos.y < 0.0 \
+			or container_pos.x > container_size.x or container_pos.y > container_size.y:
+		_hide_hover_tooltip()
+		return
+
+	# Convert through the same world-mapping helper the click path uses, so
+	# tooltip cell math matches click cell math exactly.
+	var world_pos: Vector2 = _container_to_world(container_pos, target_viewport,
+			target_subviewport, target_camera)
+	var cell := Vector2i(int(world_pos.x / CELL_SIZE), int(world_pos.y / CELL_SIZE))
+
+	# Bounds check: only real grid cells get tooltips.
+	if cell.x < 0 or cell.x >= GRID_COLS or cell.y < 0 or cell.y >= GRID_ROWS:
+		_hide_hover_tooltip()
+		return
+
+	var cell_records: Dictionary = GameState.players[GameState.current_player]["cell_records"]
+	if not cell_records.has(cell):
+		_hide_hover_tooltip()
+		return
+	var record: CellRecord = cell_records[cell]
+	if record == null:
+		_hide_hover_tooltip()
+		return
+
+	var segments: Array[String] = []
+	if record.last_probe_turn > 0:
+		segments.append("Probed turn %d" % record.last_probe_turn)
+	if record.hit_turn > 0:
+		segments.append("Hit turn %d" % record.hit_turn)
+	if record.miss_turn > 0:
+		segments.append("Missed turn %d" % record.miss_turn)
+
+	if segments.is_empty():
+		_hide_hover_tooltip()
+		return
+
+	hover_tooltip_label.text = " • ".join(segments)
+	hover_tooltip.visible = true
+
+	# Position 16px down-and-right of the cursor, but flip to up-and-left if
+	# the tooltip would clip the viewport. On the first frame after becoming
+	# visible the panel's `size` may be (0,0); the clamp below tolerates that
+	# (offset still applied) and the next frame's _process re-clamps once the
+	# layout has measured.
+	var offset := Vector2(16.0, 16.0)
+	var tip_size: Vector2 = hover_tooltip.size
+	var view_size: Vector2 = get_viewport_rect().size
+
+	var pos: Vector2 = mouse_global + offset
+	if pos.x + tip_size.x > view_size.x:
+		pos.x = mouse_global.x - offset.x - tip_size.x
+	if pos.y + tip_size.y > view_size.y:
+		pos.y = mouse_global.y - offset.y - tip_size.y
+	# Final clamp in case both flips still leave it negative on tiny viewports.
+	pos.x = clampf(pos.x, 0.0, max(0.0, view_size.x - tip_size.x))
+	pos.y = clampf(pos.y, 0.0, max(0.0, view_size.y - tip_size.y))
+
+	hover_tooltip.position = pos

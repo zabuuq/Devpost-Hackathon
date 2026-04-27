@@ -13,13 +13,17 @@ var was_probed: bool = false             # historical: cell has been inside an a
                                          # the Target Grid can render a faint "you've looked here"
                                          # marker. Cleared only when GameState.reset() builds a
                                          # fresh cell_records dict.
+var last_probe_turn: int = 0             # in-progress turn number of the most recent probe
+                                         # that covered this cell (0 if never probed). Used
+                                         # by the Target Grid hover tooltip.
 var ship: FogShipRecord = null           # null if no ship detected in this cell
 
-static func make_probe(fog_ship: FogShipRecord, probe_expires_in: int) -> CellRecord:
+static func make_probe(fog_ship: FogShipRecord, probe_expires_in: int, turn_number: int) -> CellRecord:
 	var record := CellRecord.new()
 	record.has_probe = true
 	record.expires_in = probe_expires_in
 	record.was_probed = true
+	record.last_probe_turn = turn_number
 	record.ship = fog_ship
 	return record
 
