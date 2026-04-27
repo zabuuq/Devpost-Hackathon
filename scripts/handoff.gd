@@ -5,7 +5,7 @@ extends Control
 
 func _ready() -> void:
 	GameState.phase = GameState.Phase.HANDOFF
-	next_button.set_type_variation(&"HeaderButton")
+	next_button.set_theme_type_variation(&"HeaderButton")
 	var player_num: int = GameState.current_player + 1
 	var hits: int = GameState.last_turn_hits
 	if GameState.turn_number == 0:

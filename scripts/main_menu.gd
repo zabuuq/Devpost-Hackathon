@@ -79,8 +79,8 @@ var current_page: int = 0
 
 func _ready() -> void:
 	GameState.phase = GameState.Phase.MENU
-	start_button.set_type_variation(&"HeaderButton")
-	how_to_play_button.set_type_variation(&"HeaderButton")
+	start_button.set_theme_type_variation(&"HeaderButton")
+	how_to_play_button.set_theme_type_variation(&"HeaderButton")
 	_update_toggle_labels()
 	_render_page()
 

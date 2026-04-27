@@ -88,10 +88,10 @@ func reset() -> void:
 	]
 
 func append_battle_log(player_idx: int, entry: Dictionary) -> void:
-	var log: Array = players[player_idx]["battle_log"]
-	log.append(entry)
-	while log.size() > BATTLE_LOG_CAP:
-		log.pop_front()
+	var entries: Array = players[player_idx]["battle_log"]
+	entries.append(entry)
+	while entries.size() > BATTLE_LOG_CAP:
+		entries.pop_front()
 
 func append_battle_log_divider(player_idx: int, turn_number_arg: int, is_opponent: bool) -> void:
 	var entry: Dictionary = {
