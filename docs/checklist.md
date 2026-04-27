@@ -790,7 +790,7 @@ Five items: I12-1 imports assets + builds the project-wide Theme resource. I12-2
 
 - [ ] **I12-2. Wire Theme to `Main.tscn` and verify cascade across every scene**
   Spec ref: Activates I12-1's resource at the root of the scene tree.
-  What to build: Open `scenes/main.tscn` in Godot. On the root node, set `theme = preload("res://assets/themes/main_theme.tres")`. Save. Because every other scene loads as a child of `Main` (via `Main.gd`'s scene-swap logic — see `scripts/main.gd`), all UI Controls in those child scenes will inherit the theme automatically. No edits to the per-screen `.tscn` files needed at this step.
+  What to build: Wire `assets/themes/main_theme.tres` as the project-wide theme. **Build-time correction (2026-04-26):** the original plan was to set `theme` on `scenes/main.tscn`'s root node, but `scripts/main.gd` immediately calls `change_scene_to_file("res://scenes/splash.tscn")`, which replaces the entire current scene at the root viewport. Main is not retained as an ancestor of the swapped-in scene, so a theme on the Main root never cascades. Correct mechanism: add `[gui] theme/custom="res://assets/themes/main_theme.tres"` to `project.godot`. This is Godot's project-wide theme setting and applies to every scene regardless of swap mechanism. No edits to per-screen `.tscn` files needed.
   - **Manual verification checkpoint with Jason.** Run the game and walk every screen once: splash → main menu → fleet placement (P1) → handoff → fleet placement (P2) → handoff → gameplay (one turn touching ship_panel, sliders, action buttons, battle log, hover tooltip) → end the game → victory. After each screen, capture observations:
     - Does the Kenney art appear on Buttons / Panels / Sliders / ProgressBars / Labels?
     - Are there layout breaks — buttons too tall, text clipped, sliders too small to grab, panels overflowing their containers, progress bars rendering with the wrong fill direction?
@@ -798,7 +798,7 @@ Five items: I12-1 imports assets + builds the project-wide Theme resource. I12-2
   - Catalog any layout breaks in `process-notes.md` under an `### I12-2 cascade observations` heading. Do not fix them in this item — fixing layout drift is the point of I12-3 and I12-4.
   - The grids inside the gameplay SubViewport (the actual playfield rendered by `grid_renderer.gd`) are unaffected by the theme — they draw inside a SubViewport with no UI Controls. Confirm during the walkthrough that the grids still render correctly (this is a regression check, not a styling step).
   Acceptance:
-  - `scenes/main.tscn` root node has `theme = ExtResource("...main_theme.tres...")`.
+  - `project.godot` has `theme/custom="res://assets/themes/main_theme.tres"` under a `[gui]` section.
   - At least four out of seven scenes (splash / main_menu / fleet_placement / handoff / gameplay / victory + the in-game How to Play overlay) visibly pick up the new font and at least one Kenney StyleBoxTexture (buttons or panels) without per-scene edits.
   - All gameplay logic still works (placement, turn flow, action resolution, victory detection) — this is a styling-only change.
   - A verification observation block exists in `process-notes.md` with screen-by-screen notes.

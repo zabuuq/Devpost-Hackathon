@@ -1,8 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://bmain00000001"]
+[gd_scene load_steps=2 format=3 uid="uid://bmain00000001"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_aaa"]
-[ext_resource type="Theme" path="res://assets/themes/main_theme.tres" id="2_theme"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_aaa")
-theme = ExtResource("2_theme")
