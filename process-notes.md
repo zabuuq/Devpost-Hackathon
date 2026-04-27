@@ -1163,3 +1163,43 @@ Jason added four constraints after the initial 4-item checklist landed:
 ### Items revised
 
 5 items now (was 4). I13-1 expanded to cover all three grids + zoom defaults explicitly. I13-2 rewritten as the static-TextureRect approach (was draw-in-world-space with retuned NEBULA_PAD). New I13-3 handles the fleet placement layout rework. I13-4 (was I13-3) is screenshot regen. I13-5 (was I13-4) is the gated redeploy. Final item gated like I12-5.
+
+## /build — Iteration 13
+
+Ran 2026-04-27, autonomous mode with verification at the I13-3 checkpoint and three-pause gating on I13-5. Each item dispatched to a subagent (general-purpose), orchestrator collected results and ticked the checklist between items.
+
+### Commits landed (chronological)
+
+- `2d587c4` Complete step I13-1: Grid resize 80×20 → 50×30 at 32px cells
+- `aeec119` Complete step I13-2: Static nebula TextureRect behind GridArea
+- `03d2a77` Complete step I13-3: Fleet placement layout rework — fold details into left panel
+- `f1ca94f` Post-I13-2/3 visual polish: nebula modulate, lighter grid lines, splash title teal
+- `23ef80b` Complete step I13-4: Regenerate the 13 canonical screenshots
+- (final commit) Tick I13-5 + I13 build summary + devlog draft
+
+### What landed in I13
+
+- **Grid resize 80×20 → 50×30 at 32px:** four `.gd` files updated (`scripts/ui/grid_renderer.gd`, `scripts/gameplay.gd`, `scripts/fleet_placement.gd`, `scripts/debug/screenshot_runner.gd`), both `.tscn` files (`scenes/gameplay.tscn` two cameras, `scenes/fleet_placement.tscn` one camera) updated to SubViewport `Vector2i(1600, 960)`, Camera2D `position = Vector2(800, 480)`, `zoom = Vector2(0.86, 0.86)`. `MIN_ZOOM` left at 0.1 — default zoom shows the whole grid; users can still zoom in for detail. Doc prose in `prd.md` / `spec.md` / `scope.md` updated; `color-scheme.md` had no matches. Screenshot runner waypoints fully audited and shifted (right-side col 70 → 40, fleet packing repacked into the new bounds, comments rewritten).
+- **Static nebula TextureRect:** `assets/backgrounds/nebula.png` (2912×1632, MJ v7, 16:9, ~5.7MB) replaces `nebula.jpg`. Added a `NebulaBackground` TextureRect as the first child of the GridArea in `gameplay.tscn` (anchors_preset 15, mouse_filter ignore, expand_mode IGNORE_SIZE, stretch_mode KEEP_ASPECT_COVERED). Same in `fleet_placement.tscn`, but the placement scene needed a new `GridArea` Control wrapping the `GridViewport` since it didn't have one. All three SubViewports now `transparent_bg = true`. `_draw_background()` no longer renders the nebula in either renderer. The four static scenes (`splash`, `main_menu`, `handoff`, `victory`) had ext_resource references to `nebula.jpg` that the subagent retargeted to `nebula.png` — they all use `STRETCH_KEEP_ASPECT_COVERED` so the aspect change auto-fits.
+- **Fleet placement layout rework:** `RightPanel` deleted from `fleet_placement.tscn`; `ShipName` + `ShipStats` moved into `LeftPanel` between the ScrollContainer and PlacementHint, with a new HSeparator above. `@onready` paths updated. PRD section 2.2 and spec.md Fleet Placement tree updated to reflect the two-column layout.
+- **Mid-checkpoint visual polish (after Jason walked the I13-1/2/3 build):** `NebulaBackground` modulate set to `Color(0.45, 0.45, 0.45, 1)` on both gameplay + placement so the brighter MJ render doesn't drown the grid. `COLOR_GRID_LINE` retuned from `Color(0.12, 0.15, 0.25, 0.8)` (deep indigo, tuned for the old jpg) to `Color(0.7, 0.78, 0.85, 0.6)` (soft blue-tinted near-white) in both `grid_renderer.gd` and `fleet_placement.gd`. Splash title (`TitleLine1`, `TitleLine2`) picked up the primary teal `Color(0.36, 0.88, 0.82, 1.0)` to match the main menu. `color-scheme.md` updated — grid line rows changed, new nebula-modulate row added, splash listed as a primary teal source.
+- **Screenshot regen:** ran `godot --path . -- --screenshot` against the post-polish build. Runner reported all 19 captures (13 canonical + 6 supplementary). All shots eyeballed against the brief; framing held with the new bounds (the runner's 09 crop is tight by existing design, not a new defect).
+- **Redeploy:** `butler push ./export/web zabuuq/battlestations-nebula:html5` → build `#1639531` (patched from `#1639451`, 69.60% savings, 15.92 MiB delta, version 13).
+
+### Verification observations
+
+- I13-3 checkpoint walkthrough surfaced two visual issues that the spec didn't predict: (1) the new MJ nebula reads brighter than the old AveCalvar JPG, washing out the dark indigo grid lines; (2) once the nebula was dimmed via TextureRect modulate, the indigo grid lines were still hard to see. Fixed in a single follow-on commit (`f1ca94f`) — modulate at 45%, grid line color shifted toward soft blue-white.
+- Splash title color also changed during the same polish pass: was rendering the Kenney theme default (white-ish); Jason called out it should match the main menu's lighter blue. That's the existing primary teal `#5ce0d1` — applied via `theme_override_colors/font_color` on both TitleLine labels.
+- Gate 1 smoke test ran the local export at `localhost:8000`; Jason confirmed cleanly.
+
+### Backlog deltas
+
+None this iteration. The pre-existing `Kenney UI chrome — playing interface phase 2` row added during /iterate-13 stays as the natural next-iteration entry point. No new ideas surfaced during the build.
+
+### I13 build summary
+
+Iteration scope: structural visual rework. Grid aspect ratio re-anchored to the playable area (50×30 fits the GridArea at default zoom — no horizontal panning required to see your fleet on scene entry), nebula art replaced and architecturally separated from the grid (static TextureRect in screen space rather than world-space draw), fleet placement layout collapsed from three columns to two. Five items, six commits including the post-checkpoint polish (one commit) and the screenshot regen (one commit). Mid-iteration polish was tighter than I12 — three small tweaks, all colors, all in one commit.
+
+The autonomous + verification-checkpoint pattern held cleanly. Three subagent dispatches for I13-1/2/3 (the orchestrator did I13-4/5 directly since they're mostly tooling commands). The I13-3 checkpoint produced two visual notes from Jason that the spec hadn't anticipated; both were resolved in a single follow-on commit before I13-4. Gate 1 smoke test passed on first try.
+
+Next iteration entry point: pick from `docs/backlog.md` Ideas Surfaced. The `Kenney UI chrome — playing interface phase 2` row is sitting at the top.
