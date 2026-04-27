@@ -104,6 +104,27 @@ func _build_row(ship: ShipInstance) -> Dictionary:
 	header_box.add_child(header)
 	row["header"] = header
 
+	# Destroyed-state strikethrough overlay — anchored over the text portion of
+	# the button. Width is measured from the font so the line spans only the
+	# name, not the whole button. mouse_filter = ignore so clicks pass through.
+	var strikethrough := ColorRect.new()
+	strikethrough.color = Color(0.95, 0.95, 0.95, 1.0)
+	strikethrough.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	strikethrough.anchor_left = 0.0
+	strikethrough.anchor_right = 0.0
+	strikethrough.anchor_top = 0.5
+	strikethrough.anchor_bottom = 0.5
+	var font: Font = header.get_theme_font("font")
+	var font_size: int = header.get_theme_font_size("font_size")
+	var text_w: float = font.get_string_size(header.text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size).x
+	strikethrough.offset_left = 12.0
+	strikethrough.offset_right = 12.0 + text_w + 2.0
+	strikethrough.offset_top = -1.0
+	strikethrough.offset_bottom = 1.0
+	strikethrough.visible = false
+	header.add_child(strikethrough)
+	row["header_strikethrough"] = strikethrough
+
 	var bars_box := VBoxContainer.new()
 	bars_box.size_flags_horizontal = Control.SIZE_SHRINK_END
 	bars_box.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -342,9 +363,11 @@ func _refresh_header(row: Dictionary) -> void:
 	var header_box: HBoxContainer = row["header_box"]
 	var shield_bar: ProgressBar = row["header_shield_bar"]
 	var armor_bar: ProgressBar = row["header_armor_bar"]
+	var strikethrough: ColorRect = row["header_strikethrough"]
 	var stats: Dictionary = ShipDefinitions.SHIPS[ship.ship_type]
 
 	header.text = _row_header_text(ship)
+	strikethrough.visible = ship.is_destroyed
 
 	# I11-2: three-state modulate. Apply to the HBox so the gray cue cascades
 	# down to the bars too — a destroyed or already-acted ship reads as a
@@ -379,10 +402,10 @@ func refresh_all_headers() -> void:
 
 
 func _row_header_text(ship: ShipInstance) -> String:
-	var name_text: String = (ship.ship_type as String).capitalize()
-	if ship.is_destroyed:
-		name_text += " (destroyed)"
-	return name_text
+	# Plain ship name. Destroyed-state strikethrough is rendered via the
+	# overlay ColorRect built in _build_row — Unicode combining-stroke
+	# (U+0336) forced a font fallback that broke the Kenney typography.
+	return (ship.ship_type as String).capitalize()
 
 
 func _refresh_row(row: Dictionary) -> void:

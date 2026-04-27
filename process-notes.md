@@ -1017,3 +1017,50 @@ Iteration scope: a five-item visual-polish bundle pulled directly from the backl
 - No screenshot regen required — the I11 changes don't alter any of the 18-shot capture points (same accordion structure, same grid layout, same UI). Could be regenerated later if a marketing pass wants the new bars / bright-red markers / tooltip on display.
 
 Next iteration entry point: read `docs/checklist.md` for the next bundle, or take a `/scope` pass on `docs/backlog.md`.
+
+## /iterate — Iteration 12 (opening)
+
+Started 2026-04-26 (same day as I10 + I11 ship). All I1–I11 items checked, build live on itch.io as `#1639229`.
+
+### Going-in state
+- Original checklist + I1–I11 all complete.
+- Backlog "Ideas Surfaced During Development" remaining candidates: direct hits vs partial hits, ship naming, ambient music (deferred from I10-2), Audio: improve SFX, Use graphics for the interface.
+- Long-term/exploratory items (non-linear ship shapes, half-block cells, crit hits, fleet builder) deliberately out of scope for an iteration.
+
+### Scoping pass — what Jason picked
+
+- **Picked:** "Use graphics for the interface" (#15 in the renumbered backlog list given to Jason during scoping).
+- **Art source confirmed:** Kenney UI Pack Space Expansion at `C:/Users/jcmcc/OneDrive/Coding/kenney_ui-pack-space-expansion/`. CC0 license, complete widget pack — Blue/Green/Grey/Red/Yellow color sets each with Default + Double scale variants, plus an Extra/Default neutral set with `panel_glass`, `panel_rectangle`, `panel_square` (with/without screws), `button_rectangle`/`button_square` + `_depth` pressed states, drop-shadow bar backgrounds, and `Kenney Future` + `Kenney Future Narrow` TTF fonts. No ship portrait art in the pack.
+- **Per-ship portrait art:** explicitly **out of scope this iteration**. Bumped to a follow-up backlog row that I12-5 will add when it removes the parent "Use graphics" row.
+- **Color direction:** Grey base + Blue accents. Grey for neutral chrome (panels, secondary buttons, labels). Blue for primary CTAs (Start Game / Done / Next / Play Again), slider fills, progress-bar fills, header strips. Reds + teals stay reserved for in-game state semantics (damage / shields). Pure-Blue and pure-Grey alternatives presented to Jason; he picked Grey + Blue.
+
+### Review pass observations surfaced before checklist
+
+- **No project-wide Theme exists today.** Every UI script does scattered `add_theme_*_override` calls (`scripts/ui/ship_panel.gd`, `scripts/ui/battle_log.gd`, `scripts/gameplay.gd`, `scripts/fleet_placement.gd`, plus the smaller scene scripts). Once a Theme resource exists at `Main.tscn`, the cascade paints all 7 scenes for free — the per-script work becomes a *cleanup* pass (remove redundancies the theme now handles), not a *paint* pass.
+- **`assets/sprites/ships/`, `assets/sprites/ui/`, `assets/sprites/backgrounds/` are empty.** No prior art assets to reuse or migrate.
+- **Some overrides must stay** even after the theme exists — they're state-driven, not stylistic: the `action_taken` / destroyed `header.modulate` calls (I11-2), the per-ship tinted buttons in fleet placement, the battle-log RichTextLabel color tags, the move-info red/green error/success colors, the enemy-ship name + stats panel colors, the accordion mini shield/armor bars (I11-2 — kept flat because Kenney bar art targets larger bars). The cleanup spec for I12-3 / I12-4 is explicit about what stays and what goes.
+- **The grids inside the gameplay SubViewport (grid_renderer.gd) are unaffected** by the theme — they draw outside the Control hierarchy. Confirmed by reviewing `_draw_*` methods. Theme work doesn't touch combat / probe / fog-of-war rendering.
+
+### Items written
+
+5 items total — I12-1 (asset import + Theme resource, single artifact), I12-2 (wire to Main.tscn + verification checkpoint, layout-break catalog), I12-3 (override cleanup in lighter UI scripts + apply HeaderButton variation), I12-4 (override cleanup + re-skin in `ship_panel.gd` / `battle_log.gd` / `gameplay.gd` hover tooltip), I12-5 (gated redeploy + devlog + backlog row swap). Single concern per item; final item gated like I11-5.
+
+
+
+## /build — Iteration 12
+
+Started 2026-04-26 on branch `iter-12-kenney-ui` (Jason asked the build run to live on its own branch — first iteration to do so). Autonomous mode, verification at the standard 3-item checkpoint plus the I12-2-embedded cascade walkthrough plus the I12-5 three-gate.
+
+### I12-2 cascade observations
+
+Subagent flagged a planning bug before the walkthrough: `scripts/main.gd` calls `get_tree().change_scene_to_file(...)`, which **replaces** the entire root scene. Setting theme on `Main.tscn`'s root would never reach the swapped-in splash/menu/etc. scenes. Switched the wire-up to `project.godot[gui] theme/custom = "res://assets/themes/main_theme.tres"` — Godot's project-wide theme setting that applies regardless of scene-swap. Updated the I12-2 "What to build" + Acceptance to record the corrected mechanism. Reverted the unused `theme = ExtResource(...)` line on `Main.tscn`'s root (no point keeping dead config).
+
+Walkthrough: Jason ran the game, walked splash → main menu → fleet placement (P1) → handoff → fleet placement (P2) → handoff → gameplay (one turn) → victory. Theme cascaded cleanly across every screen — Kenney Future Narrow on labels, grey Kenney Buttons on default Buttons, themed Panels, themed sliders + progress bars in the expanded ship panel. Grids inside SubViewport rendered identically (regression-clear).
+
+Three live issues Jason flagged during the walk; fixed in-flight rather than cataloging for I12-3/I12-4 since each was a one-touch fix and would have been weird to leave broken across the standard mid-iteration checkpoint:
+
+1. **White button text on the light Kenney grey button background was washed out.** Patched `assets/themes/main_theme.tres` Button colors: `font_color = Color(0.1, 0.13, 0.18)`, `font_hover_color = Color(0, 0, 0)`, `font_pressed_color = Color(0.05, 0.07, 0.1)`, `font_disabled_color = Color(0.4, 0.43, 0.48)`. HeaderButton (blue background) kept its near-white font colors — light text reads fine on blue.
+2. **Gameplay scene needed padding around the LeftPanel and the top-right End Turn button.** `scenes/gameplay.tscn`: TopBar got `offset_left = 8 / offset_right = -8 / offset_top = 8 / offset_bottom = 56` (8px breathing room on left/right/top while keeping bar height at 48). MainLayout got `offset_left = 8 / offset_top = 64 / offset_right = -8 / offset_bottom = -8` plus `theme_override_constants/separation = 8` (8px around the LeftPanel + 8px gap to the GridArea).
+3. **Destroyed-ship `(destroyed)` suffix made the row button too long.** Tried U+0336 combining strikethrough first — rendered, but forced a font fallback that broke the Kenney typography. Reverted to plain text + a 2px ColorRect overlay anchored over the measured text width inside the header Button. Strikethrough is invisible by default; `_refresh_header` toggles it on for `ship.is_destroyed`. Existing `header_box.modulate` dim cascades to the line.
+
+No remaining layout-break catalog items.
