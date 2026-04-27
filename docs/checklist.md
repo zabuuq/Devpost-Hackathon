@@ -914,7 +914,7 @@ Five items: I12-1 imports assets + builds the project-wide Theme resource. I12-2
   - PRD prose reflects the new layout.
   Verify: Launch the game, go to fleet placement. Confirm only one panel (left), grid takes up the rest. Click each of the five ships in the list — confirm the ship name and stats labels below the list update each time. Place all ships, confirm Done activates, advance to handoff.
 
-- [ ] **I13-4. Regenerate the 13 canonical screenshots**
+- [x] **I13-4. Regenerate the 13 canonical screenshots**
   Spec ref: `CLAUDE.md > Screenshot capture`. The runner at `scripts/debug/screenshot_runner.gd` produces the full 13-shot set via `godot --path . -- --screenshot`.
   What to build:
   - After I13-1, I13-2, and I13-3 land, run `godot --path . -- --screenshot`. The runner walks the same 13 capture points and writes PNGs into `assets/screenshots/`.
