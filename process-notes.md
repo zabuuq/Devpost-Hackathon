@@ -1064,3 +1064,60 @@ Three live issues Jason flagged during the walk; fixed in-flight rather than cat
 3. **Destroyed-ship `(destroyed)` suffix made the row button too long.** Tried U+0336 combining strikethrough first — rendered, but forced a font fallback that broke the Kenney typography. Reverted to plain text + a 2px ColorRect overlay anchored over the measured text width inside the header Button. Strikethrough is invisible by default; `_refresh_header` toggles it on for `ship.is_destroyed`. Existing `header_box.modulate` dim cascades to the line.
 
 No remaining layout-break catalog items.
+
+## /build — Iteration 12
+
+Started 2026-04-26 on branch `iter-12-kenney-ui` (Jason asked the build run to live on its own branch — first iteration to do so). Autonomous mode, verification at the I12-2 cascade walkthrough + the standard 3-item checkpoint after I12-3 + the I12-5 three-gate. Beep notifications fired at every breakpoint (I12-2 walk, Gate 1 smoke test, Gate 2 butler push, Gate 3 devlog draft).
+
+### Commits landed (chronological)
+
+- `9185a2a` Complete step I12-1: Import Kenney assets + Theme resource
+- `604eb76` Tick I12-1 in checklist
+- `2e7eac2` Complete step I12-2: Wire main_theme.tres to Main.tscn root
+- `cbdd8b2` Refine I12-2: switch theme cascade from Main.tscn root to project.godot[gui] (change_scene_to_file replaces the root)
+- `54d7f6a` Complete step I12-2: Theme cascade live + walkthrough fixes (dark Button text, gameplay padding, strikethrough overlay)
+- `e070b6b` Complete step I12-3: Cleanup lighter UI scripts + HeaderButton on primary CTAs
+- `49e1c5a` Tick I12-3 in checklist
+- `f644dbc` Fix I12-3 regressions: set_theme_type_variation API + log shadow warning
+- `5d5f012` Refine I12-2 theme: dark text on HeaderButton too (Kenney blue button is light-blue, not navy)
+- `809cd1c` Refine I12-2: enlarge How to Play overlay (Kenney font wraps taller; page 6 was overrunning the nav buttons)
+- `176a626` Complete step I12-4: Cleanup heavier UI scripts + reskin hover tooltip
+- `8a78e17` Tick I12-4 in checklist
+- (this commit) Complete step I12-5: Redeploy + devlog draft + backlog cleanup
+- Build pushed: `#1639451` (previous live: `#1639229`). Patch 306.36 KiB, 99.57% savings, butler re-used 99.47% of old data.
+
+### What landed in I12
+
+- **27 Kenney source assets** imported into `assets/fonts/kenney/`, `assets/ui/kenney/blue/`, `assets/ui/kenney/grey/`, `assets/ui/kenney/extra/` plus 26 Godot-generated `.import` sidecars. CC0 license; pack `License.txt` copied into `assets/fonts/kenney/`.
+- **`assets/themes/main_theme.tres`** — hand-authored 6,595-byte Theme resource with defaults for Button, PanelContainer, Panel, HSlider, ProgressBar, Label, RichTextLabel, plus a `HeaderButton` type variation. Final font_color values are dark on both Button and HeaderButton (Kenney's blue button skin turned out to be light-blue, not navy — light text was unreadable on both).
+- **`project.godot[gui] theme/custom`** — wired the theme as Godot's project-wide theme. Original plan was `Main.tscn` root, but `scripts/main.gd` calls `change_scene_to_file` which replaces the root viewport — so a Main-root theme would never reach swapped-in scenes. Subagent caught it before the cascade walk; corrective edit landed in `cbdd8b2`. Updated I12-2 spec in `docs/checklist.md` to reflect the actual mechanism.
+- **`scenes/gameplay.tscn`** — 8px padding around TopBar (so the End Turn button has air on the right) and 8px padding + 8px separation around MainLayout (so the LeftPanel has air on the left/top/bottom + an 8px gap to the GridArea).
+- **`scenes/main_menu.tscn`** — How to Play overlay panel grew from 960×700 to 1080×820 and ContentArea from 920×540 to 1040×660. Kenney Future Narrow has taller line metrics than the default Godot font, so page 6 was overrunning the nav buttons at the original size. Still leaves comfortable margin on the 1600×900 screen.
+- **`scripts/ui/ship_panel.gd`** — destroyed-state strikethrough rewritten as a 2px ColorRect overlay anchored over the measured text width inside the header Button, replacing the `(destroyed)` suffix that was widening the row. First attempt used U+0336 combining-stroke characters, which forced Godot's font system to fall back from Kenney Future Narrow on the destroyed names — reverted. Also: `FONT_SIZE_STATS_LABEL: int = 11` const introduced as the single source of truth for the dense stat panel font size (powers 7 call sites: enemy_stats, stats_label, shield/laser labels + values, energy_remaining). Header Button font_size override removed (matched theme default). Mini bars stay flat StyleBoxFlat with their teal/red tints — Kenney bar art targets larger widgets and would distort at 60×6.
+- **`scripts/ui/battle_log.gd`** — two redundant 13pt overrides removed (theme carries them); 12pt divider overrides kept with a clarifying comment.
+- **`scripts/gameplay.gd`** — hover tooltip's hand-rolled StyleBoxFlat replaced with `StyleBoxTexture` using `assets/ui/kenney/extra/panel_glass.png`, 8px margins, `modulate_color = Color(1.0, 1.0, 1.0, 0.92)` to preserve the translucency. The 11pt off-white tooltip Label override kept (tooltip-specific).
+- **`scripts/main_menu.gd` / `handoff.gd` / `victory.gd`** — `set_theme_type_variation(&"HeaderButton")` applied to Start Game, How to Play, Next, and Play Again at runtime. (Subagent originally used the wrong API name `set_type_variation` — fatal error on the first launch; fixed in `f644dbc`.)
+- **`scripts/autoloads/game_state.gd`** — `var log` renamed to `var entries` to clear the SHADOWED_GLOBAL_IDENTIFIER warning Jason flagged during the I12-3 launch (`log` shadows GDScript's math function).
+
+### Verification observations
+
+- I12-2 cascade walk: cataloged separately in the `### I12-2 cascade observations` block above. Theme cascaded cleanly across every screen; three live issues caught and fixed in-flight (white text on light buttons, gameplay padding, destroyed-suffix → strikethrough).
+- I12-3 standard 3-item checkpoint: two regressions surfaced from the subagent's HeaderButton wire-up — the wrong API method name (fatal) and the pre-existing `log` shadow warning Jason chose to fix at the same time. Both patched. After the patch, Jason flagged white text on the now-blue HeaderButton CTAs, then the page-6 overflow on the How to Play overlay. Both patched. Cumulative checkpoint passed.
+- I12-5 Gate 1 smoke test: passed in the local browser at `http://localhost:8000/index.html`. Jason verified Kenney font everywhere, dark text on grey AND blue buttons, glass-panel hover tooltip, themed slider + progress bars in the expanded ship panel, mini bars unchanged, battle log color tags unchanged, strikethrough on destroyed ships, grids unchanged.
+- I12-5 Gate 2 butler push: ran clean — 99.47% re-use, 306.36 KiB patch. Build #1639451. Spot-check on the live secret URL passed.
+- I12-5 Gate 3 devlog draft: Jason said "ship it" — draft went in verbatim. Title "The chrome stopped looking generic", three bold ledes ("The default Godot button has retired.", "Grey is for chrome, blue is for forward.", "The painted-by-numbers got cleaned up.") plus a closing paragraph on the hover tooltip glass-panel reskin and the build number.
+
+### Backlog deltas
+
+- Removed `Use graphics for the interface` row (the parent item I12 implemented).
+- Added `Per-ship portrait art` row in its place — the Kenney pack carved out the ship art piece on the way in (it has widgets, no ship sprites). Notes touch `scripts/ui/ship_panel.gd` (own + enemy cards), `scripts/fleet_placement.gd` (detail panel), and sourcing options (Kenney's space-shooter packs, Ansimuz, custom commission).
+
+### I12 build summary
+
+Iteration scope: project-wide UI overhaul. Single Theme resource painting all seven scenes via `project.godot[gui] theme/custom`. Two color sets carrying the load (grey for neutral chrome, blue for primary CTAs); reds and teals stay reserved for in-game state semantics. Asset import + Theme resource was a single artifact (I12-1), wire-up was a one-line config change once the right mechanism was identified (I12-2), cleanup spread across two passes by code density (I12-3 lighter scripts + HeaderButton variation, I12-4 heavier scripts + hover tooltip reskin), and the gated three-pause redeploy closed it out (I12-5). Iteration ran on its own branch `iter-12-kenney-ui` — first time this workflow has used a branch; merged into `main` at the end.
+
+Mid-iteration walkthrough fixes were heavier than usual (six refinement commits on top of the five item commits): the planning bug on `Main.tscn` cascade, the wrong-color-default loop on Button + HeaderButton text colors (twice), the gameplay scene padding gap, the page-6 overlay overflow, the destroyed-ship suffix → strikethrough overlay, the `set_type_variation` API name, the `log` shadow warning. Each was a one-touch fix Jason flagged during walkthroughs; net iteration size still in the same range as I10 / I11.
+
+No screenshot regen this iteration — the existing 18-shot set captures the new theme through the same scene tree paths the runner already walks. Could be regenerated later if a marketing pass wants the Kenney chrome on display.
+
+Next iteration entry point: read `docs/checklist.md` for the next bundle, or take a `/scope` pass on `docs/backlog.md`.
