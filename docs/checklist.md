@@ -716,7 +716,7 @@ Backlog rows implemented: `Hit/miss markers: unify Command Grid coloring with Ta
   - Grid lines, ships, probe overlays, and hit/miss markers all stay clamped to the existing 80×20 cell extent — only the nebula extends.
   Verify: In gameplay, click into a grid and zoom out to maximum. Confirm no flat background visible around the grid edges. Pan to each corner and confirm the nebula keeps going past the grid. Zoom back in and confirm the nebula tracks the camera (the same nebula features stay locked to world position). Spot-check that no ships, hits, misses, or probe markers extend past the original grid bounds.
 
-- [ ] **I11-4. Cell info tooltip on Target Grid hover**
+- [x] **I11-4. Cell info tooltip on Target Grid hover**
   Spec ref: Implements `backlog.md > Cell info tooltip on Target Grid hover`.
   What to build: Touchpoints: `scripts/gameplay/cell_record.gd` (data-model addition), `scripts/gameplay/action_resolver.gd` (write site), `scripts/ui/grid_renderer.gd` or the SubViewportContainer host in `scripts/gameplay.gd` (hover detection + tooltip widget).
   1. **CellRecord data addition.** Today CellRecord tracks `hit_turn`, `miss_turn`, and `was_probed: bool`. Upgrade `was_probed` from a boolean to richer state:
