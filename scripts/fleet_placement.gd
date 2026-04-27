@@ -8,8 +8,9 @@ const MIN_ZOOM: float = 0.1
 const MAX_ZOOM: float = 4.0
 const DRAG_THRESHOLD_PX: float = 4.0
 
-const NEBULA_TEXTURE: Texture2D = preload("res://assets/backgrounds/nebula.jpg")
-const NEBULA_SRC_RECT: Rect2 = Rect2(0, 900, 5333, 1333)
+# I13-2: Nebula is now a static TextureRect behind the GridArea Control in the
+# scene tree (screen space, doesn't zoom with the camera). The SubViewport uses
+# transparent_bg so it shows through. Nothing to draw here.
 
 const SHIP_NAMES: Dictionary = {
 	"battleship": "Battleship",
@@ -20,12 +21,12 @@ const SHIP_NAMES: Dictionary = {
 
 @onready var ship_list_container: VBoxContainer = $HSplitContainer/LeftPanel/ScrollContainer/ShipList
 @onready var done_button: Button = $HSplitContainer/LeftPanel/DoneButton
-@onready var grid_node: Node2D = $HSplitContainer/GridViewport/SubViewport/GridNode
-@onready var camera: Camera2D = $HSplitContainer/GridViewport/SubViewport/GridNode/Camera2D
+@onready var grid_node: Node2D = $HSplitContainer/GridArea/GridViewport/SubViewport/GridNode
+@onready var camera: Camera2D = $HSplitContainer/GridArea/GridViewport/SubViewport/GridNode/Camera2D
 @onready var detail_name: Label = $HSplitContainer/RightPanel/DetailPanel/ShipName
 @onready var detail_stats: Label = $HSplitContainer/RightPanel/DetailPanel/ShipStats
 @onready var player_label: Label = $PlayerLabel
-@onready var viewport_container: SubViewportContainer = $HSplitContainer/GridViewport
+@onready var viewport_container: SubViewportContainer = $HSplitContainer/GridArea/GridViewport
 
 var placed_ships: Dictionary = {}
 var selected_ship_idx: int = -1
@@ -262,11 +263,8 @@ func _is_placement_valid(stype: String, origin: Vector2i, facing: int) -> bool:
 	return true
 
 func _draw_grid() -> void:
-	grid_node.draw_texture_rect_region(
-		NEBULA_TEXTURE,
-		Rect2(0, 0, GRID_COLS * CELL_SIZE, GRID_ROWS * CELL_SIZE),
-		NEBULA_SRC_RECT
-	)
+	# I13-2: No nebula draw here. It's a static TextureRect in screen space
+	# behind the SubViewport (which is transparent). Grid lines + ships only.
 	var line_color := Color(0.15, 0.2, 0.32, 0.6)
 	for col in range(GRID_COLS + 1):
 		var x: float = col * CELL_SIZE

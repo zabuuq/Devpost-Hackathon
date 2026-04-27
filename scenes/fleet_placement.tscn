@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://bfleet00000001"]
+[gd_scene load_steps=3 format=3 uid="uid://bfleet00000001"]
 
 [ext_resource type="Script" path="res://scripts/fleet_placement.gd" id="1_fleet"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/nebula.png" id="2_nebula"]
 
 [node name="FleetPlacement" type="Control"]
 layout_mode = 3
@@ -69,17 +70,34 @@ custom_minimum_size = Vector2(160, 44)
 text = "Done"
 disabled = true
 
-[node name="GridViewport" type="SubViewportContainer" parent="HSplitContainer"]
+[node name="GridArea" type="Control" parent="HSplitContainer"]
 size_flags_horizontal = 3
 size_flags_vertical = 3
+
+[node name="NebulaBackground" type="TextureRect" parent="HSplitContainer/GridArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_nebula")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="GridViewport" type="SubViewportContainer" parent="HSplitContainer/GridArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 stretch = true
 
-[node name="SubViewport" type="SubViewport" parent="HSplitContainer/GridViewport"]
+[node name="SubViewport" type="SubViewport" parent="HSplitContainer/GridArea/GridViewport"]
+transparent_bg = true
 size = Vector2i(1600, 960)
 
-[node name="GridNode" type="Node2D" parent="HSplitContainer/GridViewport/SubViewport"]
+[node name="GridNode" type="Node2D" parent="HSplitContainer/GridArea/GridViewport/SubViewport"]
 
-[node name="Camera2D" type="Camera2D" parent="HSplitContainer/GridViewport/SubViewport/GridNode"]
+[node name="Camera2D" type="Camera2D" parent="HSplitContainer/GridArea/GridViewport/SubViewport/GridNode"]
 zoom = Vector2(0.86, 0.86)
 position = Vector2(800, 480)
 
@@ -109,4 +127,4 @@ autowrap_mode = 2
 
 [connection signal="pressed" from="HSplitContainer/LeftPanel/RandomizeButton" to="." method="_on_randomize_pressed"]
 [connection signal="pressed" from="HSplitContainer/LeftPanel/DoneButton" to="." method="_on_done_pressed"]
-[connection signal="gui_input" from="HSplitContainer/GridViewport" to="." method="_on_viewport_gui_input"]
+[connection signal="gui_input" from="HSplitContainer/GridArea/GridViewport" to="." method="_on_viewport_gui_input"]

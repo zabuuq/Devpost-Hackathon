@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_menu"]
 [ext_resource type="Script" path="res://scripts/ui/text_wrap.gd" id="2_wrap"]
-[ext_resource type="Texture2D" path="res://assets/backgrounds/nebula.jpg" id="3_nebula"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/nebula.png" id="3_nebula"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3

@@ -231,10 +231,10 @@ func _ship_center_cell(stype: String, origin: Vector2i, facing: int) -> Vector2i
 # overlay sprites (e.g., the cursor in shot 04) in screen space.
 func _screen_pos_of_grid_cell(scene: Node, cell: Vector2i) -> Vector2:
 	var cam: Camera2D = scene.get_node_or_null(
-		"HSplitContainer/GridViewport/SubViewport/GridNode/Camera2D")
+		"HSplitContainer/GridArea/GridViewport/SubViewport/GridNode/Camera2D")
 	var subvp: SubViewport = scene.get_node_or_null(
-		"HSplitContainer/GridViewport/SubViewport")
-	var container: Control = scene.get_node_or_null("HSplitContainer/GridViewport")
+		"HSplitContainer/GridArea/GridViewport/SubViewport")
+	var container: Control = scene.get_node_or_null("HSplitContainer/GridArea/GridViewport")
 	if cam == null or subvp == null or container == null:
 		return Vector2.ZERO
 	var world: Vector2 = Vector2(
@@ -272,10 +272,10 @@ func _add_cursor_overlay(scene: Node, screen_pos: Vector2) -> void:
 
 
 func _fit_placement_camera(scene: Node) -> void:
-	var cam: Camera2D = scene.get_node_or_null("HSplitContainer/GridViewport/SubViewport/GridNode/Camera2D")
-	var vp: SubViewport = scene.get_node_or_null("HSplitContainer/GridViewport/SubViewport")
+	var cam: Camera2D = scene.get_node_or_null("HSplitContainer/GridArea/GridViewport/SubViewport/GridNode/Camera2D")
+	var vp: SubViewport = scene.get_node_or_null("HSplitContainer/GridArea/GridViewport/SubViewport")
 	_fit_grid_camera(cam, vp)
-	var grid_node: Node2D = scene.get_node_or_null("HSplitContainer/GridViewport/SubViewport/GridNode")
+	var grid_node: Node2D = scene.get_node_or_null("HSplitContainer/GridArea/GridViewport/SubViewport/GridNode")
 	if grid_node != null:
 		grid_node.queue_redraw()
 
@@ -285,8 +285,8 @@ func _fit_placement_camera(scene: Node) -> void:
 # than the letterboxed full-grid view. Used by shot 04 so ship sprites are
 # legible in the tutorial overlay.
 func _zoom_in_placement_camera(scene: Node) -> void:
-	var cam: Camera2D = scene.get_node_or_null("HSplitContainer/GridViewport/SubViewport/GridNode/Camera2D")
-	var vp: SubViewport = scene.get_node_or_null("HSplitContainer/GridViewport/SubViewport")
+	var cam: Camera2D = scene.get_node_or_null("HSplitContainer/GridArea/GridViewport/SubViewport/GridNode/Camera2D")
+	var vp: SubViewport = scene.get_node_or_null("HSplitContainer/GridArea/GridViewport/SubViewport")
 	if cam == null or vp == null:
 		return
 	var vp_size: Vector2 = Vector2(vp.size)
@@ -297,7 +297,7 @@ func _zoom_in_placement_camera(scene: Node) -> void:
 	var zoom: float = vp_size.y / grid_h
 	cam.zoom = Vector2(zoom, zoom)
 	cam.position = Vector2(grid_w / 2.0, grid_h / 2.0)
-	var grid_node: Node2D = scene.get_node_or_null("HSplitContainer/GridViewport/SubViewport/GridNode")
+	var grid_node: Node2D = scene.get_node_or_null("HSplitContainer/GridArea/GridViewport/SubViewport/GridNode")
 	if grid_node != null:
 		grid_node.queue_redraw()
 
@@ -442,7 +442,7 @@ func _shot_04_fleet_placement_full() -> void:
 	var cursor_screen_pos: Vector2 = _screen_pos_of_grid_cell(scene, center_cell)
 	_add_cursor_overlay(scene, cursor_screen_pos)
 	var grid_node: Node2D = scene.get_node_or_null(
-		"HSplitContainer/GridViewport/SubViewport/GridNode")
+		"HSplitContainer/GridArea/GridViewport/SubViewport/GridNode")
 	if grid_node != null:
 		grid_node.queue_redraw()
 	await _capture("04_fleet_placement_full.png")

@@ -859,7 +859,7 @@ Five items: I12-1 imports assets + builds the project-wide Theme resource. I12-2
 
 ## Iteration 13 — Grid resize + new nebula
 
-- [ ] **I13-1. Grid resize 80×20 → 50×30 at 32px cells (all three grids)**
+- [x] **I13-1. Grid resize 80×20 → 50×30 at 32px cells (all three grids)**
   Spec ref: `prd.md > 9. Grid` and `spec.md > Architecture Overview` (grid dimensions referenced as 80×20 throughout). New constants: `GRID_COLS = 50`, `GRID_ROWS = 30`, `CELL_SIZE = 32` (unchanged). New SubViewport size: `Vector2i(1600, 960)`. New Camera2D center: `Vector2(800, 480)`. Three grids in scope: Command Grid + Target Grid (both in `gameplay.tscn`) and the Fleet Placement Grid (in `fleet_placement.tscn`). The Fleet Placement Grid has been overlooked in past iterations — explicit verification step at the bottom of this item to make sure it isn't this time.
   What to build:
   - Update `GRID_COLS = 50` and `GRID_ROWS = 30` in all four GD files: `scripts/ui/grid_renderer.gd:5-6`, `scripts/gameplay.gd:4-5`, `scripts/fleet_placement.gd:4-5`, `scripts/debug/screenshot_runner.gd:17-18`.

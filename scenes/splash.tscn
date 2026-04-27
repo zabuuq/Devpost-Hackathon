@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://bsplash0000001"]
 
 [ext_resource type="Script" path="res://scripts/splash.gd" id="1_splash"]
-[ext_resource type="Texture2D" path="res://assets/backgrounds/nebula.jpg" id="2_nebula"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/nebula.png" id="2_nebula"]
 
 [node name="Splash" type="Control"]
 layout_mode = 3

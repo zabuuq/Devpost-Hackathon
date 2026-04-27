@@ -4,12 +4,12 @@ class_name GridRenderer
 const CELL_SIZE: int = 32
 const GRID_COLS: int = 50
 const GRID_ROWS: int = 30
-# I11-3: Pad the nebula draw rect on every side so a zoomed-out / panned camera
-# never sees the SubViewport's flat clear color past the 50x30 playable grid.
-# 1280px == ~80% of grid-width of slack, comfortably more than any zoom-out frame.
-const NEBULA_PAD: int = 1280
-
-const NEBULA_TEXTURE: Texture2D = preload("res://assets/backgrounds/nebula.jpg")
+# I13-2: Nebula is no longer drawn inside the SubViewport. It now lives as a
+# static TextureRect behind the SubViewportContainer in screen space, so it
+# stays locked to the GridArea bounds regardless of zoom or pan. The SubViewport
+# uses transparent_bg so the static nebula shows through. _draw_background()
+# therefore does nothing — the dark base color is supplied by the parent scene's
+# Background ColorRect, which the static nebula overlays.
 
 const COLOR_BG: Color = Color(0.08, 0.06, 0.16, 1.0)
 const COLOR_GRID_LINE: Color = Color(0.12, 0.15, 0.25, 0.8)
@@ -77,16 +77,12 @@ func _draw() -> void:
 	_draw_probe_highlight()
 
 func _draw_background() -> void:
-	# Extend the nebula NEBULA_PAD pixels past the grid on every side so the
-	# camera can zoom out / pan without exposing the SubViewport clear color.
-	# Grid lines, ships, and overlays still draw only over the playable cells.
-	var dest := Rect2(
-		-NEBULA_PAD, -NEBULA_PAD,
-		GRID_COLS * CELL_SIZE + 2 * NEBULA_PAD,
-		GRID_ROWS * CELL_SIZE + 2 * NEBULA_PAD
-	)
-	var src := Rect2(0, 0, NEBULA_TEXTURE.get_width(), NEBULA_TEXTURE.get_height())
-	draw_texture_rect_region(NEBULA_TEXTURE, dest, src)
+	# I13-2: No-op. The nebula is now a static TextureRect behind the
+	# SubViewportContainer (screen space, doesn't zoom with the camera), and the
+	# SubViewport itself is transparent so that nebula shows through. Nothing to
+	# draw inside the world here — the function is kept as a hook in case future
+	# work wants to add an in-world dark wash again.
+	pass
 
 func _draw_grid_lines() -> void:
 	var grid_w: float = GRID_COLS * CELL_SIZE
