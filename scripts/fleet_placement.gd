@@ -23,8 +23,8 @@ const SHIP_NAMES: Dictionary = {
 @onready var done_button: Button = $HSplitContainer/LeftPanel/DoneButton
 @onready var grid_node: Node2D = $HSplitContainer/GridArea/GridViewport/SubViewport/GridNode
 @onready var camera: Camera2D = $HSplitContainer/GridArea/GridViewport/SubViewport/GridNode/Camera2D
-@onready var detail_name: Label = $HSplitContainer/RightPanel/DetailPanel/ShipName
-@onready var detail_stats: Label = $HSplitContainer/RightPanel/DetailPanel/ShipStats
+@onready var detail_name: Label = $HSplitContainer/LeftPanel/ShipName
+@onready var detail_stats: Label = $HSplitContainer/LeftPanel/ShipStats
 @onready var player_label: Label = $PlayerLabel
 @onready var viewport_container: SubViewportContainer = $HSplitContainer/GridArea/GridViewport
 

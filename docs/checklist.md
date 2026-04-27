@@ -878,7 +878,7 @@ Five items: I12-1 imports assets + builds the project-wide Theme resource. I12-2
   - Screenshot runner constants are aligned with the new bounds (don't run it yet — that's I13-4).
   Verify: Launch a new game in the editor or a local export. **Fleet placement check** — confirm the placement grid shows all 50 columns and 30 rows at scene entry, place a ship at column 49 (right edge) and another at row 29 (bottom edge), confirm no off-grid placements. **Gameplay check** — start a turn, confirm both Command Grid and Target Grid show all 50×30 cells at default zoom without panning. Take one turn including a probe at the right edge and a probe at the bottom edge. Confirm no errors, no clipped probes.
 
-- [ ] **I13-2. Nebula as a static background TextureRect (not zooming with the grid)**
+- [x] **I13-2. Nebula as a static background TextureRect (not zooming with the grid)**
   Spec ref: `prd.md > 9. Grid > Nebula background`, `spec.md > Grid Rendering`. Replaces the I3-1 / I11-3 approach of drawing the nebula inside `_draw_background()` (where it lives in world space and zooms with Camera2D). New approach: a static TextureRect behind the SubViewportContainer, in screen space, locked to the GridArea bounds and unaffected by zoom or pan. Same architectural change applies to the gameplay scene (Command + Target grids share one nebula behind the GridArea) and the fleet placement scene (one nebula behind the placement grid).
   What to build:
   - Copy the source image at `/c/Users/jcmcc/Downloads/aufdemrand_httpss.mj.run9Cju85kDvz8_Star_nebula_--ar_169_--v_7_2c782e84-0479-4f5f-98e4-eaf35a2c4128.png` (2912×1632 PNG, 16:9, ~5.7MB) into `assets/backgrounds/nebula.png`. Delete `assets/backgrounds/nebula.jpg` and its `.import` sidecar.

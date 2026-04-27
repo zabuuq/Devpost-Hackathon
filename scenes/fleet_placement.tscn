@@ -59,6 +59,20 @@ size_flags_vertical = 3
 [node name="ShipList" type="VBoxContainer" parent="HSplitContainer/LeftPanel/ScrollContainer"]
 size_flags_horizontal = 3
 
+[node name="HSeparator" type="HSeparator" parent="HSplitContainer/LeftPanel"]
+
+[node name="ShipName" type="Label" parent="HSplitContainer/LeftPanel"]
+text = "—"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.9, 0.96, 0.94, 1.0)
+
+[node name="ShipStats" type="Label" parent="HSplitContainer/LeftPanel"]
+text = "Select a ship\nto see details."
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.7, 0.81, 0.8, 1.0)
+autowrap_mode = 2
+
 [node name="PlacementHint" type="Label" parent="HSplitContainer/LeftPanel"]
 text = "Click ship to select\nQ/E to rotate\nRight-click to cancel"
 theme_override_font_sizes/font_size = 11
@@ -100,30 +114,6 @@ size = Vector2i(1600, 960)
 [node name="Camera2D" type="Camera2D" parent="HSplitContainer/GridArea/GridViewport/SubViewport/GridNode"]
 zoom = Vector2(0.86, 0.86)
 position = Vector2(800, 480)
-
-[node name="RightPanel" type="VBoxContainer" parent="HSplitContainer"]
-custom_minimum_size = Vector2(180, 0)
-
-[node name="DetailLabel" type="Label" parent="HSplitContainer/RightPanel"]
-text = "Ship Details"
-horizontal_alignment = 1
-theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.6, 0.92, 0.87, 1.0)
-
-[node name="DetailPanel" type="VBoxContainer" parent="HSplitContainer/RightPanel"]
-size_flags_vertical = 3
-
-[node name="ShipName" type="Label" parent="HSplitContainer/RightPanel/DetailPanel"]
-text = "—"
-horizontal_alignment = 1
-theme_override_font_sizes/font_size = 16
-theme_override_colors/font_color = Color(0.9, 0.96, 0.94, 1.0)
-
-[node name="ShipStats" type="Label" parent="HSplitContainer/RightPanel/DetailPanel"]
-text = "Select a ship\nto see details."
-theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.7, 0.81, 0.8, 1.0)
-autowrap_mode = 2
 
 [connection signal="pressed" from="HSplitContainer/LeftPanel/RandomizeButton" to="." method="_on_randomize_pressed"]
 [connection signal="pressed" from="HSplitContainer/LeftPanel/DoneButton" to="." method="_on_done_pressed"]

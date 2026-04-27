@@ -138,18 +138,22 @@ Reused for both players. Reads `GameState.current_player` to know whose fleet is
 
 **Layout:**
 ```
-┌──────────────┬────────────────────────────────┬───────────────┐
-│  Ship List   │   SubViewportContainer          │  Ship Detail  │
-│  (left panel)│   (Command Grid — this player)  │  (right panel)│
-│              │                                 │               │
-│  [ Done ]    │                                 │               │
-└──────────────┴────────────────────────────────┴───────────────┘
+┌──────────────┬────────────────────────────────┐
+│  Ship List   │                                │
+│  ──────────  │   SubViewportContainer         │
+│  Ship Detail │   (Command Grid — this player) │
+│  (left panel)│   + static nebula behind grid  │
+│  [ Done ]    │                                │
+└──────────────┴────────────────────────────────┘
 ```
 
-**Left panel — Ship List:**
-- Displays 5 ships as horizontal strips (squares shown to scale)
-- Unplaced ships: clickable. Click → ship enters ghost/cursor mode
-- Placed ships: shown as "placed" indicator in list
+**Left panel — Ship List + Ship Detail (combined):**
+- Top: 5 ships as horizontal strips (squares shown to scale)
+  - Unplaced ships: clickable. Click → ship enters ghost/cursor mode
+  - Placed ships: shown as "placed" indicator in list
+- Below the ship list (separated by an HSeparator): ship detail block
+  - Shows name, special ability, stats for the currently selected ship type
+- Bottom: placement hint text and Done button
 
 **Center — Command Grid (SubViewport + Camera2D):**
 - 50×30 grid, nebula background behind cells
@@ -160,9 +164,6 @@ Reused for both players. Reads `GameState.current_player` to know whose fleet is
   - Q → rotate counterclockwise
   - E → rotate clockwise
   - Ghost turns red when placement is invalid (overlap or out of bounds)
-
-**Right panel — Ship Detail:**
-- Shows name, illustration, special ability, stats for selected ship
 
 **Done button:**
 - Disabled until all 5 ships are placed

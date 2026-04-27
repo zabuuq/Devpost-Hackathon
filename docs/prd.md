@@ -36,9 +36,8 @@ Triggered after pressing Start Game.
 Player 1 clicks Next to proceed to the placement grid.
 
 **Placement screen layout:**
-- **Left panel:** Ship list. Each ship displayed as a horizontal strip showing its square count. Clicking a ship selects it and highlights it for drag placement.
+- **Left panel:** Ship list at top. Each ship displayed as a horizontal strip showing its square count. Clicking a ship selects it and highlights it for drag placement. Below the ship list, the same panel shows the selected ship's detail card — name, special ability description, and stats: max shields, max armor, max energy, laser strength, missile count, probe count.
 - **Center:** The 50×30 grid. Ships are dragged from the left panel onto the grid. Once placed, ships can be nudged with arrow keys or re-dragged. A rotate button (or keyboard shortcut) rotates the selected ship.
-- **Right panel:** Selected ship detail card — ship illustration (if available), name, special ability description, and stats: max shields, max armor, max energy, laser strength, missile count, probe count.
 - **Done button:** Confirms placement and advances to handoff.
 
 **Placement rules:**
