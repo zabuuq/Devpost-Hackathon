@@ -836,16 +836,15 @@ func _setup_hover_tooltip() -> void:
 	hover_tooltip.z_index = 100
 	hover_tooltip.z_as_relative = false
 
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.05, 0.08, 0.12, 0.92)
-	style.corner_radius_top_left = 2
-	style.corner_radius_top_right = 2
-	style.corner_radius_bottom_left = 2
-	style.corner_radius_bottom_right = 2
-	style.content_margin_left = 6
-	style.content_margin_right = 6
-	style.content_margin_top = 4
-	style.content_margin_bottom = 4
+	# I12-4: Kenney glass-panel art in place of the hand-rolled flat styling.
+	# modulate keeps the same translucency the old StyleBoxFlat gave us.
+	var style := StyleBoxTexture.new()
+	style.texture = preload("res://assets/ui/kenney/extra/panel_glass.png") as Texture2D
+	style.content_margin_left = 8
+	style.content_margin_right = 8
+	style.content_margin_top = 8
+	style.content_margin_bottom = 8
+	style.modulate_color = Color(1.0, 1.0, 1.0, 0.92)
 	hover_tooltip.add_theme_stylebox_override("panel", style)
 
 	hover_tooltip_label = Label.new()

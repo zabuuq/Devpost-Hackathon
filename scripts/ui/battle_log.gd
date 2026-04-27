@@ -139,11 +139,10 @@ func _build_entry_label(entry: Dictionary) -> RichTextLabel:
 	label.scroll_active = false
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	label.add_theme_color_override("default_color", color)
-	label.add_theme_font_size_override("normal_font_size", 13)
-	label.add_theme_font_size_override("bold_font_size", 13)
 	label.set_meta("plain_text", text)
 	label.set_meta("is_divider", action_type == "divider")
 	if action_type == "divider":
+		# Compact 12pt — divider rows are visual separators, not entries.
 		label.add_theme_font_size_override("normal_font_size", 12)
 		label.add_theme_font_size_override("bold_font_size", 12)
 	label.text = _escape_bbcode(text)

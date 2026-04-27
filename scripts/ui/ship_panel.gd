@@ -11,6 +11,10 @@ signal ship_deselected()
 # Target Grid) hides the accordion entirely and shows a stripped read-only
 # panel in its place; hide_enemy_panel restores the accordion.
 
+# Compact density for stat readouts and slider labels. Single source of truth
+# so the dense panel stays visually consistent vs. the theme's 13pt default.
+const FONT_SIZE_STATS_LABEL: int = 11
+
 var _accordion: VBoxContainer = null
 var _enemy_panel: VBoxContainer = null
 var _enemy_name_label: Label = null
@@ -56,7 +60,7 @@ func _build_static_ui() -> void:
 	_enemy_panel.add_child(_enemy_name_label)
 
 	_enemy_stats_label = Label.new()
-	_enemy_stats_label.add_theme_font_size_override("font_size", 11)
+	_enemy_stats_label.add_theme_font_size_override("font_size", FONT_SIZE_STATS_LABEL)
 	_enemy_stats_label.add_theme_color_override("font_color", Color(0.7, 0.77, 0.8))
 	_enemy_stats_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	_enemy_panel.add_child(_enemy_stats_label)
@@ -99,7 +103,6 @@ func _build_row(ship: ShipInstance) -> Dictionary:
 	header.text = _row_header_text(ship)
 	header.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_theme_font_size_override("font_size", 13)
 	header.pressed.connect(func() -> void: _on_header_pressed(ship))
 	header_box.add_child(header)
 	row["header"] = header
@@ -125,6 +128,7 @@ func _build_row(ship: ShipInstance) -> Dictionary:
 	header.add_child(strikethrough)
 	row["header_strikethrough"] = strikethrough
 
+	# Mini bars stay flat — Kenney bar art targets larger widgets.
 	var bars_box := VBoxContainer.new()
 	bars_box.size_flags_horizontal = Control.SIZE_SHRINK_END
 	bars_box.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -180,7 +184,7 @@ func _build_detail_panel(detail: VBoxContainer, row: Dictionary) -> void:
 	var stats: Dictionary = ShipDefinitions.SHIPS[ship.ship_type]
 
 	var stats_label := Label.new()
-	stats_label.add_theme_font_size_override("font_size", 11)
+	stats_label.add_theme_font_size_override("font_size", FONT_SIZE_STATS_LABEL)
 	stats_label.add_theme_color_override("font_color", Color(0.7, 0.77, 0.8))
 	stats_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	detail.add_child(stats_label)
@@ -191,7 +195,7 @@ func _build_detail_panel(detail: VBoxContainer, row: Dictionary) -> void:
 	var shield_box := HBoxContainer.new()
 	var shield_label := Label.new()
 	shield_label.text = "Shield Regen:"
-	shield_label.add_theme_font_size_override("font_size", 11)
+	shield_label.add_theme_font_size_override("font_size", FONT_SIZE_STATS_LABEL)
 	shield_box.add_child(shield_label)
 	var shield_slider := HSlider.new()
 	shield_slider.min_value = 0
@@ -202,7 +206,7 @@ func _build_detail_panel(detail: VBoxContainer, row: Dictionary) -> void:
 	shield_slider.value_changed.connect(func(v: float) -> void: _on_shield_slider_changed(row, v))
 	shield_box.add_child(shield_slider)
 	var shield_value_label := Label.new()
-	shield_value_label.add_theme_font_size_override("font_size", 11)
+	shield_value_label.add_theme_font_size_override("font_size", FONT_SIZE_STATS_LABEL)
 	shield_value_label.custom_minimum_size = Vector2(35, 0)
 	shield_box.add_child(shield_value_label)
 	detail.add_child(shield_box)
@@ -212,7 +216,7 @@ func _build_detail_panel(detail: VBoxContainer, row: Dictionary) -> void:
 	var laser_box := HBoxContainer.new()
 	var laser_label := Label.new()
 	laser_label.text = "Laser Power:"
-	laser_label.add_theme_font_size_override("font_size", 11)
+	laser_label.add_theme_font_size_override("font_size", FONT_SIZE_STATS_LABEL)
 	laser_box.add_child(laser_label)
 	var laser_slider := HSlider.new()
 	laser_slider.min_value = 0
@@ -223,7 +227,7 @@ func _build_detail_panel(detail: VBoxContainer, row: Dictionary) -> void:
 	laser_slider.value_changed.connect(func(v: float) -> void: _on_laser_slider_changed(row, v))
 	laser_box.add_child(laser_slider)
 	var laser_value_label := Label.new()
-	laser_value_label.add_theme_font_size_override("font_size", 11)
+	laser_value_label.add_theme_font_size_override("font_size", FONT_SIZE_STATS_LABEL)
 	laser_value_label.custom_minimum_size = Vector2(35, 0)
 	laser_box.add_child(laser_value_label)
 	detail.add_child(laser_box)
@@ -231,7 +235,7 @@ func _build_detail_panel(detail: VBoxContainer, row: Dictionary) -> void:
 	row["laser_value_label"] = laser_value_label
 
 	var energy_remaining_label := Label.new()
-	energy_remaining_label.add_theme_font_size_override("font_size", 11)
+	energy_remaining_label.add_theme_font_size_override("font_size", FONT_SIZE_STATS_LABEL)
 	energy_remaining_label.add_theme_color_override("font_color", Color(0.6, 0.9, 0.6))
 	detail.add_child(energy_remaining_label)
 	row["energy_remaining_label"] = energy_remaining_label
