@@ -941,3 +941,79 @@ Iteration scope: kill the tab strip on the gameplay screen left panel and replac
 - Smoke test (Gate 1) passed in the local browser at `http://localhost:8000/index.html`. Butler push (Gate 2) ran clean. Devlog draft (Gate 3) approved by "ship it".
 
 Next iteration entry point: read `docs/checklist.md` for I11 scoping, or take a `/scope` pass on `docs/backlog.md` to pick the next bundle.
+
+## /iterate — Iteration 11 (opening)
+
+Started 2026-04-26 (same day as I10 ship). All I10 items checked, working tree clean, build live on itch.io as `#1639077`.
+
+### Going-in state
+- Original checklist + I1–I10 all complete.
+- Backlog "Ideas Surfaced During Development" candidates available: direct hits vs partial hits, ship naming, ambient music (deferred from I10-2), cell info tooltip on Target Grid hover, nebula extends beyond grid bounds, hit/miss color unification across grids, accordion row armor/shield bar in collapsed state.
+- Long-term/exploratory items (non-linear ship shapes, half-block cells, crit hits, fleet builder) deliberately out of scope for an iteration — they need their own design pass first.
+
+### Scoping pass — what Jason picked
+
+- **Future items (stay in backlog):** #11 Direct hits vs partial hits, #12 Ship naming, #14 Audio: ambient music.
+- **Removed from backlog:** #13 Ship list in left panel — already shipped as the I10 accordion. Pruned from `docs/backlog.md` Ideas table.
+- **Picked for I11:** #15 Cell info tooltip on Target Grid hover, #16 Nebula extends beyond grid bounds, #17 Hit/miss color unification (option (a) — Command palette red for fresh, gray for persistent, applied to hit + miss + near-miss on both grids), #18 Accordion row armor/shield bar in collapsed state, plus a NEW item from Jason: gray the ship name in the side bar once that ship has taken its action for the turn. The accordion-row bar (#18) and the gray-when-acted item are bundled into one checklist item (I11-2) since both touch `_build_row` / `_refresh_header`.
+- **Added to backlog:** "Audio: improve SFX" (replace placeholder-grade SFX with higher-quality sources — file-replacement job since `AudioManager.play_sfx(name)` is the single integration point) and "Use graphics for the interface" (replace default Godot Controls with custom panel art / themed widgets to match the nebula aesthetic — touches ship_panel.gd, main_menu.gd, handoff.gd, victory.gd, plus a project-wide Theme).
+
+### Review pass observations surfaced before checklist
+
+- Tooltip data for #15 is half-built: `CellRecord` already has `hit_turn` and `miss_turn` from I7-3. The boolean `was_probed` needs to be paired with a new `last_probe_turn: int` so the tooltip can show probe-event timing.
+- The "unify hit/miss colors" item had three valid interpretations. Confirmed with Jason: option (a) — push the Command palette's bright red (`Color(1.0, 0.15, 0.15, 1.0)`) over to Target Grid for fresh markers, use gray (`Color(0.6, 0.6, 0.6, 0.4)`) for older/persistent markers, applied uniformly to hit + miss + near-miss on both grids. The orange near-miss color drops out entirely.
+- Gray-when-acted is essentially free — `_row_header_text` and `_refresh_header` already handle the destroyed case via `modulate`. Adding an `action_taken` branch is a one-line change in each, plus a new `refresh_all_headers()` method to keep non-expanded rows in sync after damage / shield regen.
+- Collapsed-row armor/shield bar (#18) is the most actual-new-widget work in the bundle: today the row header is a plain Button; restructuring to HBox{ Button, mini bars } adds a Control hierarchy but isn't risky.
+- Nebula extension (#16) is a single-touchpoint change in `_draw_background`. Going with option (a): a fixed padded dest rect (`NEBULA_PAD = 1280` on all sides) that's guaranteed to cover the SubViewport at any zoom level. Source rect stays as-is.
+
+### Items written
+
+5 items total — 4 work items (I11-1 color unify, I11-2 accordion header polish bundle, I11-3 nebula extension, I11-4 cell tooltip) + I11-5 gated redeploy + devlog. All single- or two-file changes, no data-model rework beyond the new `CellRecord.last_probe_turn` field.
+
+## /build — Iteration 11
+
+Started and shipped 2026-04-26 (same day as scoping pass and as I10 ship). Autonomous mode, verification at one mid-bundle checkpoint, plus the standard three-gate redeploy. All five items landed.
+
+### Commits landed
+
+- `5b5affc` Complete step I11-1: Unify hit / miss / near-miss colors across both grids
+- `3235c53` Complete step I11-2: Accordion header polish — collapsed-row armor/shield bar + gray-when-acted
+- `5a8249d` Complete step I11-3: Nebula background extends beyond grid bounds
+- `048b7e4` Refine I11-3: drop unused NEBULA_SRC_RECT in grid_renderer (dead-code cleanup the I11-3 subagent flagged)
+- `67f90a5` Tick I11-1 / I11-2 / I11-3 in checklist
+- `9d15a0c` Refine I11-1: bump COLOR_MARKER_PERSISTENT alpha to 1.0 for readability (verification checkpoint feedback — Jason said the 0.4-alpha gray was too faint to see)
+- `5dcc3f4` Refine I11-1: align COLOR_HISTORICAL_PROBE with persistent marker gray (Jason's follow-up — wanted the persistent gray and the "you've looked here" border to read as one system)
+- `33e4b80` Complete step I11-4: Cell info tooltip on Target Grid hover
+- `5ae33df` Tick I11-4 in checklist
+- (this commit) Complete step I11-5: Redeploy + devlog draft + backlog cleanup
+- Build pushed: `#1639229` (previous live: `#1639077`). Patch 215.15 KiB, 99.70% savings, butler re-used 99.62% of old data.
+
+### What landed in I11
+
+- **`scripts/ui/grid_renderer.gd`** — eight marker color constants collapsed to two (`COLOR_MARKER_FRESH = Color(1.0, 0.15, 0.15, 1.0)`, `COLOR_MARKER_PERSISTENT = Color(0.6, 0.6, 0.6, 1.0)`). Bright red for fresh markers, mid-gray for one-turn-old markers, applied uniformly across hits, misses, and near-misses on both grids. Orange near-miss color removed entirely. `COLOR_HISTORICAL_PROBE` retuned to match the persistent gray. `_draw_background` extended NEBULA_PAD = 1280 on every side so the nebula fills the SubViewport at any zoom-out / pan; switched to the full source texture (5333×3555) since the old 4:1 crop would over-stretch on the new 1.6:1 dest. Dead constant `NEBULA_SRC_RECT` dropped (the fleet placement scene still defines its own).
+- **`scripts/ui/ship_panel.gd`** — accordion row header restructured from a plain Button into HBox{ Button, mini VBox{ shield ProgressBar, armor ProgressBar } }. Both bars `MOUSE_FILTER_IGNORE` so clicks pass through to the button. New `refresh_all_headers()` method iterates every row's header. New row-dict keys: `header_box`, `header_shield_bar`, `header_armor_bar`. `_refresh_header` extended to a third state — alive + `action_taken` modulates the whole header HBox to `Color(0.6, 0.6, 0.6)`, distinct from the destroyed gray `Color(0.5, 0.5, 0.5)`. Modulate cascades cleanly to bars and label in 4.6.2.
+- **`scripts/gameplay.gd`** — `refresh_all_headers()` called in three places: line 102 (after `_setup_ship_panel()` in `_ready` so each turn starts with bars at correct values), line 528 (after the action-resolution `refresh_expanded()`), line 716 (after the move-action `refresh_expanded()`). New `_setup_hover_tooltip()` builds a `PanelContainer + Label` in `_ready`, parented to the gameplay scene root with `top_level = true`, `z_index = 100`, both nodes `MOUSE_FILTER_IGNORE`. `_process(_delta)` calls `_update_hover_tooltip()` — chosen over signal-driven because the tooltip needs to react to grid switches and to in-place `cell_records` updates, not only to mouse motion. Position offset 16px down-right from cursor with a flip to up-left if it would clip; final `clampf` to viewport size catches the small-viewport edge. Tooltip hidden on grid switch (`_switch_grid`) and on `target_viewport.mouse_exited`.
+- **`scripts/gameplay/cell_record.gd`** — added `last_probe_turn: int` field. `make_probe(...)` signature gained a `turn_number: int` arg.
+- **`scripts/gameplay/action_resolver.gd`** — passes `player_data["turns_played"] + 1` as the new arg at both probe-cell write sites (line 70, 87). Probe-overlap reset path gets the fresh turn number for free since each cell is overwritten by a new `CellRecord.make_probe(...)`.
+- **`scripts/debug/screenshot_runner.gd`** — both `make_probe(...)` call sites updated to pass `1` as the placeholder turn number.
+- **`docs/color-scheme.md`** — Grid/probe/combat markers section updated for the I11-1 palette unification: two new rows replacing the old four-constant entries; persistent-gray row notes the historical-probe border now shares the same color. Other line numbers in the doc are still drifted by ~3 from the `NEBULA_SRC_RECT` removal but were left as-is; not in scope for I11-5 and a future cleanup pass can re-run the line-number sweep.
+
+### Verification checkpoint observation
+
+Single mid-bundle checkpoint after I11-1 / I11-2 / I11-3. Jason flagged the persistent-marker gray as too faint to see at the original `Color(0.6, 0.6, 0.6, 0.4)`. Bumped alpha to 1.0 (`9d15a0c`). Follow-up ask: align `COLOR_HISTORICAL_PROBE` to the same gray for visual consistency between the "old hit/miss" layer and the "you've looked here" layer (`5dcc3f4`). Both refinements landed before continuing to I11-4. No regressions observed on other items.
+
+### Backlog deltas
+
+- Removed four rows from the Ideas Surfaced table, all implemented in I11: `Cell info tooltip on Target Grid hover`, `Nebula extends beyond grid bounds`, `Hit/miss markers: unify Command Grid coloring with Target Grid`, `Accordion row visual: armor/shield bar in collapsed state`.
+- The I10 leftover row (`Audio: ambient music`) and the two rows added during I11 scoping (`Audio: improve SFX`, `Use graphics for the interface`) all stay — none implemented this iteration.
+
+### I11 build summary
+
+Iteration scope: a five-item visual-polish bundle pulled directly from the backlog Ideas Surfaced table plus one new ask from Jason ("gray ship name when action taken"). No data-model rework beyond a single new `CellRecord.last_probe_turn: int`. No new scenes. Final commit sequence above.
+
+- Smoke test (Gate 1) passed in the local browser at `http://localhost:8000/index.html`. Jason verified the unified red/gray palette on both grids, the accordion bars + gray-when-acted, the extended nebula, and the cell tooltip.
+- Butler push (Gate 2) ran clean — 99.62% re-use, 215.15 KiB patch.
+- Devlog draft (Gate 3) at `docs/claude-cowork/devlog-i11.md` — Gallows-Deadpan voice, three bold ledes ("One palette, two grids, no orange.", "The accordion learned to keep score.", "The Target Grid finally remembers.") with the nebula extension folded into the body before the close.
+- No screenshot regen required — the I11 changes don't alter any of the 18-shot capture points (same accordion structure, same grid layout, same UI). Could be regenerated later if a marketing pass wants the new bars / bright-red markers / tooltip on display.
+
+Next iteration entry point: read `docs/checklist.md` for the next bundle, or take a `/scope` pass on `docs/backlog.md`.
