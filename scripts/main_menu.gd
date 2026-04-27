@@ -64,6 +64,8 @@ const HOW_TO_PLAY_PAGES: Array[Dictionary] = [
 
 @onready var how_to_play_overlay: Control = $HowToPlayOverlay
 @onready var sfx_button: Button = $MenuContainer/SFXToggle
+@onready var start_button: Button = $MenuContainer/StartGame
+@onready var how_to_play_button: Button = $MenuContainer/HowToPlay
 @onready var page_title: Label = $HowToPlayOverlay/Panel/PageTitle
 @onready var page_screenshot: TextureRect = $HowToPlayOverlay/Panel/ContentArea/PageScreenshot
 @onready var page_screenshot2: TextureRect = $HowToPlayOverlay/Panel/ContentArea/PageScreenshot2
@@ -77,6 +79,8 @@ var current_page: int = 0
 
 func _ready() -> void:
 	GameState.phase = GameState.Phase.MENU
+	start_button.set_type_variation(&"HeaderButton")
+	how_to_play_button.set_type_variation(&"HeaderButton")
 	_update_toggle_labels()
 	_render_page()
 

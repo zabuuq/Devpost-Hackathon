@@ -38,6 +38,7 @@ func _ready() -> void:
 	p2_damage.text = "%d" % p2_stats.get("total_damage", 0)
 	p2_misses.text = "%d" % p2_stats.get("total_misses", 0)
 
+	play_again_btn.set_type_variation(&"HeaderButton")
 	play_again_btn.pressed.connect(_on_play_again)
 
 

@@ -1,9 +1,11 @@
 extends Control
 
 @onready var message_label: Label = $CenterPanel/MessageLabel
+@onready var next_button: Button = $CenterPanel/NextButton
 
 func _ready() -> void:
 	GameState.phase = GameState.Phase.HANDOFF
+	next_button.set_type_variation(&"HeaderButton")
 	var player_num: int = GameState.current_player + 1
 	var hits: int = GameState.last_turn_hits
 	if GameState.turn_number == 0:
