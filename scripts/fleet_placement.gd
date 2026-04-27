@@ -1,9 +1,9 @@
 extends Control
 
 const CELL_SIZE: int = 32
-const GRID_COLS: int = 80
-const GRID_ROWS: int = 20
-const GRID_CENTER: Vector2i = Vector2i(40, 10)
+const GRID_COLS: int = 50
+const GRID_ROWS: int = 30
+const GRID_CENTER: Vector2i = Vector2i(25, 15)
 const MIN_ZOOM: float = 0.1
 const MAX_ZOOM: float = 4.0
 const DRAG_THRESHOLD_PX: float = 4.0
@@ -376,7 +376,7 @@ func _on_randomize_pressed() -> void:
 				placed = true
 				break
 		if not placed:
-			# Defensive rollback — should never trigger on an 80x20 grid.
+			# Defensive rollback — should never trigger on a 50x30 grid.
 			push_warning("Randomize: failed to place %s after %d attempts; restoring prior board." % [stype, MAX_ATTEMPTS])
 			placed_ships = prior_placed
 			for j in range(ship_buttons.size()):

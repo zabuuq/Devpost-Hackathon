@@ -2,11 +2,11 @@ extends Node2D
 class_name GridRenderer
 
 const CELL_SIZE: int = 32
-const GRID_COLS: int = 80
-const GRID_ROWS: int = 20
+const GRID_COLS: int = 50
+const GRID_ROWS: int = 30
 # I11-3: Pad the nebula draw rect on every side so a zoomed-out / panned camera
-# never sees the SubViewport's flat clear color past the 80x20 playable grid.
-# 1280px == one grid-width of slack, comfortably more than any zoom-out frame.
+# never sees the SubViewport's flat clear color past the 50x30 playable grid.
+# 1280px == ~80% of grid-width of slack, comfortably more than any zoom-out frame.
 const NEBULA_PAD: int = 1280
 
 const NEBULA_TEXTURE: Texture2D = preload("res://assets/backgrounds/nebula.jpg")

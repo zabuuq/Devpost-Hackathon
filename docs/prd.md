@@ -37,7 +37,7 @@ Player 1 clicks Next to proceed to the placement grid.
 
 **Placement screen layout:**
 - **Left panel:** Ship list. Each ship displayed as a horizontal strip showing its square count. Clicking a ship selects it and highlights it for drag placement.
-- **Center:** The 80×20 grid. Ships are dragged from the left panel onto the grid. Once placed, ships can be nudged with arrow keys or re-dragged. A rotate button (or keyboard shortcut) rotates the selected ship.
+- **Center:** The 50×30 grid. Ships are dragged from the left panel onto the grid. Once placed, ships can be nudged with arrow keys or re-dragged. A rotate button (or keyboard shortcut) rotates the selected ship.
 - **Right panel:** Selected ship detail card — ship illustration (if available), name, special ability description, and stats: max shields, max armor, max energy, laser strength, missile count, probe count.
 - **Done button:** Confirms placement and advances to handoff.
 
@@ -73,7 +73,7 @@ The main game loop. Active for all turns after fleet placement is complete.
 - **Tabbed:** One grid fills the screen at max size. Tab key (or button) switches between My Fleet grid and Enemy grid.
 
 **Grid navigation:**
-- Zoom in/out — fully zoomed out shows the entire 80×20 grid; zoomed in allows detail navigation.
+- Zoom in/out — fully zoomed out shows the entire 50×30 grid; zoomed in allows detail navigation.
 - Pan by clicking and dragging on empty grid space.
 - Movement during gameplay is action-based (select ship → choose action → choose direction). No drag-to-move.
 
@@ -128,7 +128,7 @@ Each player commands an identical fleet of 5 ships.
 | Destroyer | 3 | 750 | 750 | 750 | 250 | 12 | 12 | — |
 | Cruiser | 2 | 500 | 500 | 500 | 250 | 10 | 10 | 2 move actions per turn |
 
-**Total fleet footprint per player:** 17 squares across 5 ships on an 80×20 grid.
+**Total fleet footprint per player:** 17 squares across 5 ships on a 50×30 grid.
 
 ---
 
@@ -245,8 +245,8 @@ The Cruiser may take **2 move actions per turn** (costs 100 energy total if both
 
 ## 9. Grid
 
-- **Dimensions:** 80×20 cells per player. Two separate hidden grids — one per player.
-- **Zoom:** Full zoom-out shows the entire 80×20 grid. Zoom in for detail (exact zoom levels TBD in spec).
+- **Dimensions:** 50×30 cells per player. Two separate hidden grids — one per player.
+- **Zoom:** Full zoom-out shows the entire 50×30 grid. Zoom in for detail (exact zoom levels TBD in spec).
 - **Pan:** Click and drag on empty grid space. During fleet placement, clicking a ship selects/drags it — panning only triggers on empty cells.
 - **Nebula background:** Deep space purples, blues, teals. Probed areas illuminate/highlight over the nebula texture rather than replacing it.
 

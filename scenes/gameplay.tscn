@@ -104,15 +104,15 @@ anchor_bottom = 1.0
 stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="MainLayout/GridArea/CommandViewport"]
-size = Vector2i(2560, 640)
+size = Vector2i(1600, 960)
 
 [node name="GridNode" type="Node2D" parent="MainLayout/GridArea/CommandViewport/SubViewport"]
 script = ExtResource("2_grid")
 is_command_grid = true
 
 [node name="Camera2D" type="Camera2D" parent="MainLayout/GridArea/CommandViewport/SubViewport/GridNode"]
-zoom = Vector2(1, 1)
-position = Vector2(1280, 320)
+zoom = Vector2(0.86, 0.86)
+position = Vector2(800, 480)
 
 [node name="TargetViewport" type="SubViewportContainer" parent="MainLayout/GridArea"]
 layout_mode = 1
@@ -123,15 +123,15 @@ stretch = true
 visible = false
 
 [node name="SubViewport" type="SubViewport" parent="MainLayout/GridArea/TargetViewport"]
-size = Vector2i(2560, 640)
+size = Vector2i(1600, 960)
 
 [node name="GridNode" type="Node2D" parent="MainLayout/GridArea/TargetViewport/SubViewport"]
 script = ExtResource("2_grid")
 is_command_grid = false
 
 [node name="Camera2D" type="Camera2D" parent="MainLayout/GridArea/TargetViewport/SubViewport/GridNode"]
-zoom = Vector2(1, 1)
-position = Vector2(1280, 320)
+zoom = Vector2(0.86, 0.86)
+position = Vector2(800, 480)
 
 [node name="TurnManager" type="Node" parent="."]
 script = ExtResource("3_turn")

@@ -23,7 +23,7 @@ Two players sitting at the same computer who want a tense, tactical hidden-infor
 - Demonstrate spec-driven development end-to-end
 
 ## What "Done" Looks Like
-Two players can sit down at a browser, go through a setup phase (fleet placement, hot-seat handoff with a blank interstitial screen), and play a full game to completion. Each player has a separate hidden grid (~80×20 cells). Each turn, the active player clicks through their ships one at a time, choosing one action each (probe, shoot, move, or special ability). Between turns, a handoff screen shows what happened to your ships last turn (probes detected, damage received). The game ends when one fleet is completely destroyed.
+Two players can sit down at a browser, go through a setup phase (fleet placement, hot-seat handoff with a blank interstitial screen), and play a full game to completion. Each player has a separate hidden grid (~50×30 cells). Each turn, the active player clicks through their ships one at a time, choosing one action each (probe, shoot, move, or special ability). Between turns, a handoff screen shows what happened to your ships last turn (probes detected, damage received). The game ends when one fleet is completely destroyed.
 
 The UI looks good — nebula background, ship portraits, probed areas illuminated, clear shield/armor/energy readouts. There are sound effects. It runs in a browser and could be published to itch.io as-is.
 
@@ -41,7 +41,7 @@ Each ship gets one action per turn: **Probe**, **Shoot** (laser or missile), **M
 
 ## Core Mechanics Summary
 
-**Grid:** Two separate hidden grids (~80×20). Each player places their fleet on their own grid; you never see the opponent's grid directly — only what probes reveal.
+**Grid:** Two separate hidden grids (~50×30). Each player places their fleet on their own grid; you never see the opponent's grid directly — only what probes reveal.
 
 **Probing:** Costs energy. Reveals a 3×3 area (standard) or larger (Probe Ship). Probe intel fades over turns — turn 1: full detail, turn 2: visible if ship still in area, turn 3: visible only if nearby, turn 4+: gone, leaves a "?" marker. If the opponent moves a ship into an active probe zone, it becomes visible.
 
@@ -71,7 +71,7 @@ Each ship gets one action per turn: **Probe**, **Shoot** (laser or missile), **M
 
 ## Loose Implementation Notes
 - **Engine:** Godot 4, exported to HTML5. GDScript (or GDScript + some TypeScript via tooling if feasible — TypeScript is Jason's stretch goal).
-- **Grid rendering:** The ~80×20 grid will need to be scrollable or zoomable in the browser — it's too wide to fit at full cell size on most screens. Consider a minimap or viewport pan.
+- **Grid rendering:** The ~50×30 grid will need to be scrollable or zoomable in the browser — it may not fit at full cell size on smaller screens. Consider a minimap or viewport pan.
 - **Two-grid UI layout:** Player sees their own fleet grid + their fog-of-war view of the opponent's grid. Probe illumination overlaid on the nebula texture.
 - **Ship portraits:** Side panel that shows a detailed ship illustration + current stats (shield %, armor %, energy allocation, missiles remaining) when a ship is selected.
 - **Sound:** Ambient space audio, laser/missile SFX, probe SFX, explosion SFX. Godot's AudioStreamPlayer handles this cleanly.

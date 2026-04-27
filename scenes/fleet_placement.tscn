@@ -75,13 +75,13 @@ size_flags_vertical = 3
 stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="HSplitContainer/GridViewport"]
-size = Vector2i(2560, 640)
+size = Vector2i(1600, 960)
 
 [node name="GridNode" type="Node2D" parent="HSplitContainer/GridViewport/SubViewport"]
 
 [node name="Camera2D" type="Camera2D" parent="HSplitContainer/GridViewport/SubViewport/GridNode"]
-zoom = Vector2(1, 1)
-position = Vector2(1280, 320)
+zoom = Vector2(0.86, 0.86)
+position = Vector2(800, 480)
 
 [node name="RightPanel" type="VBoxContainer" parent="HSplitContainer"]
 custom_minimum_size = Vector2(180, 0)

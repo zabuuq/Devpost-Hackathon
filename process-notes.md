@@ -1121,3 +1121,45 @@ Mid-iteration walkthrough fixes were heavier than usual (six refinement commits 
 No screenshot regen this iteration — the existing 18-shot set captures the new theme through the same scene tree paths the runner already walks. Could be regenerated later if a marketing pass wants the Kenney chrome on display.
 
 Next iteration entry point: read `docs/checklist.md` for the next bundle, or take a `/scope` pass on `docs/backlog.md`.
+
+## /iterate — Iteration 13 (opening)
+
+Started 2026-04-26 (same day as I10 / I11 / I12 ship). All I1–I12 items checked, working tree clean, build live on itch.io as `#1639451`.
+
+### Going-in state
+- Original checklist + I1–I12 all complete.
+- Backlog "Ideas Surfaced During Development" remaining candidates: direct hits vs partial hits, ship naming, ambient music (deferred from I10-2), Audio: improve SFX, per-ship portrait art (added during I12-5 when "Use graphics for the interface" was retired).
+- Long-term/exploratory items (non-linear ship shapes, half-block cells, crit hits, fleet builder) deliberately out of scope for an iteration.
+- Most recent iteration (I12) was the Kenney UI Pack themed overhaul: project-wide Theme resource via `project.godot[gui] theme/custom`, grey + blue palette, glass-panel hover tooltip, HeaderButton variation on primary CTAs.
+
+### Scoping pass — what Jason picked
+
+- **Picked:** none. The "more graphics for the rest of the playing interface" thread was deferred to backlog as `Kenney UI chrome — playing interface phase 2` (added to `docs/backlog.md` Ideas Surfaced table, just below the `Per-ship portrait art` row).
+- The backlog row captures the remaining un-themed surfaces from the I13 review pass — TopBar / LeftPanel panel chrome, accordion mini bar reskin (I12-4 punt), targeting reticule using Kenney crosshairs, header chips for sub-section labels (Battle Log, Actions, accordion row variants), and a glass strip behind the move-mode floating UI — plus the Kenney art categories we haven't used yet (crosshairs, header button blade/notch/large variants, notched/screwed panel variants, large bar art, cursor variants).
+- I13 closed without a build run. No checklist items written, no commits, no redeploy. Working tree clean, build live as `#1639451`.
+
+
+### Re-scoping pass — Jason swapped the iteration target
+
+After deferring the chrome-phase-2 work above, Jason pivoted to two structural changes: resize the grid 80×20 → 50×30, and swap in a new Midjourney nebula image.
+
+**Grid sizing rationale:** Anchored on the playable area math. Project viewport 1600×900, minus TopBar / LeftPanel / margins, leaves a GridArea of ~1376×828 (1.66:1 aspect). The current 80×20 grid at 32px is 2560×640 (4:1) — much wider than the playable area, which is why the game requires horizontal panning at zoom 1.0. Walked Jason through five candidate grids (43×26, 40×24, 50×30, 64×40, 86×52). He picked **50×30 at 32px** — 1500 cells (close to the original 1600 so tactical density is preserved), 1.67:1 aspect (matches the playable area), 32px cells (no marker / facing-triangle proportions need re-tuning).
+
+**Nebula source:** Midjourney v7 with `--ar 16:9`, file at `/c/Users/jcmcc/Downloads/aufdemrand_httpss.mj.run9Cju85kDvz8_Star_nebula_--ar_169_--v_7_2c782e84-0479-4f5f-98e4-eaf35a2c4128.png`. 2912×1632 PNG, 5.7MB. Aspect is 16:9 (1.78:1) — slightly wider than the new 1.67:1 grid, so a small vertical stretch on draw is expected. Acceptable on an abstract nebula; build subagent can switch to `draw_texture_rect_region` cropping if it reads badly.
+
+### Items written
+
+4 items — I13-1 (grid resize: constants + scenes + default zoom + screenshot runner waypoints + doc prose), I13-2 (nebula swap: drop new asset + update preloads + retune NEBULA_PAD), I13-3 (screenshot regeneration after both upstream items land), I13-4 (gated redeploy + devlog + commit/push, mirrors I12-5).
+
+### Scope expanded mid-pass
+
+Jason added four constraints after the initial 4-item checklist landed:
+
+1. **Nebula is a static background, not drawn inside the SubViewport.** Replaces the I3-1 / I11-3 architecture (where `_draw_background()` rendered the nebula in world space, scaling and panning with Camera2D). New approach: `TextureRect` behind the `SubViewportContainer`, anchored to the GridArea bounds, mouse-filter ignore, with the SubViewport set to `transparent_bg = true`. Drops `NEBULA_TEXTURE` and `NEBULA_PAD` from `grid_renderer.gd` and `fleet_placement.gd`.
+2. **All grid changes apply to all three grids.** Fleet Placement Grid has been overlooked in past iterations (Jason flagged this directly). I13-1 and I13-2 spec verification steps for the placement grid explicitly.
+3. **Default zoom shows all cells on every grid.** 50×30 grid at 32px = 1600×960. Default zoom = 0.86 (= 1376/1600) shows all cells in the gameplay GridArea (1376×828). Same default applied to fleet placement (which gets the same zoom even though its GridArea is slightly different — the I13-3 panel removal widens placement GridArea, so 0.86 stays valid).
+4. **Fleet placement: remove right panel, fold ship details into left panel.** Currently right panel holds `ShipName` + `ShipStats` Labels. Move them to the left panel between the ship list and the placement hint. Update `@onready` paths in `fleet_placement.gd:25-26`. Update PRD section 2.2 to reflect new layout.
+
+### Items revised
+
+5 items now (was 4). I13-1 expanded to cover all three grids + zoom defaults explicitly. I13-2 rewritten as the static-TextureRect approach (was draw-in-world-space with retuned NEBULA_PAD). New I13-3 handles the fleet placement layout rework. I13-4 (was I13-3) is screenshot regen. I13-5 (was I13-4) is the gated redeploy. Final item gated like I12-5.

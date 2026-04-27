@@ -1,8 +1,8 @@
 extends Control
 
 const CELL_SIZE: int = 32
-const GRID_COLS: int = 80
-const GRID_ROWS: int = 20
+const GRID_COLS: int = 50
+const GRID_ROWS: int = 30
 const MIN_ZOOM: float = 0.1
 const MAX_ZOOM: float = 4.0
 const DRAG_THRESHOLD_PX: float = 4.0
@@ -794,7 +794,7 @@ func _save_camera_state(cam: Camera2D, is_command: bool) -> void:
 
 func _restore_camera_state(cam: Camera2D, _vp: SubViewport, is_command: bool) -> void:
 	# When there's no saved state for this player, leave the scene's camera
-	# defaults (zoom 1.0, position (1280, 320), matching fleet_placement.tscn)
+	# defaults (zoom 0.86, position (800, 480), matching fleet_placement.tscn)
 	# untouched. Per-input saves capture every pan/zoom, so the saved-state
 	# branch covers everything else.
 	var key: String = "command_camera" if is_command else "target_camera"

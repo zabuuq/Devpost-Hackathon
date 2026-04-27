@@ -9,7 +9,7 @@
 | Export target | HTML5 / Web | [Exporting for the Web](https://docs.godotengine.org/en/4.6/tutorials/export/exporting_for_web.html) |
 | Deployment | itch.io via Butler CLI | [Butler docs](https://itch.io/docs/butler/) · [Pushing builds](https://itch.io/docs/butler/pushing.html) |
 
-**GDScript note:** Use static typing throughout (`var x: int`, `func foo() -> void`). Godot 4.6 has measurable performance improvements for statically typed scripts — relevant for grid logic loops over an 80×20 board.
+**GDScript note:** Use static typing throughout (`var x: int`, `func foo() -> void`). Godot 4.6 has measurable performance improvements for statically typed scripts — relevant for grid logic loops over a 50×30 board.
 
 ---
 
@@ -152,7 +152,7 @@ Reused for both players. Reads `GameState.current_player` to know whose fleet is
 - Placed ships: shown as "placed" indicator in list
 
 **Center — Command Grid (SubViewport + Camera2D):**
-- 80×20 grid, nebula background behind cells
+- 50×30 grid, nebula background behind cells
 - Ghost ship follows cursor when a ship is selected
 - Click to place at valid position (not red/overlapping)
 - Click an already-placed ship → picks it back up into ghost mode
@@ -218,7 +218,7 @@ Implements `prd.md > 2.5 Gameplay Screen`.
 **Grid view — SubViewport + Camera2D:**
 - Two SubViewport instances (Command Grid, Target Grid)
 - Camera2D in each handles zoom/pan natively
-- Full zoom-out shows entire 80×20 grid; zoom in for cell detail
+- Full zoom-out shows entire 50×30 grid; zoom in for cell detail
 - Pan: click and drag on empty grid space
 - Probe illumination rendered as overlay on nebula texture (illuminated, not replaced)
 
@@ -252,7 +252,7 @@ Implements `prd.md > 2.6 Victory Screen`.
 Attached to a Node2D inside each SubViewport. Handles all drawing for one grid (Command or Target).
 
 **Rendering layers (drawn in order):**
-1. Nebula background texture (tiled or stretched to 80×20 grid bounds)
+1. Nebula background texture (tiled or stretched to 50×30 grid bounds)
 2. Grid cell lines
 3. Wreckage markers (decorative only — passthrough for movement)
 4. Ships (Command Grid: full color; Target Grid: ghost/clear based on probe state)
@@ -289,7 +289,7 @@ SubViewportContainer
         └── Camera2D (zoom/pan)
 ```
 
-Camera2D zoom limits: fully zoomed out = entire 80×20 visible; max zoom in = TBD during build (suggest ~4× cell size).
+Camera2D zoom limits: fully zoomed out = entire 50×30 visible; max zoom in = TBD during build (suggest ~4× cell size).
 
 ---
 
@@ -723,7 +723,7 @@ battlestations-nebula/                   ← project root
 
 ### Sparse Dictionary for fog-of-war (CellRecord)
 **Decision:** `cell_records` is a `Dictionary[Vector2i → CellRecord]` with entries only for cells that have data.
-**Why:** 80×20 = 1600 cells per player per grid. Most cells will never have probe data. Dictionary lookup is O(1) in GDScript. Iterating only cells with data (for aging) is more efficient than iterating the full grid.
+**Why:** 50×30 = 1500 cells per player per grid. Most cells will never have probe data. Dictionary lookup is O(1) in GDScript. Iterating only cells with data (for aging) is more efficient than iterating the full grid.
 **Tradeoff accepted:** Slightly less obvious to iterate than a 2D array. Mitigated by clear naming and comments.
 
 ### Screen-relative WASD movement
@@ -747,7 +747,7 @@ No external APIs. No backend. No database. No API keys required. Entirely self-c
 
 ## Open Issues
 
-1. **Zoom levels for Camera2D** — max zoom-in level not specified. Suggest starting at 4× cell size during build and adjusting based on how it feels. Needs to be comfortable for selecting individual cells on the 80×20 grid.
+1. **Zoom levels for Camera2D** — max zoom-in level not specified. Suggest starting at 4× cell size during build and adjusting based on how it feels. Needs to be comfortable for selecting individual cells on the 50×30 grid.
 
 2. **Ship sprite / portrait assets** — not yet sourced. The spec assumes one portrait and one grid sprite per ship type (5 types). These need to exist before `grid_renderer.gd` and `ship_panel.gd` can be completed. Placeholder colored rectangles are fine for build; swap in art during `/iterate`.
 

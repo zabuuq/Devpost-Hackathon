@@ -14,25 +14,25 @@ extends Node
 
 const OUT_DIR: String = "res://assets/screenshots"
 const CELL_SIZE: int = 32
-const GRID_COLS: int = 80
-const GRID_ROWS: int = 20
+const GRID_COLS: int = 50
+const GRID_ROWS: int = 30
 
 # Fleet positions match the screenshot brief. The brief describes ship bodies
 # extending "downward (south)" from the origin, so we use facing=2 (down) in
 # the code's convention (0=up, 1=right, 2=down, 3=left).
 const P1_POSITIONS: Array = [
-	{"type": "battleship", "pos": Vector2i(10, 9)},
-	{"type": "probe_ship", "pos": Vector2i(20, 9)},
-	{"type": "destroyer",  "pos": Vector2i(30, 9)},
-	{"type": "destroyer",  "pos": Vector2i(40, 9)},
-	{"type": "cruiser",    "pos": Vector2i(50, 9)},
+	{"type": "battleship", "pos": Vector2i(5, 9)},
+	{"type": "probe_ship", "pos": Vector2i(13, 9)},
+	{"type": "destroyer",  "pos": Vector2i(20, 9)},
+	{"type": "destroyer",  "pos": Vector2i(27, 9)},
+	{"type": "cruiser",    "pos": Vector2i(33, 9)},
 ]
 const P2_POSITIONS: Array = [
-	{"type": "battleship", "pos": Vector2i(70, 9)},
-	{"type": "probe_ship", "pos": Vector2i(60, 9)},
-	{"type": "destroyer",  "pos": Vector2i(55, 9)},
-	{"type": "destroyer",  "pos": Vector2i(65, 9)},
-	{"type": "cruiser",    "pos": Vector2i(75, 9)},
+	{"type": "battleship", "pos": Vector2i(40, 9)},
+	{"type": "probe_ship", "pos": Vector2i(30, 9)},
+	{"type": "destroyer",  "pos": Vector2i(25, 9)},
+	{"type": "destroyer",  "pos": Vector2i(35, 9)},
+	{"type": "cruiser",    "pos": Vector2i(45, 9)},
 ]
 const SHIP_FACING: int = 2  # down
 
@@ -41,11 +41,11 @@ const SHIP_FACING: int = 2  # down
 # Not every ship sits inside the visible window; that's intentional (brief asks
 # for >50% visible, not all). Facings: 0=up, 1=right, 2=down, 3=left.
 const SHOT_04_POSITIONS: Array = [
-	{"type": "battleship", "pos": Vector2i(28, 4),  "facing": 1},
-	{"type": "probe_ship", "pos": Vector2i(50, 15), "facing": 0},
-	{"type": "destroyer",  "pos": Vector2i(38, 2),  "facing": 2},
-	{"type": "destroyer",  "pos": Vector2i(70, 10), "facing": 3},
-	{"type": "cruiser",    "pos": Vector2i(25, 17), "facing": 1},
+	{"type": "battleship", "pos": Vector2i(15, 4),  "facing": 1},
+	{"type": "probe_ship", "pos": Vector2i(35, 22), "facing": 0},
+	{"type": "destroyer",  "pos": Vector2i(25, 2),  "facing": 2},
+	{"type": "destroyer",  "pos": Vector2i(45, 10), "facing": 3},
+	{"type": "cruiser",    "pos": Vector2i(10, 25), "facing": 1},
 ]
 
 # Shot 05b needs a tight cluster of ships with varied facings inside the
@@ -280,8 +280,8 @@ func _fit_placement_camera(scene: Node) -> void:
 		grid_node.queue_redraw()
 
 
-# Zooms the placement camera so the grid's 20 rows fill the viewport vertically.
-# The 80-column width then overflows, giving a tight horizontal slice rather
+# Zooms the placement camera so the grid's 30 rows fill the viewport vertically.
+# The 50-column width then overflows, giving a tight horizontal slice rather
 # than the letterboxed full-grid view. Used by shot 04 so ship sprites are
 # legible in the tutorial overlay.
 func _zoom_in_placement_camera(scene: Node) -> void:
@@ -302,14 +302,14 @@ func _zoom_in_placement_camera(scene: Node) -> void:
 		grid_node.queue_redraw()
 
 
-# Zooms the camera so the grid's 20 rows fill the SubViewportContainer
+# Zooms the camera so the grid's 30 rows fill the SubViewportContainer
 # vertically and centered, killing the letterbox bands that
-# _fit_gameplay_cameras' fit-whole-grid zoom leaves above and below the 4:1
-# grid in a ~1.64:1 container. The horizontal center is the caller's choice
-# (`center_col`) so different shots can frame different slices of the 80-col
-# grid. Vertical center is always grid_h/2 — anything else re-introduces a
-# top or bottom gray band. The SubViewport doesn't need resizing; with
-# stretch=true, the container already syncs the viewport size to its own.
+# _fit_gameplay_cameras' fit-whole-grid zoom leaves above and below the
+# grid. The horizontal center is the caller's choice (`center_col`) so
+# different shots can frame different slices of the 50-col grid. Vertical
+# center is always grid_h/2 — anything else re-introduces a top or bottom
+# gray band. The SubViewport doesn't need resizing; with stretch=true, the
+# container already syncs the viewport size to its own.
 func _gameplay_fill_view(
 		gp: Node,
 		container_path: String,
@@ -520,10 +520,10 @@ func _shot_05b_command_ships() -> void:
 
 
 # Page-3 triptych, image 3 / Page-6 hero: target grid demonstrating the
-# I9-1 partial-reveal contract. A 7x7 active probe centered at (72, 16) clips
-# only the bow cell of the P2 Battleship (70, 13) plus both cells of the P2
-# Cruiser (relocated for this shot to (74, 15) facing east). The Battleship
-# is facing south, so cell (70, 13) is its front — the facing triangle reads
+# I9-1 partial-reveal contract. A 7x7 active probe centered at (42, 16) clips
+# only the bow cell of the P2 Battleship (40, 13) plus both cells of the P2
+# Cruiser (relocated for this shot to (44, 15) facing east). The Battleship
+# is facing south, so cell (40, 13) is its front — the facing triangle reads
 # as a clear "this is the nose, the rest of the ship is back that way." The
 # other 4 Battleship cells fall outside the probe area and stay un-rendered.
 func _shot_05c_target_grid_mixed() -> void:
@@ -535,12 +535,12 @@ func _shot_05c_target_grid_mixed() -> void:
 	# probe area alongside the Battleship's bow. The runner resets state after
 	# this shot, so the relocation doesn't leak to downstream shots.
 	var cruiser_p2: ShipInstance = GameState.players[1]["fleet"][4]
-	cruiser_p2.position = Vector2i(74, 15)
+	cruiser_p2.position = Vector2i(44, 15)
 	cruiser_p2.facing = 1  # east
 	var cell_records: Dictionary = GameState.players[0]["cell_records"]
 	cell_records.clear()
-	# Battleship (P2) at default (70, 9), facing=2 (south) → cells (70, 9..13).
-	# Front cell is (70, 13) — that's the only Battleship cell the probe will catch.
+	# Battleship (P2) at default (40, 9), facing=2 (south) → cells (40, 9..13).
+	# Front cell is (40, 13) — that's the only Battleship cell the probe will catch.
 	var battleship_p2: ShipInstance = GameState.players[1]["fleet"][0]
 	var battleship_fog: FogShipRecord = FogShipRecord.from_ship(battleship_p2)
 	var battleship_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
@@ -548,11 +548,11 @@ func _shot_05c_target_grid_mixed() -> void:
 	var cruiser_fog: FogShipRecord = FogShipRecord.from_ship(cruiser_p2)
 	var cruiser_cells: Array[Vector2i] = ShipDefinitions.get_ship_cells(
 		cruiser_p2.ship_type, cruiser_p2.position, cruiser_p2.facing)
-	# 7x7 probe centered at (72, 16) → x=69..75, y=13..19. Battleship cells
-	# inside: only (70, 13) — the bow. Cruiser cells inside: both (74, 15)
-	# and (75, 15). Battleship's rear cells (70, 9..12) are above the probe
+	# 7x7 probe centered at (42, 16) → x=39..45, y=13..19. Battleship cells
+	# inside: only (40, 13) — the bow. Cruiser cells inside: both (44, 15)
+	# and (45, 15). Battleship's rear cells (40, 9..12) are above the probe
 	# and stay nebula.
-	var probe_center := Vector2i(72, 16)
+	var probe_center := Vector2i(42, 16)
 	var half: int = 3
 	for y in range(probe_center.y - half, probe_center.y - half + 7):
 		for x in range(probe_center.x - half, probe_center.x - half + 7):
@@ -565,8 +565,8 @@ func _shot_05c_target_grid_mixed() -> void:
 			elif cruiser_cells.has(cell):
 				fog = cruiser_fog
 			cell_records[cell] = CellRecord.make_probe(fog, 2, 1)
-	# Switch to target grid. cam_center_col=72 puts the probe at window center
-	# horizontally; cam y stays at grid center so all 20 rows fit in the
+	# Switch to target grid. cam_center_col=42 puts the probe at window center
+	# horizontally; cam y stays at grid center so all 30 rows fit in the
 	# viewport. The crop is shifted DOWN to capture the lower portion of the
 	# grid where the probe (rows 13..19) sits.
 	gp.call("_switch_grid", 1)  # ActiveGrid.TARGET
@@ -575,13 +575,13 @@ func _shot_05c_target_grid_mixed() -> void:
 		"MainLayout/GridArea/TargetViewport",
 		"MainLayout/GridArea/TargetViewport/SubViewport",
 		"MainLayout/GridArea/TargetViewport/SubViewport/GridNode/Camera2D",
-		72)
+		42)
 	var target_renderer: Node2D = gp.get_node_or_null(
 		"MainLayout/GridArea/TargetViewport/SubViewport/GridNode")
 	if target_renderer != null:
 		target_renderer.queue_redraw()
 	# Crop covers the probe area + a row of nebula above (where the un-probed
-	# Battleship tail sits, invisible by design). At cam_center=(72, 10) and
+	# Battleship tail sits, invisible by design). At cam_center=(42, 15) and
 	# zoom ~1.33, world rows 13..19 map to roughly window y=600..896; the
 	# 800x340 crop at (394, 556) captures that range with a small nebula
 	# margin above the probe.
@@ -600,7 +600,7 @@ func _shot_05c_target_grid_mixed() -> void:
 
 func _shot_06_probe_aiming() -> void:
 	# Stay on the gameplay scene. Select probe ship, enter probe targeting,
-	# and position the highlight over cell (70, 11) by setting mouse_world_pos.
+	# and position the highlight over cell (40, 11) by setting mouse_world_pos.
 	var gp: Node = get_tree().current_scene
 	if gp == null:
 		push_error("[screenshot_runner] shot 06: current_scene is null")
@@ -612,7 +612,7 @@ func _shot_06_probe_aiming() -> void:
 	gp.call("_select_ship", probe_ship)
 	gp.call("_enter_targeting", "probe", probe_ship)
 	var target_renderer: Node2D = gp.get_node("MainLayout/GridArea/TargetViewport/SubViewport/GridNode")
-	var target_world: Vector2 = Vector2(70 * CELL_SIZE + CELL_SIZE / 2.0, 11 * CELL_SIZE + CELL_SIZE / 2.0)
+	var target_world: Vector2 = Vector2(40 * CELL_SIZE + CELL_SIZE / 2.0, 11 * CELL_SIZE + CELL_SIZE / 2.0)
 	target_renderer.set("mouse_world_pos", target_world)
 	target_renderer.queue_redraw()
 	await _capture("06_probe_aiming.png")
@@ -627,7 +627,7 @@ func _shot_07_probe_revealed() -> void:
 	# Use _execute_targeting_action (not resolver.resolve_probe) so the battle
 	# log gets the entry and SFX fires — matches the real UI flow. That method
 	# auto-switches back to the command grid, so we flip to target grid after.
-	gp.call("_execute_targeting_action", Vector2i(70, 11))
+	gp.call("_execute_targeting_action", Vector2i(40, 11))
 	gp.call("_switch_grid", 1)  # ActiveGrid.TARGET
 	# I10-1: Battle Log is always visible alongside the accordion now, so no
 	# tab swap is needed here. The accordion still has the probe ship's row
@@ -734,7 +734,7 @@ func _shot_10_active_probe_enemy_panel() -> void:
 	var bs_p2: ShipInstance = GameState.players[1]["fleet"][0]  # battleship is first
 	bs_p2.current_shields = 750
 	bs_p2.current_armor = 1000
-	# Pre-populate P1's cell records with a fresh probe around (70, 11).
+	# Pre-populate P1's cell records with a fresh probe around (40, 11).
 	# Probe ship probes start at expires_in=3; one age pass → 2, still active.
 	var cell_records: Dictionary = GameState.players[0]["cell_records"]
 	var fog: FogShipRecord = FogShipRecord.from_ship(bs_p2)
@@ -742,7 +742,7 @@ func _shot_10_active_probe_enemy_panel() -> void:
 		bs_p2.ship_type, bs_p2.position, bs_p2.facing)
 	var half: int = 3  # probe_size = 6 for a probe ship
 	for y in range(11 - half, 11 - half + 6):
-		for x in range(70 - half, 70 - half + 6):
+		for x in range(40 - half, 40 - half + 6):
 			if x < 0 or x >= GRID_COLS or y < 0 or y >= GRID_ROWS:
 				continue
 			var cell := Vector2i(x, y)
@@ -756,7 +756,7 @@ func _shot_10_active_probe_enemy_panel() -> void:
 		return
 	_fit_gameplay_cameras(gp)
 	gp.call("_switch_grid", 1)  # TARGET
-	gp.call("_try_select_enemy_ship", Vector2i(70, 11))
+	gp.call("_try_select_enemy_ship", Vector2i(40, 11))
 	await _capture("10_active_probe_enemy_panel.png")
 
 
@@ -768,7 +768,7 @@ func _shot_11_probe_closeup() -> void:
 		return
 	var target_cam: Camera2D = gp.get_node("MainLayout/GridArea/TargetViewport/SubViewport/GridNode/Camera2D")
 	target_cam.zoom = Vector2(2.5, 2.5)
-	target_cam.position = Vector2(70 * CELL_SIZE + CELL_SIZE / 2.0, 11 * CELL_SIZE + CELL_SIZE / 2.0)
+	target_cam.position = Vector2(40 * CELL_SIZE + CELL_SIZE / 2.0, 11 * CELL_SIZE + CELL_SIZE / 2.0)
 	var target_renderer: Node2D = gp.get_node("MainLayout/GridArea/TargetViewport/SubViewport/GridNode")
 	target_renderer.queue_redraw()
 	await _capture("11_probe_closeup.png")
@@ -791,13 +791,13 @@ func _shot_12_battle_log_detail() -> void:
 		battle_log.call("add_entry", {
 			"type": "probe",
 			"ship_type": "probe_ship",
-			"target": Vector2i(70, 11),
+			"target": Vector2i(40, 11),
 			"ships_detected": 1
 		})
 		battle_log.call("add_entry", {
 			"type": "laser",
 			"ship_type": "battleship",
-			"target": Vector2i(70, 11),
+			"target": Vector2i(40, 11),
 			"hit": true,
 			"has_probe": true,
 			"shield_damage": 250,
@@ -809,8 +809,8 @@ func _shot_12_battle_log_detail() -> void:
 			"type": "move",
 			"success": true,
 			"ship_type": "cruiser",
-			"old_position": Vector2i(50, 9),
-			"new_position": Vector2i(52, 9),
+			"old_position": Vector2i(33, 9),
+			"new_position": Vector2i(35, 9),
 			"old_facing": 2,
 			"new_facing": 2,
 			"move_points_used": 1.0,
